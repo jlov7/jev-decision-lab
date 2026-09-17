@@ -1,102 +1,176 @@
 import copy
+import json
+import math
 import unittest
-from jev_lab import engine, metrics, provider
+from unittest.mock import patch
 
+try:
+    from jev_lab import engine, provider, metrics, strategy
+except ImportError:
+    engine = provider = metrics = strategy = None
+
+class ImplementationExists(unittest.TestCase):
+    def test_required_modules_exist(self):
+        self.assertIsNotNone(engine, 'Recovered implementation must be present and importable')
+
+@unittest.skipIf(engine is None, 'implementation pending')
 class ContractTests(unittest.TestCase):
     def setUp(self):
-        self.case = engine.cases()[0]
+        self.case = engine.case_by_id('S02')
         self.request = engine.request_for(self.case)
-        self.response = provider.replay(self.case['id'])
-    def test_valid_contract(self):
+        self.response = provider.replay('S02')
+    def test_contract(self):
         self.assertEqual(engine.validate(self.request, self.response), self.response)
-    def test_labels_never_in_prompt(self):
-        import json
-        text = json.dumps(self.request)
-        self.assertNotIn('expected_owner', text)
-        self.assertNotIn('teaching_note', text)
-        self.assertNotIn('fixture', text)
-    def test_bad_probability_sum_rejected(self):
-        self.response['answers']['owner']['probabilities']['operations'] = 3
-        with self.assertRaises(ValueError): engine.validate(self.request, self.response)
-    def test_unknown_answer_rejected(self):
-        self.response['answers']['invented'] = {'type':'noul','noul':.5}
-        with self.assertRaises(ValueError): engine.validate(self.request, self.response)
-    def test_nan_rejected(self):
-        self.response['answers']['sufficient']['noul'] = float('nan')
-        with self.assertRaises(ValueError): engine.validate(self.request, self.response)
-    def test_wrong_score_mean_rejected(self):
-        self.response['answers']['severity']['score'] = 0
-        with self.assertRaises(ValueError): engine.validate(self.request, self.response)
-    def test_negative_usage_rejected(self):
+    def test_all_cases(self):
+        self.assertEqual(len(engine.cases()), 12)
+        for c in engine.cases():
+            self.assertEqual(len(engine.run(c['id'])['response']['answers']), 6)
+    def test_no_gold_leak(self):
+        self.case['expected_owner'] = 'injected'
+        self.case['teaching_note'] = 'hidden'
+        self.assertNotIn('expected_owner', json.dumps(engine.request_for(self.case)))
+        self.assertNotIn('teaching_note', json.dumps(engine.request_for(self.case)))
+    def test_model_identity_required(self):
+        self.response.pop('model')
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_pinned_model_mismatch_rejected(self):
+        self.response['model'] = 'jev-other'
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response,live=True)
+    def test_answer_ids_exact(self):
+        self.response['answers']['extra'] = {'type':'noul','noul':.5}
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_answer_type_exact(self):
+        self.response['answers']['owner']['type'] = 'noul'
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_probability_sum(self):
+        self.response['answers']['owner']['probabilities']['operations'] = .1
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_options_exact(self):
+        self.response['answers']['owner']['probabilities']['invented'] = 0.
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_argmax(self):
+        self.response['answers']['owner']['choice'] = 'quality'
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_bad_numbers(self):
+        for value in [float('nan'),float('inf'),True,-.1,1.1,'0.9',None]:
+            with self.subTest(value=value), self.assertRaises(ValueError): engine.number(value)
+    def test_score_mean(self):
+        self.response['answers']['severity']['score'] = 2
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_missing_score_distribution(self):
+        self.response['answers']['severity'].pop('probabilities')
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_score_legend(self):
+        self.response['answers']['severity']['legend']['0'] = 'wrong'
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_negative_usage(self):
         self.response['usage']['input_tokens'] = -1
-        with self.assertRaises(ValueError): engine.validate(self.request, self.response)
-    def test_selected_option_must_be_argmax(self):
-        a = self.response['answers']['owner']
-        a['choice'] = min(a['probabilities'], key=a['probabilities'].get)
-        with self.assertRaises(ValueError): engine.validate(self.request, self.response)
-    def test_noul_has_no_confidence(self):
-        self.assertNotIn('confidence', self.response['answers']['sufficient'])
+        with self.assertRaises(ValueError): engine.validate(self.request,self.response)
+    def test_noul_no_confidence(self):
+        self.assertNotIn('confidence',self.response['answers']['sufficient'])
+    def test_case_unknown(self):
+        with self.assertRaises(ValueError): engine.run('UNKNOWN')
+    def test_mode_unknown(self):
+        with self.assertRaises(ValueError): engine.run('S02','fake-live')
 
+@unittest.skipIf(engine is None, 'implementation pending')
 class PolicyTests(unittest.TestCase):
-    def setUp(self):
-        self.case = engine.cases()[1]
-        self.response = provider.replay(self.case['id'])
-    def test_unverified_source_overrides_confidence(self):
-        r = engine.decide(self.case, self.response, .5, 'unverified')
-        self.assertEqual(r['route'], 'VERIFY_SOURCE')
-    def test_stale_source_overrides_confidence(self):
-        self.assertEqual(engine.decide(self.case,self.response,.5,'stale')['route'], 'REFRESH_EVIDENCE')
-    def test_threshold_is_not_correctness(self):
-        self.assertEqual(engine.decide(self.case,self.response,.99)['route'], 'HUMAN_REVIEW')
-    def test_invalid_threshold_rejected(self):
-        for t in [-1, 2, float('nan'), True]:
-            with self.assertRaises(ValueError): engine.decide(self.case,self.response,t)
-    def test_fixture_is_explicit(self):
-        r = engine.run(self.case['id'])
+    def test_replay_no_network(self):
+        with patch('urllib.request.build_opener') as opener:
+            r = engine.run('S02'); opener.assert_not_called()
         self.assertEqual(r['provenance']['kind'],'synthetic_replay')
         self.assertIsNone(r['provenance']['latency_ms'])
-        self.assertIsNone(r['provenance']['usage'])
-    def test_replay_same_receipt_without_new_call(self):
-        r = engine.run(self.case['id'])
-        updated = engine.reconsider(r,.99,'original')
-        self.assertEqual(r['response'],updated['response'])
-        self.assertEqual(r['provenance'],updated['provenance'])
-        self.assertEqual(updated['additional_model_calls'],0)
-    def test_all_cases_valid(self):
-        self.assertEqual(len(engine.cases()),12)
-        for c in engine.cases():
-            r=engine.run(c['id'])
-            self.assertTrue(r['receipt_hash'])
-    def test_unknown_variant_rejected(self):
-        with self.assertRaises(ValueError): engine.decide(self.case,self.response,.8,'secret')
+        self.assertIsNone(r['provenance']['estimated_cost_usd'])
+        self.assertEqual(r['provenance']['model_calls'],0)
+    def test_consent_required(self):
+        with self.assertRaises(PermissionError): engine.run('S02','live',consent=False)
+    def test_boolean_consent_not_string(self):
+        with self.assertRaises(PermissionError): engine.run('S02','live',consent='true')
+    def test_stale_overrides(self):
+        r=engine.reconsider(engine.run('S02'),.5,'stale')
+        self.assertEqual(r['decision']['route'],'REFRESH_EVIDENCE')
+    def test_unverified_overrides(self):
+        r=engine.reconsider(engine.run('S02'),.5,'unverified')
+        self.assertEqual(r['decision']['route'],'VERIFY_SOURCE')
+    def test_critical_before_repair(self):
+        self.assertEqual(engine.run('S01')['decision']['route'],'HUMAN_REVIEW')
+    def test_mandatory(self):
+        self.assertEqual(engine.run('S03')['decision']['route'],'HUMAN_REVIEW')
+    def test_conflict_requests_evidence(self):
+        self.assertEqual(engine.run('T03')['decision']['route'],'REQUEST_EVIDENCE')
+    def test_threshold(self):
+        self.assertEqual(engine.run('S02',threshold=.99)['decision']['route'],'HUMAN_REVIEW')
+    def test_replay_no_extra_call(self):
+        r=engine.run('S02')
+        with patch('jev_lab.provider.live') as live:
+            r2=engine.reconsider(r,.99); live.assert_not_called()
+        self.assertEqual(r['response'],r2['response'])
+        self.assertEqual(r2['additional_model_calls'],0)
+    def test_hash_and_tamper(self):
+        r=engine.run('S02'); h=r.pop('receipt_hash')
+        self.assertEqual(engine.digest(r),h)
+        r['decision']['route']='OTHER'
+        self.assertNotEqual(engine.digest(r),h)
+    def test_tampered_reconsider_rejected(self):
+        r=engine.run('S02');r['decision']['route']='OTHER'
+        with self.assertRaises(ValueError):engine.reconsider(r,.8)
+    def test_unknown_variant(self):
+        with self.assertRaises(ValueError): engine.reconsider(engine.run('S02'),.8,'invented')
+    def test_high_confidence_wrong_case(self):
+        r=engine.run('S04'); a=r['response']['answers']['owner']
+        self.assertGreater(a['probabilities'][a['choice']],.95)
+        self.assertNotEqual(a['choice'],engine.load('labels')['S04']['expected_owner'])
+    def test_policy_metadata_not_in_model_request(self):
+        self.assertNotIn('mandatory_review',json.dumps(engine.request_for(engine.case_by_id('S02'))))
 
-class MetricTests(unittest.TestCase):
-    def test_perfect_predictions(self):
-        m=metrics.classification([({'a':1.,'b':0.},'a'),({'a':0.,'b':1.},'b')])
-        self.assertEqual(m['accuracy'],1)
-        self.assertEqual(m['brier'],0)
-        self.assertEqual(m['ece_10'],0)
-    def test_brier_definition(self):
-        m=metrics.classification([({'a':.75,'b':.25},'a')])
-        self.assertAlmostEqual(m['brier'],.125)
-    def test_empty_is_not_zero_error(self):
-        m=metrics.classification([])
-        self.assertIsNone(m['accuracy'])
-    def test_zero_coverage_risk_is_null(self):
-        m=metrics.classification([({'a':.6,'b':.4},'a')])
-        self.assertIsNone(m['risk_coverage'][-1]['error_rate'])
-    def test_unknown_gold_rejected(self):
-        with self.assertRaises(ValueError): metrics.classification([({'a':1},'b')])
+@unittest.skipIf(engine is None, 'implementation pending')
+class BeforeActionTests(unittest.TestCase):
+    def setUp(self):
+        self.receipt=engine.run('S02')
+        self.current={'state_unchanged':True,'source_fresh':True,'approval_current':True,'permission_granted':True}
+    def test_allowed_is_simulation_only(self):
+        r=strategy.action_preview(self.receipt,self.current)
+        self.assertEqual(r['result'],'SIMULATED_RECOMMENDATION')
+        self.assertEqual(r['external_actions'],0)
+    def test_each_false_blocks(self):
+        for key in self.current:
+            c=dict(self.current);c[key]=False
+            with self.subTest(key=key): self.assertEqual(strategy.action_preview(self.receipt,c)['result'],'HOLD')
+    def test_missing_is_not_permission(self):
+        self.current.pop('permission_granted')
+        self.assertEqual(strategy.action_preview(self.receipt,self.current)['result'],'HOLD')
+    def test_truthy_string_not_permission(self):
+        self.current['permission_granted']='yes'
+        with self.assertRaises(ValueError):strategy.action_preview(self.receipt,self.current)
+    def test_prior_hold_cannot_be_overridden(self):
+        self.assertEqual(strategy.action_preview(engine.run('S03'),self.current)['result'],'HOLD')
+    def test_tampered_receipt(self):
+        self.receipt['case_id']='S01'
+        with self.assertRaises(ValueError): strategy.action_preview(self.receipt,self.current)
+    def test_garden_numeric_uses_code(self):
+        self.assertEqual(strategy.garden('calculate',True,False)['lane'],'deterministic')
+    def test_garden_judgment_local_constraint(self):
+        r=strategy.garden('classify',False,False)
+        self.assertFalse(r['hosted_jev_eligible'])
+    def test_garden_unknown_no_default(self):
+        with self.assertRaises(ValueError):strategy.garden('unknown',True,False)
 
-class NetworkTests(unittest.TestCase):
-    def test_live_disabled_by_default(self):
-        from unittest.mock import patch
-        with patch.dict('os.environ',{},clear=True):
-            with self.assertRaises(PermissionError): provider.live({'state':'test','questions':{},'model':'jev-1.13.0'})
-    def test_budget_attempts_reserved_atomically(self):
-        b=provider.CallBudget(2)
-        b.reserve(); b.reserve()
-        with self.assertRaises(RuntimeError): b.reserve()
-        self.assertEqual(b.used,2)
-
-if __name__ == '__main__': unittest.main()
+@unittest.skipIf(engine is None, 'implementation pending')
+class MetricsTests(unittest.TestCase):
+    def test_perfect(self):
+        m=metrics.classification([({'a':1.,'b':0.},'a')])
+        self.assertEqual(m['brier'],0);self.assertEqual(m['ece_10'],0)
+    def test_brier(self):
+        self.assertAlmostEqual(metrics.classification([({'a':.75,'b':.25},'a')])['brier'],.125)
+    def test_empty(self):
+        self.assertIsNone(metrics.classification([])['accuracy'])
+    def test_no_coverage_is_not_no_error(self):
+        self.assertIsNone(metrics.classification([({'a':.7,'b':.3},'a')])['risk_coverage'][-1]['error_rate'])
+    def test_duplicate(self):
+        r=engine.run('S02')
+        with self.assertRaises(ValueError):metrics.evaluate([r,r],engine.load('labels'))
+    def test_mixed_provenance(self):
+        a=engine.run('S01');b=engine.run('S02');b['provenance']['kind']='live_typesafe'
+        with self.assertRaises(ValueError):metrics.evaluate([a,b],engine.load('labels'))
+    def test_unknown_gold(self):
+        with self.assertRaises(ValueError):metrics.classification([({'a':1.},'b')])

@@ -3,8 +3,15 @@ import threading
 import unittest
 import urllib.request
 import urllib.error
-from jev_lab import server
+try:
+    from jev_lab import server
+except ImportError:
+    server=None
 
+class ServerExists(unittest.TestCase):
+    def test_server_implemented(self):self.assertIsNotNone(server)
+
+@unittest.skipIf(server is None,'server pending')
 class ServerTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -22,32 +29,31 @@ class ServerTests(unittest.TestCase):
         if origin:headers['Origin']=origin
         req=urllib.request.Request(self.base+path,data=json.dumps(body).encode(),headers=headers)
         with urllib.request.urlopen(req) as r:return json.load(r)
+    def token(self):return self.get('/api/config')['session_token']
     def test_token_required(self):
         with self.assertRaises(urllib.error.HTTPError) as e:self.post('/api/run',{'case_id':'S01'})
         self.assertEqual(e.exception.code,403)
     def test_cross_origin_blocked(self):
-        token=self.get('/api/config')['session_token']
-        with self.assertRaises(urllib.error.HTTPError) as e:self.post('/api/run',{'case_id':'S01'},token,'https://evil.example')
+        with self.assertRaises(urllib.error.HTTPError) as e:self.post('/api/run',{'case_id':'S01'},self.token(),'https://evil.example')
         self.assertEqual(e.exception.code,403)
-    def test_replay_flow_and_receipt_reconsideration(self):
-        token=self.get('/api/config')['session_token']
-        r=self.post('/api/run',{'case_id':'S02','mode':'replay'},token)
-        self.assertEqual(r['provenance']['kind'],'synthetic_replay')
-        s=self.post('/api/reconsider',{'receipt_id':r['receipt_id'],'threshold':.99,'variant':'stale'},token)
-        self.assertEqual(s['decision']['route'],'REFRESH_EVIDENCE')
-        self.assertEqual(s['additional_model_calls'],0)
-    def test_arbitrary_receipt_not_accepted(self):
-        token=self.get('/api/config')['session_token']
-        with self.assertRaises(urllib.error.HTTPError):
-            self.post('/api/reconsider',{'receipt_id':'fake','threshold':.8},token)
+    def test_replay_reconsider(self):
+        t=self.token();r=self.post('/api/run',{'case_id':'S02'},t)
+        s=self.post('/api/reconsider',{'receipt_id':r['receipt_id'],'threshold':.99,'variant':'stale'},t)
+        self.assertEqual(s['decision']['route'],'REFRESH_EVIDENCE');self.assertEqual(s['additional_model_calls'],0)
+    def test_fabricated_receipt_not_accepted(self):
+        with self.assertRaises(urllib.error.HTTPError):self.post('/api/reconsider',{'receipt_id':'fake','threshold':.8},self.token())
+    def test_config_no_key(self):self.assertNotIn('TYPESAFE_API_KEY',json.dumps(self.get('/api/config')))
     def test_no_path_traversal(self):
         with self.assertRaises(urllib.error.HTTPError):urllib.request.urlopen(self.base+'/../data/labels.json')
-    def test_config_contains_no_key(self):
-        self.assertNotIn('TYPESAFE_API_KEY',json.dumps(self.get('/api/config')))
-    def test_eval_is_explicitly_synthetic(self):
-        token=self.get('/api/config')['session_token']
-        report=self.post('/api/evaluate',{},token)
-        self.assertEqual(report['provenance'],'synthetic_replay')
-        self.assertEqual(report['overall']['n'],12)
-
-if __name__=='__main__':unittest.main()
+    def test_synthetic_eval(self):
+        r=self.post('/api/evaluate',{},self.token())
+        self.assertEqual(r['overall']['n'],12);self.assertEqual(r['provenance'],'synthetic_replay')
+    def test_action_preview_hold(self):
+        t=self.token();r=self.post('/api/run',{'case_id':'S02'},t)
+        p=self.post('/api/action-preview',{'receipt_id':r['receipt_id'],'current':{}},t)
+        self.assertEqual(p['result'],'HOLD');self.assertEqual(p['external_actions'],0)
+    def test_garden(self):
+        r=self.post('/api/garden',{'task':'calculate','allow_cloud':False,'consequence_high':True},self.token())
+        self.assertEqual(r['lane'],'deterministic')
+    def test_arbitrary_state_cannot_be_sent(self):
+        with self.assertRaises(urllib.error.HTTPError):self.post('/api/run',{'case_id':'S02','state':'client confidential'},self.token())
