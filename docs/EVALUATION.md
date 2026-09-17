@@ -24,6 +24,8 @@ Run a tuned rules baseline, a suitable small discriminative baseline, a cheap co
 
 Use two tracks when needed. **Minimal decision track:** return the necessary category or action recommendation. **Uncertainty track:** return comparable probabilities where a provider genuinely supports them. Do not label a verbal confidence string as the same object as normalized class probabilities. A provider without a defensible distribution can still compete on decision quality, latency and cost.
 
+The prototype records both tracks per arm and per question in `jev_lab/adapters.py`. One asymmetry decides what can ever be compared across providers, so state it rather than smoothing it over: the native `noul` and the AI SDK `boolean` both reduce to a probability in `[0,1]` for a proposition, so the yes/no track is comparable across provenance. Choice and Score answers are not comparable across provenance, because the AI SDK returns no distribution for them at all. A report must not present one as though it were the other.
+
 ### Required measurements
 
 Report accuracy or task-specific precision/recall, costly false negatives and false positives, abstention, coverage, accepted-outcome rate, reviewer minutes, rework, response failures and timeout counts. Report p50/p95 client latency and throughput under a specified concurrency regime. Record input/output tokens, pricing date, retries, cache behavior and any unmetered uncertainty. Include failed requests in the denominator; their costs may be unknown.
@@ -48,6 +50,18 @@ python3 -m jev_lab bench --mode live --allow-network --repeats 3 --out runs/shap
 ```
 
 This requires configured provider credentials and makes up to 39 attempts: three repetitions of one batch, six serial calls and six concurrent calls. It measures the serving/request shape, not another vendor or enterprise quality. The code stops after a repetition with failures; requests already in that repetition may have been sent. A 15-second timeout is not proof of zero billing.
+
+## What the prototype implements today
+
+`jev_lab/adapters.py` exposes the comparison arms behind one explicit interface, returning the raw response together with normalized predictions, model, configuration, usage and latency. `jev_lab/comparator.py` evaluates each arm separately, and `python3 -m jev_lab compare --arms replay --cases S01` runs it offline with no credentials.
+
+Three properties are enforced in code rather than left to reviewer discipline:
+
+- **No pooled metrics.** `metrics.evaluate` refuses receipts that mix provenance kinds, so each arm is scored on its own and no combined figure is produced.
+- **Unavailable is reported as unavailable.** An arm that returns no distribution, or that never completed a call, reports its metrics as absent. It is never scored as zero and never ranked against a scored arm.
+- **Every failure is retained verbatim.** A provider's own refusal or transport error appears in the report as the provider raised it; the comparator does not wrap, retry or substitute a replay result.
+
+`live_verified` is `false` throughout and no adapter call has been executed against a live route. Gateway evaluation is reachable only through the vendor's TypeScript AI SDK, so the Gateway arm in this standard-library prototype is a documented mapping layer whose transport is unresolved by design. `docs/QA.md` records that boundary.
 
 ## Predeclare the decision
 
