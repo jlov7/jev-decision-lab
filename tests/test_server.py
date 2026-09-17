@@ -57,3 +57,30 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(r['lane'],'deterministic')
     def test_arbitrary_state_cannot_be_sent(self):
         with self.assertRaises(urllib.error.HTTPError):self.post('/api/run',{'case_id':'S02','state':'client confidential'},self.token())
+
+@unittest.skipIf(server is None,'server pending')
+class ShowcaseEndpointTests(ServerTests):
+    def test_burst_replay_stores_receipts(self):
+        r=self.post('/api/burst',{'mode':'replay'},self.token())
+        self.assertEqual(r['summary']['succeeded'],12);self.assertEqual(r['kind'],'synthetic_replay')
+        first=r['results'][0];self.assertIn('receipt_id',first);self.assertNotIn('receipt',first)
+        self.assertEqual(first['route'],'HUMAN_REVIEW')
+    def test_burst_live_unconfigured_is_403_not_replay(self):
+        with self.assertRaises(urllib.error.HTTPError) as e:self.post('/api/burst',{'mode':'live','consent':True},self.token())
+        self.assertEqual(e.exception.code,403)
+    def test_playground_unconfigured_is_403(self):
+        body={'state':'synthetic text','questions':{'q':{'type':'noul','instructions':'Is it fine?'}},'consent':True}
+        with self.assertRaises(urllib.error.HTTPError) as e:self.post('/api/playground',body,self.token())
+        self.assertEqual(e.exception.code,403)
+    def test_playground_bad_shape_is_400(self):
+        body={'state':'synthetic text','questions':{'q':{'type':'essay','instructions':'x'}},'consent':True}
+        with self.assertRaises(urllib.error.HTTPError) as e:self.post('/api/playground',body,self.token())
+        self.assertEqual(e.exception.code,400)
+    def test_compare_replay_arm(self):
+        r=self.post('/api/compare',{'arms':['replay'],'case_ids':['S01','S02']},self.token())
+        self.assertEqual([a['name'] for a in r['arms']],['replay']);self.assertEqual(r['expected_owner']['S01'],'operations')
+    def test_config_reports_compare_state_without_secrets(self):
+        c=self.get('/api/config');self.assertIn('compare_enabled',c);self.assertIn('compare_model',c)
+        self.assertNotIn('ANTHROPIC_API_KEY',json.dumps(c))
+    def test_favicon_served(self):
+        with urllib.request.urlopen(self.base+'/favicon.svg') as r:self.assertEqual(r.headers['Content-Type'],'image/svg+xml')

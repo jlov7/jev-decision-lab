@@ -172,12 +172,17 @@ class GatewayArm(ProviderArm):
 
 
 _ARMS = {"replay": ReplayArm, "native": NativeArm, "gateway": GatewayArm}
+ARM_NAMES = ("replay", "native", "gateway", "claude")
 
 
 def build(name: str, transport=None) -> ProviderArm:
+    if name == "claude":
+        from .llm_arm import ClaudeArm  # optional SDK; imported lazily
+
+        return ClaudeArm()
     if name not in _ARMS:
         raise ValueError(
-            f"Unknown provider arm {name!r}. Registered arms: {sorted(_ARMS)}"
+            f"Unknown provider arm {name!r}. Registered arms: {sorted(ARM_NAMES)}"
         )
     return GatewayArm(transport=transport) if name == "gateway" else _ARMS[name]()
 

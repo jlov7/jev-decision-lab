@@ -6,19 +6,23 @@ import threading
 from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
-from . import engine, metrics, provider, strategy
+from . import engine, llm_arm, metrics, provider, showcase, strategy
 
 TOKEN = secrets.token_urlsafe(32)
 RECEIPTS: OrderedDict[str, dict] = OrderedDict()
 LOCK = threading.Lock()
 STATIC = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
-          '/style.css': ('style.css', 'text/css; charset=utf-8')}
+          '/style.css': ('style.css', 'text/css; charset=utf-8'),
+          '/favicon.svg': ('favicon.svg', 'image/svg+xml')}
 FIELDS = {'/api/run': {'case_id', 'mode', 'threshold', 'consent'},
           '/api/reconsider': {'receipt_id', 'threshold', 'variant'},
           '/api/action-preview': {'receipt_id', 'current'},
           '/api/garden': {'task', 'allow_cloud', 'consequence_high'},
-          '/api/evaluate': set()}
+          '/api/evaluate': set(),
+          '/api/burst': {'mode', 'consent', 'case_ids', 'threshold'},
+          '/api/playground': {'state', 'questions', 'consent'},
+          '/api/compare': {'arms', 'case_ids', 'consent'}}
 
 
 def store(receipt: dict) -> dict:
@@ -67,7 +71,10 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, {'session_token': TOKEN, 'live_enabled': provider.live_enabled(),
                 'live_attempts': provider.BUDGET.used, 'live_attempt_limit': provider.BUDGET.limit,
                 'model': engine.request_for(engine.cases()[0])['model'],
-                'price_per_million_input': provider.PRICE_PER_MILLION_INPUT, 'price_as_of': '2026-09-17'})
+                'price_per_million_input': provider.PRICE_PER_MILLION_INPUT, 'price_as_of': '2026-09-17',
+                'compare_enabled': llm_arm.live_enabled(), 'compare_model': llm_arm.model_name(),
+                'compare_sdk_available': llm_arm.sdk_available(), 'compare_attempts': llm_arm.BUDGET.used,
+                'compare_attempt_limit': llm_arm.BUDGET.limit, 'arms': list(showcase.adapters.ARM_NAMES)})
         if path == '/api/cases':
             return self.send(200, {'cases': engine.cases(), 'packs': engine.load('packs')})
         if path == '/api/signals':
@@ -103,6 +110,27 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send(200, strategy.action_preview(lookup(body.get('receipt_id')), body.get('current', {})))
             if path == '/api/garden':
                 return self.send(200, strategy.garden(body.get('task'), body.get('allow_cloud'), body.get('consequence_high')))
+            if path == '/api/burst':
+                ids = body.get('case_ids') or [c['id'] for c in engine.cases()]
+                if not isinstance(ids, list) or not all(isinstance(i, str) for i in ids):
+                    raise ValueError('case_ids must be a list of case id strings')
+                result = showcase.burst(ids, body.get('mode', 'replay'), body.get('consent', False), body.get('threshold', .85))
+                for row in result['results']:
+                    if row['ok']:
+                        stored = store(row.pop('receipt'))
+                        row.update({'receipt_id': stored['receipt_id'], 'route': stored['decision']['route'],
+                                    'owner': stored['decision']['owner'], 'owner_probability': stored['decision']['owner_probability'],
+                                    'critical_probability': stored['decision']['critical_probability'],
+                                    'model': stored['response']['model'], 'latency_ms': stored['provenance']['latency_ms'],
+                                    'usage': stored['provenance']['usage'], 'estimated_cost_usd': stored['provenance']['estimated_cost_usd']})
+                return self.send(200, result)
+            if path == '/api/playground':
+                return self.send(200, showcase.playground(body.get('state'), body.get('questions'), body.get('consent', False)))
+            if path == '/api/compare':
+                ids = body.get('case_ids') or []
+                if not isinstance(ids, list) or not all(isinstance(i, str) for i in ids):
+                    raise ValueError('case_ids must be a list of case id strings')
+                return self.send(200, showcase.compare(body.get('arms'), ids, body.get('consent', False)))
             return self.send(200, metrics.evaluate([engine.run(c['id']) for c in engine.cases()], engine.load('labels')))
         except PermissionError as exc:
             self.send(403, {'error': str(exc)})

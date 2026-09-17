@@ -110,7 +110,22 @@ def _arm_report(arm: ProviderArm, cases: list[dict]) -> dict:
         "succeeded": len(successes),
         "failed": len(failures),
         "failures": failures,
+        "cases": [_case_row(case, result) for case, result in successes],
         "tracks": _tracks(successes),
+    }
+
+
+def _case_row(case: dict, result: dict) -> dict:
+    """What this arm answered for one case, with its own latency and cost. No verdict."""
+    provenance = result["provenance"]
+    return {
+        "case_id": case["id"],
+        "pack": case["pack"],
+        "model": provenance.get("model") or result["raw"].get("model"),
+        "answers": {qid: record["answer"] for qid, record in result["normalized"]["records"].items()},
+        "latency_ms": provenance.get("latency_ms"),
+        "usage": provenance.get("usage"),
+        "estimated_cost_usd": provenance.get("estimated_cost_usd"),
     }
 
 
