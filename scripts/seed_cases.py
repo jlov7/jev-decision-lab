@@ -60,13 +60,13 @@ answers = {
 'Q03':('contradiction','assurance',.90,[.01,.09,.65,.25],.92,.95,'original_source'),
 'Q04':('commercial','commercial',.95,[.01,.14,.66,.19],.96,.02,'approved_scope')}
 def choice(keys, selected, probability):
- return {'type':'choice','choice':selected,'probabilities':{k:probability if k==selected else (1-probability)/(len(keys)-1) for k in keys},'confidence':.77}
+ return {'type':'choice','choice':selected,'probabilities':{k:probability if k==selected else round((1-probability)/(len(keys)-1),6) for k in keys},'confidence':.77}
 replay={}
 for case in cases:
  p=packs[case['pack']];issue,owner,prob,sev,suf,con,ev=answers[case['id']]
  replay[case['id']]={'model':'synthetic-fixture-v1','answers':{
  'issue':choice(p['issues'],issue,.94),'owner':choice(p['owners'],owner,prob),
- 'severity':{'type':'score','score':sum(i*x for i,x in enumerate(sev)),'probabilities':{str(i):x for i,x in enumerate(sev)},'confidence':.77,'legend':{str(i):x for i,x in enumerate(levels)}},
+ 'severity':{'type':'score','score':round(sum(i*x for i,x in enumerate(sev)),6),'probabilities':{str(i):x for i,x in enumerate(sev)},'confidence':.77,'legend':{str(i):x for i,x in enumerate(levels)}},
  'sufficient':{'type':'noul','noul':suf},'contradiction':{'type':'noul','noul':con},'next_evidence':choice(p['evidence'],ev,.94)},'usage':{'input_tokens':0,'output_tokens':0}}
 for name,value in [('cases',cases),('labels',labels),('packs',packs),('replay',replay)]:
  (ROOT/'data'/f'{name}.json').write_text(json.dumps(value,indent=2)+'\n')

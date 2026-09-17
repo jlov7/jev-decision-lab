@@ -13,3 +13,4 @@ test-results/
 # Rebuilt from reviewed, versioned seed scripts.
 data/*.json
 docs/source-register.json
+.claude/
