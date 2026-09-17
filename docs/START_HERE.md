@@ -1,5 +1,7 @@
 # Start here
 
+**The root [README](../README.md) is now the complete guide**: plain-English explanation, quick start, connecting an account, user journeys, architecture, API and CLI references, configuration, safety boundaries, testing and troubleshooting. This page remains as a short index into the longer documents.
+
 ## Read, run, then test the proposition
 
 The package has two distinct deliverables: a source-grounded research/audit report, and an implemented local learning laboratory. The latter uses authored fixtures by default. It is not a live Jev benchmark or a production control system.
