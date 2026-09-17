@@ -6,7 +6,7 @@ Jev Decision Lab is a small local application that puts TypeSafe's **Jev** model
 
 It exists to answer one question for engineers, strategists and leaders: *where does a cheap, fast, bounded judgment belong in a real workflow, and where does it not?*
 
-![Workbench: a supplier case, six typed judgments, the policy route and trace](docs/images/workbench.png)
+<p align="center"><img src="docs/images/hero.svg" alt="Animated overview: a situation flows into Jev, comes out as typed answers with probability distributions, passes through explicit policy and becomes a route" width="100%"></p>
 
 ---
 
@@ -72,6 +72,8 @@ Everything is driven by twelve **authored, synthetic** cases across three indust
 | **Model garden** | A deterministic worksheet: given a task type and constraints, which *kind* of capability belongs, and what checks are owed before procurement | No |
 | **Signal audit** | A dated chronology of public signals before Jev's launch, filterable by as-of date, with explicit "ingestion unknown" caveats | No |
 | **Learn & measure** | The three primitives explained, the confident-wrong teaching case, and calibration metrics over the authored fixtures | No |
+
+![Workbench: a supplier case, six typed judgments, the policy route and trace](docs/images/workbench.png)
 
 ![Live lab burst console: six tiles for latency, wall time, tokens, cost and calls, then twelve case rows](docs/images/live-burst.png)
 
@@ -200,21 +202,21 @@ Bring one real decision your team makes repeatedly (do not bring real data). In 
 ```mermaid
 flowchart LR
   subgraph Browser["Browser (vanilla JS, no framework)"]
-    UI[Workbench · Live lab · Garden · Signals · Learn]
+    UI["Workbench · Live lab · Garden · Signals · Learn"]
   end
   subgraph Server["Python stdlib server · 127.0.0.1:8765"]
-    S[server.py<br/>same-origin + session token<br/>strict field allow-lists]
-    E[engine.py<br/>request · validate · policy · receipt]
-    SH[showcase.py<br/>burst · playground · compare]
-    A[adapters.py + llm_arm.py<br/>provider arms]
-    C[comparator.py<br/>per-arm, never pooled]
-    D[(data/*.json<br/>cases · packs · replay · labels)]
+    S["server.py<br/>same-origin + session token<br/>strict field allow-lists"]
+    E["engine.py<br/>request · validate · policy · receipt"]
+    SH["showcase.py<br/>burst · playground · compare"]
+    A["adapters.py + llm_arm.py<br/>provider arms"]
+    C["comparator.py<br/>per-arm, never pooled"]
+    D[("data/*.json<br/>cases · packs · replay · labels")]
   end
   subgraph Providers
-    J[TypeSafe Jev<br/>api.typesafe.ai/v1/systemone]
-    K[Anthropic Claude<br/>optional baseline]
+    J["TypeSafe Jev<br/>api.typesafe.ai/v1/systemone"]
+    K["Anthropic Claude<br/>optional baseline"]
   end
-  UI -- fetch JSON --> S
+  UI -- "fetch JSON" --> S
   S --> E
   S --> SH
   SH --> E
@@ -222,8 +224,8 @@ flowchart LR
   C --> A
   E --> A
   E --> D
-  A -- HTTPS, bearer, no redirects --> J
-  A -- official SDK, structured output --> K
+  A -- "HTTPS, bearer, no redirects" --> J
+  A -- "official SDK, structured output" --> K
 ```
 
 The runtime is the Python standard library plus three static files. There is no build step, no framework, no database and no telemetry. The optional `anthropic` package is used only by the comparison arm.
@@ -240,16 +242,16 @@ sequenceDiagram
   participant J as Jev API
   U->>B: Run six judgments (live, consent ticked)
   B->>S: POST /api/run {case_id, mode, threshold, consent} + X-Lab-Token
-  S->>E: run()
-  E->>E: request_for(case): model + state + six questions
+  S->>E: run(case, mode, threshold, consent)
+  E->>E: build request (model, state, six questions)
   E->>P: live(request)
-  P->>P: live_enabled? budget.reserve() size ≤ 16 KB?
+  P->>P: live enabled, budget slot reserved, body under 16 KB
   P->>J: POST /v1/systemone (bearer, 15 s timeout, no redirects)
   J-->>P: {model, answers, usage}
   P-->>E: response + provenance (latency, tokens, est. cost)
-  E->>E: validate(): ids, types, distributions sum to 1, argmax choice, score = weighted index, legend, usage ints, pinned model
-  E->>E: decide(): first matching policy rule → route + trace
-  E->>E: receipt: hashes of request, questions, case, policy source; content hash of the whole
+  E->>E: validate ids, types, distributions sum to 1, argmax choice, weighted score, legend, usage, pinned model
+  E->>E: decide with the first matching policy rule, keep the trace
+  E->>E: build the receipt and content-hash it
   E-->>S: receipt
   S-->>B: receipt + receipt_id (server-held)
   B-->>U: route, distributions, trace, provenance banner
