@@ -1,0 +1,28 @@
+{
+  "browser": "Playwright / system Chromium",
+  "fallback_reason": "Browser plugin absent; managed Chromium blocks loopback navigation. Local-asset rendering with a bridge to the real HTTP server was used; browser-network/CSP integration remains untested.",
+  "viewports": [
+    [
+      1440,
+      1100
+    ],
+    [
+      390,
+      844
+    ]
+  ],
+  "checks": [
+    "Replay run changes the recommendation",
+    "Before-action approval revocation blocks the simulation",
+    "Policy replay changes the route with zero new model calls",
+    "Receipt export returns a JSON download",
+    "Model garden maps exact calculation to code, not Jev",
+    "As-of chronology filters dates without claiming tracker ingestion",
+    "Evaluation labels all results as authored teaching fixtures",
+    "Unconfigured live mode is an explicit error, not a replay fallback",
+    "390px mobile viewport has no document-level horizontal overflow"
+  ],
+  "page_errors": [],
+  "live_jev_executed": false,
+  "status": "PASS"
+}

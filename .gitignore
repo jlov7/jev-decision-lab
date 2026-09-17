@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+runs/
+.venv/
+.DS_Store
+node_modules/
+playwright-report/
+test-results/
+
+# Rebuilt from reviewed, versioned seed scripts.
+data/*.json
+docs/source-register.json
+.claude/
