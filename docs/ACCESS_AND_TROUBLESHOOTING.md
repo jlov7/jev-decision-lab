@@ -49,6 +49,21 @@ unset TYPESAFE_API_KEY JEV_ALLOW_LIVE
 
 Rotate a key immediately if it has appeared in logs, screenshots, prompts or source control. Deleting a leaked key from a later commit does not remove it from history.
 
+## Live lab and the Claude baseline
+
+With the key configured, the **Live lab** tab fires all twelve cases concurrently and reports p50/p95 client latency, tokens and an estimated cost per run; the **playground** sends text you type with questions you declare; **compare** runs Jev beside a constrained-output Claude baseline on the same cases. Each burst or compare uses twelve attempts against the per-process caps (`JEV_MAX_LIVE_CALLS`, default 20; `JEV_MAX_COMPARE_CALLS`, default 40); raise them deliberately if you want several runs in one session.
+
+The Claude arm needs the optional SDK and its own key in the same terminal:
+
+```bash
+uv sync --extra compare
+read -s ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
+export JEV_COMPARE_MODEL=claude-haiku-4-5   # or claude-sonnet-5 / claude-opus-5
+uv run python3 -m jev_lab
+```
+
+It returns categories only, so its distribution track is reported unavailable; agreement with the twelve teaching labels is a smoke test, not accuracy.
+
 ## Minimal native request
 
 The SDK is not required by the lab, but the official Python package is `typesafe-sdk` and the JavaScript package is `@typesafe-ai/sdk`. The native endpoint is `POST https://api.typesafe.ai/v1/systemone`, authenticated with a bearer token. Use the official reference for current supported fields. [S02, S03]

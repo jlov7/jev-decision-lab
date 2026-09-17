@@ -1,17 +1,35 @@
 # Jev Decision Lab
 
-A synthetic-first enterprise workbench for understanding typed judgment models, explicit policy and the boundary before action. Includes a detailed research report, an audit of prelaunch frontier signals, a model-garden worksheet and a Codex continuation packet.
+A local workbench for seeing what TypeSafe's Jev judgment model actually does: how fast it answers, what it costs, what typed answers and distributions it returns, and what your own code must still decide. It ships with three synthetic enterprise scenario packs, a live burst console, a free-form playground, a side-by-side comparison against a constrained-output Claude baseline, explicit policy replay, content-hashed receipts, a model-garden worksheet, a prelaunch signal audit and a research report.
 
 ## Run locally
 
 ```bash
-python3 scripts/setup_lab.py
-python3 -m unittest discover -s tests -v
-python3 -m jev_lab check
-python3 -m jev_lab
+uv run python3 scripts/setup_lab.py
+uv run python3 -m unittest discover -s tests -v
+uv run python3 -m jev_lab check
+uv run python3 -m jev_lab
 ```
 
-Open `http://127.0.0.1:8765`. Runtime uses Python 3.10+ standard library and local browser assets. No install, GPU or API key is needed for synthetic replay. Python 3.13 was tested in the build environment; validate your target interpreter and browser.
+Open `http://127.0.0.1:8765`. The runtime is Python 3.10+ standard library plus local browser assets; `uv` is only a convenience for a clean interpreter. No API key is needed for synthetic replay. Python 3.13 was tested.
+
+## Connect your Jev account
+
+Create an API key in the TypeSafe console, then start the server from a terminal so the key lives only in that process:
+
+```bash
+read -s TYPESAFE_API_KEY && export TYPESAFE_API_KEY
+export JEV_ALLOW_LIVE=1
+uv run python3 -m jev_lab
+```
+
+Open **Live lab**, tick consent, and fire the burst: twelve cases, seventy-two typed judgments, concurrent, with client-observed latency and an estimated cost per run. Then ask your own questions in the playground. For the Claude comparison arm, also export `ANTHROPIC_API_KEY` and run `uv sync --extra compare` once. Every live path requires the server-side key, the enable flag and per-run consent; nothing retries and nothing falls back to replay.
+
+For a terminal-only first call:
+
+```bash
+uv run python3 -m jev_lab smoke --mode live --allow-network --out runs/first-live.json
+```
 
 ## Start here
 
@@ -21,7 +39,7 @@ Three packs cover supplier disruption, service incidents and consultancy deliver
 
 ## Claims and limits
 
-Replay outputs are authored teaching fixtures, not measured Jev results. The native TypeSafe adapter is implemented and mock-contract tested, but no authenticated Jev call was made during this build. There are no external actions and no real business-data uploads. The chronology does not establish actual tracker ingestion. Read [QA and remaining verification](docs/QA.md).
+Replay outputs are authored teaching fixtures, not measured Jev results. The native TypeSafe adapter and the Claude comparison arm are contract-tested against the official documentation with controlled responses; no authenticated call was made during the build itself, so the first live burst on your account is the first real measurement. Twelve synthetic cases are a smoke test, not a benchmark. There are no external actions. The playground sends only text you type, live, after consent; it is not a channel for company or client data. The chronology does not establish actual tracker ingestion. Read [QA and remaining verification](docs/QA.md).
 
 To connect your account, use the [access guide](docs/ACCESS_AND_TROUBLESHOOTING.md). Never paste an API key into the UI, a prompt or a repository. Personal-device access is not enterprise approval.
 

@@ -89,8 +89,12 @@ jev_lab/
   metrics.py      owner accuracy, Brier, log loss, ECE, risk/coverage
   strategy.py     before-action simulation and model-garden role mapping
   experiments.py same-state batch/serial/parallel comparison
+  adapters.py     provider arm interface: replay, native, gateway (mapping only)
+  llm_arm.py      Claude constrained-output baseline arm (optional SDK extra)
+  comparator.py   per-arm comparison; never pooled, never ranked
+  showcase.py     live burst, playground request validation, compare wrapper
   server.py       loopback API, strict fields, receipt store, static assets
-  __main__.py     serve/check/smoke/eval/bench commands
+  __main__.py     serve/check/smoke/eval/bench/compare commands
 web/
   index.html      semantic, accessible application structure
   app.js          UI state, fetch calls, inspection and export
@@ -144,6 +148,9 @@ All POST routes require same-origin checks, a session token in `X-Lab-Token`, JS
 | `/api/action-preview` | `receipt_id`, `current` | Simulation only; no effect adapter |
 | `/api/garden` | `task`, `allow_cloud`, `consequence_high` | No model call |
 | `/api/evaluate` | none | Always authored replay; live evaluation is explicit CLI work |
+| `/api/burst` | `mode`, `consent`, `case_ids`, `threshold` | Concurrent run over bundled cases; attempt cap checked before any call |
+| `/api/playground` | `state`, `questions`, `consent` | User-typed synthetic text; live only; shape and size validated; nothing stored |
+| `/api/compare` | `arms`, `case_ids`, `consent` | Per-arm report plus teaching labels; live arms need consent |
 
 Receipts are stored only in process memory, capped at 200 and lost on restart. Exported files are user-controlled. This is intentional for a personal teaching tool; a production evidence store requires a separate retention and access design.
 

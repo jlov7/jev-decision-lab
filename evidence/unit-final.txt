@@ -27,9 +27,7 @@ test_budget (test_adversarial.TransportTests.test_budget) ... ok
 test_headers_endpoint_usage (test_adversarial.TransportTests.test_headers_endpoint_usage) ... ok
 test_inconsistent_heads (test_adversarial.TransportTests.test_inconsistent_heads) ... ok
 test_invalid_budget (test_adversarial.TransportTests.test_invalid_budget) ... ok
-test_invalid_json (test_adversarial.TransportTests.test_invalid_json) ... /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 401: 'bad'>
-  _warnings.warn(self.warn_message, ResourceWarning)
-ok
+test_invalid_json (test_adversarial.TransportTests.test_invalid_json) ... ok
 test_live_disabled (test_adversarial.TransportTests.test_live_disabled) ... ok
 test_no_redirect (test_adversarial.TransportTests.test_no_redirect) ... ok
 test_oversize_not_sent (test_adversarial.TransportTests.test_oversize_not_sent) ... ok
@@ -106,25 +104,65 @@ test_unverified_overrides (test_core.PolicyTests.test_unverified_overrides) ... 
 test_failed_calls_counted (test_experiments.ExperimentTests.test_failed_calls_counted) ... ok
 test_request_shapes (test_experiments.ExperimentTests.test_request_shapes) ... ok
 test_experiment_implemented (test_experiments.ExperimentsExist.test_experiment_implemented) ... ok
+test_model_comes_from_environment_with_a_pinned_default (test_llm_arm.GatingTests.test_model_comes_from_environment_with_a_pinned_default) ... ok
+test_refuses_before_sending_when_not_enabled (test_llm_arm.GatingTests.test_refuses_before_sending_when_not_enabled) ... ok
+test_registry_builds_the_claude_arm (test_llm_arm.GatingTests.test_registry_builds_the_claude_arm) ... ok
+test_answers_are_minimal_decisions_with_no_invented_distribution (test_llm_arm.NormalizationTests.test_answers_are_minimal_decisions_with_no_invented_distribution) ... ok
+test_boolean_must_be_boolean (test_llm_arm.NormalizationTests.test_boolean_must_be_boolean) ... ok
+test_choice_outside_criteria_fails_closed (test_llm_arm.NormalizationTests.test_choice_outside_criteria_fails_closed) ... ok
+test_missing_question_fails_closed (test_llm_arm.NormalizationTests.test_missing_question_fails_closed) ... ok
+test_provenance_records_model_usage_latency_and_dated_price (test_llm_arm.NormalizationTests.test_provenance_records_model_usage_latency_and_dated_price) ... ok
+test_refusal_fails_closed (test_llm_arm.NormalizationTests.test_refusal_fails_closed) ... ok
+test_score_outside_levels_fails_closed (test_llm_arm.NormalizationTests.test_score_outside_levels_fails_closed) ... ok
+test_structured_output_is_requested_without_retries (test_llm_arm.NormalizationTests.test_structured_output_is_requested_without_retries) ... ok
+test_truncated_output_fails_closed (test_llm_arm.NormalizationTests.test_truncated_output_fails_closed) ... ok
+test_unknown_model_price_is_unknown_not_zero (test_llm_arm.NormalizationTests.test_unknown_model_price_is_unknown_not_zero) ... ok
+test_prompt_carries_state_and_questions_but_never_labels (test_llm_arm.SchemaTests.test_prompt_carries_state_and_questions_but_never_labels) ... ok
+test_schema_mirrors_the_three_primitives (test_llm_arm.SchemaTests.test_schema_mirrors_the_three_primitives) ... ok
 test_server_implemented (test_server.ServerExists.test_server_implemented) ... ok
 test_action_preview_hold (test_server.ServerTests.test_action_preview_hold) ... ok
-test_arbitrary_state_cannot_be_sent (test_server.ServerTests.test_arbitrary_state_cannot_be_sent) ... /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 400: 'Bad Request'>
-  _warnings.warn(self.warn_message, ResourceWarning)
-ok
+test_arbitrary_state_cannot_be_sent (test_server.ServerTests.test_arbitrary_state_cannot_be_sent) ... ok
 test_config_no_key (test_server.ServerTests.test_config_no_key) ... ok
-test_cross_origin_blocked (test_server.ServerTests.test_cross_origin_blocked) ... /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 403: 'Forbidden'>
-  _warnings.warn(self.warn_message, ResourceWarning)
-ok
+test_cross_origin_blocked (test_server.ServerTests.test_cross_origin_blocked) ... ok
 test_fabricated_receipt_not_accepted (test_server.ServerTests.test_fabricated_receipt_not_accepted) ... ok
 test_garden (test_server.ServerTests.test_garden) ... ok
-test_no_path_traversal (test_server.ServerTests.test_no_path_traversal) ... /opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 404: 'Not Found'>
-  _warnings.warn(self.warn_message, ResourceWarning)
-ok
+test_no_path_traversal (test_server.ServerTests.test_no_path_traversal) ... ok
 test_replay_reconsider (test_server.ServerTests.test_replay_reconsider) ... ok
 test_synthetic_eval (test_server.ServerTests.test_synthetic_eval) ... ok
 test_token_required (test_server.ServerTests.test_token_required) ... ok
+test_action_preview_hold (test_server.ShowcaseEndpointTests.test_action_preview_hold) ... ok
+test_arbitrary_state_cannot_be_sent (test_server.ShowcaseEndpointTests.test_arbitrary_state_cannot_be_sent) ... ok
+test_burst_live_unconfigured_is_403_not_replay (test_server.ShowcaseEndpointTests.test_burst_live_unconfigured_is_403_not_replay) ... ok
+test_burst_replay_stores_receipts (test_server.ShowcaseEndpointTests.test_burst_replay_stores_receipts) ... ok
+test_compare_replay_arm (test_server.ShowcaseEndpointTests.test_compare_replay_arm) ... ok
+test_config_no_key (test_server.ShowcaseEndpointTests.test_config_no_key) ... ok
+test_config_reports_compare_state_without_secrets (test_server.ShowcaseEndpointTests.test_config_reports_compare_state_without_secrets) ... ok
+test_cross_origin_blocked (test_server.ShowcaseEndpointTests.test_cross_origin_blocked) ... ok
+test_fabricated_receipt_not_accepted (test_server.ShowcaseEndpointTests.test_fabricated_receipt_not_accepted) ... ok
+test_favicon_served (test_server.ShowcaseEndpointTests.test_favicon_served) ... ok
+test_garden (test_server.ShowcaseEndpointTests.test_garden) ... ok
+test_no_path_traversal (test_server.ShowcaseEndpointTests.test_no_path_traversal) ... ok
+test_playground_bad_shape_is_400 (test_server.ShowcaseEndpointTests.test_playground_bad_shape_is_400) ... ok
+test_playground_unconfigured_is_403 (test_server.ShowcaseEndpointTests.test_playground_unconfigured_is_403) ... ok
+test_replay_reconsider (test_server.ShowcaseEndpointTests.test_replay_reconsider) ... ok
+test_synthetic_eval (test_server.ShowcaseEndpointTests.test_synthetic_eval) ... ok
+test_token_required (test_server.ShowcaseEndpointTests.test_token_required) ... ok
+test_duplicate_or_unknown_case_is_rejected_before_any_call (test_showcase.BurstTests.test_duplicate_or_unknown_case_is_rejected_before_any_call) ... ok
+test_live_burst_needs_consent_and_configuration (test_showcase.BurstTests.test_live_burst_needs_consent_and_configuration) ... ok
+test_live_burst_refuses_when_the_attempt_budget_cannot_cover_it (test_showcase.BurstTests.test_live_burst_refuses_when_the_attempt_budget_cannot_cover_it) ... ok
+test_live_burst_summarises_latency_tokens_and_cost (test_showcase.BurstTests.test_live_burst_summarises_latency_tokens_and_cost) ... ok
+test_one_failure_is_retained_and_does_not_stop_the_burst (test_showcase.BurstTests.test_one_failure_is_retained_and_does_not_stop_the_burst) ... ok
+test_replay_burst_runs_every_case_with_no_latency_claim (test_showcase.BurstTests.test_replay_burst_runs_every_case_with_no_latency_claim) ... ok
+test_live_arm_requires_consent_before_any_call (test_showcase.CompareTests.test_live_arm_requires_consent_before_any_call) ... ok
+test_replay_compare_adds_side_by_side_rows_and_labels (test_showcase.CompareTests.test_replay_compare_adds_side_by_side_rows_and_labels) ... ok
+test_unknown_arm_is_rejected (test_showcase.CompareTests.test_unknown_arm_is_rejected) ... ok
+test_playground_is_live_only_and_consented (test_showcase.PlaygroundRequestTests.test_playground_is_live_only_and_consented) ... ok
+test_playground_returns_validated_response_with_provenance (test_showcase.PlaygroundRequestTests.test_playground_returns_validated_response_with_provenance) ... ok
+test_question_shape_is_validated (test_showcase.PlaygroundRequestTests.test_question_shape_is_validated) ... ok
+test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... ok
+test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 115 tests in 0.591s
+Ran 161 tests in 1.577s
 
 OK

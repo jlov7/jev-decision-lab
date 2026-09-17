@@ -23,8 +23,8 @@ Open `http://127.0.0.1:8765`. Try S02, expired evidence, removed approval, then 
 
 ## What exists
 
-Three scenario packs, twelve teaching cases, six typed questions, a native HTTP adapter, strict response validation, policy replay, content-hashed receipts, a before-action simulation, a model-garden worksheet, a dated source chronology, evaluation metrics, a request-shape experiment CLI and tests.
+Three scenario packs, twelve teaching cases, six typed questions, a native HTTP adapter, strict response validation, policy replay, content-hashed receipts, a before-action simulation, a Live lab (concurrent burst with latency and cost, a free-form playground, and a per-arm comparison against a constrained-output Claude baseline), a model-garden worksheet, a dated source chronology, evaluation metrics, a request-shape experiment CLI and tests.
 
 ## What does not yet exist
 
-An authenticated Jev run, a live competitor comparison, a representative domain calibration result, an actual ingestion-log audit, enterprise approval, a real effect/authority service or a production deployment. These are explicit next stages, not hidden claims.
+A recorded authenticated Jev run (the lab is built for it; the account owner runs it), a representative domain calibration result, an actual ingestion-log audit, enterprise approval, a real effect/authority service or a production deployment. These are explicit next stages, not hidden claims.

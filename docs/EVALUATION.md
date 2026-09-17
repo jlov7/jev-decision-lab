@@ -61,7 +61,9 @@ Three properties are enforced in code rather than left to reviewer discipline:
 - **Unavailable is reported as unavailable.** An arm that returns no distribution, or that never completed a call, reports its metrics as absent. It is never scored as zero and never ranked against a scored arm.
 - **Every failure is retained verbatim.** A provider's own refusal or transport error appears in the report as the provider raised it; the comparator does not wrap, retry or substitute a replay result.
 
-`live_verified` is `false` throughout and no adapter call has been executed against a live route. Gateway evaluation is reachable only through the vendor's TypeScript AI SDK, so the Gateway arm in this standard-library prototype is a documented mapping layer whose transport is unresolved by design. `docs/QA.md` records that boundary.
+The Claude arm (`jev_lab/llm_arm.py`, arm name `claude`) is the protocol's cheap constrained-output baseline: it asks the official SDK for exactly the declared categories, levels and booleans through structured output, reports them on the minimal-decision track, and marks the distribution track unavailable because a generative model returns no class distribution. Its model is pinned by `JEV_COMPARE_MODEL` (default `claude-haiku-4-5`) and its cost uses dated list prices. `python3 -m jev_lab compare --arms native,claude --mode live --allow-network` runs both live arms from the terminal; the Live lab runs them from the browser after consent.
+
+`live_verified` is `false` throughout until an authenticated response has been recorded. Gateway evaluation is reachable only through the vendor's TypeScript AI SDK, so the Gateway arm in this standard-library prototype is a documented mapping layer whose transport is unresolved by design. `docs/QA.md` records that boundary.
 
 ## Predeclare the decision
 
