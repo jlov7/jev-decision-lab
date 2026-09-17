@@ -49,21 +49,15 @@ class InterfaceTests(unittest.TestCase):
     def test_every_arm_reports_the_two_tracks(self):
         for name in ("replay", "native", "gateway"):
             arm = adapters.build(name)
-            self.assertEqual(
-                set(arm.tracks), {"minimal_decision", "comparable_distribution"}
-            )
-            self.assertFalse(
-                arm.live_verified, "no route has been checked against a live provider"
-            )
+            self.assertEqual(set(arm.tracks), {"minimal_decision", "comparable_distribution"})
+            self.assertFalse(arm.live_verified, "no route has been checked against a live provider")
 
     def test_call_returns_raw_provenance_and_normalized(self):
         request = engine.request_for(engine.case_by_id("S02"))
         result = adapters.build("replay").call(request, "S02")
         self.assertEqual(set(result), {"raw", "provenance", "normalized"})
         self.assertEqual(result["provenance"]["kind"], "synthetic_replay")
-        self.assertEqual(
-            result["normalized"]["schema_version"], adapters.SCHEMA_VERSION
-        )
+        self.assertEqual(result["normalized"]["schema_version"], adapters.SCHEMA_VERSION)
 
 
 @unittest.skipIf(adapters is None, "adapter interface pending")
@@ -101,17 +95,13 @@ class NativeNormalizationTests(unittest.TestCase):
         severity = self.normalized["records"]["severity"]
         self.assertEqual(severity["primitive"], "ordered")
         self.assertEqual(severity["distribution"]["kind"], "ordinal")
-        self.assertEqual(
-            severity["answer"], self.native["answers"]["severity"]["score"]
-        )
+        self.assertEqual(severity["answer"], self.native["answers"]["severity"]["score"])
 
     def test_native_yes_no_normalizes_to_a_comparable_binary(self):
         sufficient = self.normalized["records"]["sufficient"]
         self.assertEqual(sufficient["wire_type"], "noul")
         self.assertEqual(sufficient["primitive"], "proposition")
-        self.assertEqual(
-            sufficient["answer"], self.native["answers"]["sufficient"]["noul"]
-        )
+        self.assertEqual(sufficient["answer"], self.native["answers"]["sufficient"]["noul"])
         self.assertAlmostEqual(
             sufficient["distribution"]["probabilities"]["yes"],
             self.native["answers"]["sufficient"]["noul"],
@@ -123,7 +113,12 @@ class NativeNormalizationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             adapters.normalize_native(self.request, broken)
 
-    def test_missing_native_distribution_is_not_fabricated(self):
+    def test_native_choice_must_be_argmax(self):
+        broken = copy.deepcopy(self.native)
+        broken["answers"]["owner"]["choice"] = "quality"
+        with self.assertRaises(ValueError) as caught:
+            adapters.normalize_native(self.request, broken)
+        self.assertIn("highest-probability", str(caught.exception))
         broken = copy.deepcopy(self.native)
         del broken["answers"]["owner"]["probabilities"]
         with self.assertRaises(ValueError):
@@ -220,9 +215,7 @@ class GatewayTransportTests(unittest.TestCase):
 
     def test_gateway_pins_the_documented_package_version(self):
         self.assertEqual(adapters.GATEWAY_PACKAGE_PIN, "ai@7.0.105")
-        self.assertEqual(
-            adapters.build("gateway").pinned_version, adapters.GATEWAY_PACKAGE_PIN
-        )
+        self.assertEqual(adapters.build("gateway").pinned_version, adapters.GATEWAY_PACKAGE_PIN)
 
     def test_injected_transport_is_normalized_the_same_way(self):
         request = engine.request_for(engine.case_by_id("S02"))
@@ -237,6 +230,4 @@ class GatewayTransportTests(unittest.TestCase):
         self.assertEqual(seen["payload"]["model"], "typesafe-ai/jev")
         self.assertEqual(result["provenance"]["kind"], "live_gateway")
         self.assertEqual(result["provenance"]["model_calls"], 1)
-        self.assertEqual(
-            result["normalized"]["records"]["owner"]["wire_type"], "choice"
-        )
+        self.assertEqual(result["normalized"]["records"]["owner"]["wire_type"], "choice")

@@ -1,17 +1,17 @@
 # Verification record and remaining risk
 
-**Build date: September 17, 2026. Local prototype version: 0.3.0.**
+**Build date: September 17, 2026. Local prototype version: 0.3.1.**
 
 ## Executed
 
 | Check | Result | Evidence |
 |---|---|---|
-| Python unit, policy, metrics, adapter, comparator, showcase, Claude arm, CLI, mock transport and real loopback HTTP tests | 161 tests passed, no skipped tests in the final run | `evidence/unit-final.txt` |
+| Python unit, policy, metrics, adapter, comparator, showcase, Claude arm, CLI, mock transport and real loopback HTTP tests | 179 tests passed, no skipped tests in the final run | `evidence/unit-final.txt` |
 | Provider adapter interface and per-arm comparator | Two-track interface, public contract distinction between `boolean` and `noul`, provenance separation, retained failures and unavailable-not-zero reporting all pass | `tests/test_adapters.py`, `tests/test_comparator.py` |
 | `compare` command and its live gate | Live arms are refused unless `--mode live` and `--allow-network` are both set; an unconsented arm makes no call, and a consented arm's own failure is retained verbatim | `tests/test_cli_compare.py` |
 | Authored data generation | Rebuilt offline from versioned scripts | `scripts/setup_lab.py` |
-| All twelve replay contracts and policy runs | Passed | `python3 -m jev_lab check` |
-| JavaScript syntax | Passed | `node --check web/app.js` |
+| All twelve replay contracts and policy runs | Passed | `uv run python3 -m jev_lab check` |
+| JavaScript syntax | Passed | `node --check web/app.js web/live.js` |
 | UI interactions and rendering | Nine scripted checks passed; no page JavaScript errors | `evidence/browser-check.json` |
 | Desktop and narrow-screen inspection | Screenshots inspected at 1440px and 390px viewport widths | `evidence/desktop.png`, `evidence/mobile.png` |
 | Supplied frontier file scan | 29 mounted files; no literal Jev, TypeSafe or RLCD matches | `evidence/project-scan.json` |
@@ -74,7 +74,7 @@ Python 3.13, Node 22, system Chromium, Python Playwright. Runtime itself uses on
 ```bash
 uv run python3 scripts/setup_lab.py
 uv run python3 -m unittest discover -s tests -v
-node --check web/app.js
+node --check web/app.js web/live.js
 uv run python3 -m jev_lab check
 uv run python3 -m jev_lab eval --out runs/replay-evaluation.json
 uv run python3 -m jev_lab compare --arms replay --cases S01 --out runs/compare-replay.json

@@ -131,8 +131,9 @@ class ClaudeArm(ProviderArm):
     live = True
     pinned_version = "anthropic-sdk>=1.6 messages.create output_config.format json_schema"
 
-    def __init__(self, client=None):
+    def __init__(self, client=None, prepaid=None):
         self.client = client
+        self.prepaid = prepaid
 
     def _client(self):
         if self.client is not None:
@@ -160,7 +161,10 @@ class ClaudeArm(ProviderArm):
         if len(prompt.encode()) > provider.MAX_INPUT_BYTES:
             raise ValueError("Request exceeds the lab 16,000-byte ceiling. Nothing was sent.")
         client = self._client()
-        BUDGET.reserve()
+        token = self.prepaid
+        if token is None:
+            token = BUDGET.hold(1)
+        token.consume()
         started = time.perf_counter()
         try:
             response = client.messages.create(

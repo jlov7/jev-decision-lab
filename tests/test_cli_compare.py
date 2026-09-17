@@ -28,9 +28,7 @@ class CompareCommandTests(unittest.TestCase):
             code = 0
             with (
                 mock.patch.dict(os.environ, env, clear=True),
-                mock.patch(
-                    "sys.argv", ["jev_lab", "compare", "--out", str(out), *argv]
-                ),
+                mock.patch("sys.argv", ["jev_lab", "compare", "--out", str(out), *argv]),
             ):
                 try:
                     with redirect_stdout(stream), redirect_stderr(stream):
@@ -85,12 +83,8 @@ class CompareCommandTests(unittest.TestCase):
         self.assertEqual(sorted(arms), ["native", "replay"])
         for name in ("native", "replay"):
             dist = arms[name]["tracks"]["comparable_distribution"]
-            self.assertFalse(
-                dist["pooled_with_other_arms"], f"{name} arm must not be pooled"
-            )
-        self.assertEqual(
-            arms["replay"]["tracks"]["comparable_distribution"]["metrics"]["n"], 1
-        )
+            self.assertFalse(dist["pooled_with_other_arms"], f"{name} arm must not be pooled")
+        self.assertEqual(arms["replay"]["tracks"]["comparable_distribution"]["metrics"]["n"], 1)
         self.assertIsNone(
             arms["native"]["tracks"]["comparable_distribution"]["metrics"],
             "an arm with no successful call reports unavailable, never zero",
@@ -116,9 +110,19 @@ class CompareCommandTests(unittest.TestCase):
         self.assertIn("live mode disabled", failure["error"].lower())
         self.assertTrue(failure["cost_unknown"])
         replay = next(arm for arm in report["arms"] if arm["name"] == "replay")
-        self.assertEqual(
-            replay["succeeded"], 1, "one arm failing must not stop another"
-        )
+        self.assertEqual(replay["succeeded"], 1, "one arm failing must not stop another")
+
+    def test_rules_arm_compare_runs_offline(self):
+        code, _output, report = self.run_cli("--arms", "replay,rules", "--cases", "S02,S04")
+        self.assertEqual(code, 0)
+        names = [arm["name"] for arm in report["arms"]]
+        self.assertEqual(names, ["replay", "rules"])
+        self.assertTrue(report["planted_error"]["S04"])
+        rows = {
+            arm["name"]: {row["case_id"]: row for row in arm["cases"]} for arm in report["arms"]
+        }
+        self.assertEqual(rows["rules"]["S02"]["answers"]["issue"], "delivery")
+        self.assertEqual(rows["replay"]["S02"]["answers"]["issue"], "routine")
 
 
 if __name__ == "__main__":

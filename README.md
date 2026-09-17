@@ -68,7 +68,7 @@ Everything is driven by twelve **authored, synthetic** cases across three indust
 | Tab | What it does | Needs a key? |
 |---|---|---|
 | **Workbench** | Pick a scenario and case, run six typed judgments, inspect every distribution, change the policy threshold or mark evidence stale and replay the policy with zero new model calls, recheck the action boundary, export a receipt | No (replay) / Yes (live) |
-| **Live lab** | **Burst:** fire all twelve cases concurrently and read p50/p95 latency, tokens and estimated cost. **Playground:** write your own situation and questions. **Compare:** Jev beside a constrained-output Claude baseline on the same cases | Yes |
+| **Live lab** | **Burst:** fire all twelve cases concurrently and read p50/p95 latency, tokens and estimated cost. Click a row to inspect its receipt. **Playground:** write your own situation and questions, with a live byte counter against the HTTP and provider ceilings. **Compare:** Jev beside a constrained-output Claude baseline and a keyword-rules arm; S04 is labelled as a planted teaching error and excluded from owner-agreement counts | Burst/compare replay work offline; live Jev/Claude need a key |
 | **Model garden** | A deterministic worksheet: given a task type and constraints, which *kind* of capability belongs, and what checks are owed before procurement | No |
 | **Signal audit** | A dated chronology of public signals before Jev's launch, filterable by as-of date, with explicit "ingestion unknown" caveats | No |
 | **Learn & measure** | The three primitives explained, the confident-wrong teaching case, and calibration metrics over the authored fixtures | No |
@@ -87,7 +87,7 @@ Requirements: Python 3.10 or newer and a modern browser. [`uv`](https://docs.ast
 git clone https://github.com/jlov7/jev-decision-lab.git
 cd jev-decision-lab
 uv run python3 scripts/setup_lab.py      # rebuild the authored datasets from the reviewed seed scripts
-uv run python3 -m unittest discover -s tests   # 161 tests, about two seconds
+uv run python3 -m unittest discover -s tests   # 179 tests, about two seconds
 uv run python3 -m jev_lab                # serve on http://127.0.0.1:8765
 ```
 
@@ -347,14 +347,14 @@ jev-decision-lab/
 │   ├── experiments.py         request-shape experiment (one batch vs six serial vs six parallel)
 │   ├── server.py              loopback HTTP server, allow-listed fields, receipt store, CSP
 │   └── __main__.py            serve · check · smoke · eval · bench · compare
-├── web/                       index.html · app.js · style.css · favicon.svg (no build step)
+├── web/                       index.html · app.js · live.js · style.css · live.css · favicon.svg (no build step)
 ├── data/                      generated: cases · packs · replay · labels · signals
 ├── scripts/
 │   ├── setup_lab.py           regenerate data and the source register
 │   ├── seed_cases.py          the authored cases, questions, fixtures and labels
 │   ├── seed_signals.py        the prelaunch chronology
 │   └── source_register.py     bibliography metadata
-├── tests/                     161 tests: contract, policy, server, adapters, comparator, showcase, Claude arm, CLI
+├── tests/                     179 tests: contract, policy, server, adapters, comparator, showcase, Claude arm, CLI
 ├── docs/                      research report, frontier audit, build packet, evaluation protocol, QA record, workshop
 ├── evidence/                  retained test output and browser-check records
 ├── runs/                      CLI outputs (replay evaluation and compare are committed as examples)
@@ -438,9 +438,9 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 161 tests
+uv run python3 -m unittest discover -s tests -v    # 179 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
-node --check web/app.js                             # optional JS syntax check
+node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint
 ```
 

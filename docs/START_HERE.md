@@ -15,10 +15,10 @@ Run the lab using the root README. Then use [WORKSHOP.md](WORKSHOP.md) for a fiv
 ## Immediate sequence
 
 ```bash
-python3 scripts/setup_lab.py
-python3 -m unittest discover -s tests -v
-python3 -m jev_lab check
-python3 -m jev_lab
+uv run python3 scripts/setup_lab.py
+uv run python3 -m unittest discover -s tests -v
+uv run python3 -m jev_lab check
+uv run python3 -m jev_lab
 ```
 
 Open `http://127.0.0.1:8765`. Try S02, expired evidence, removed approval, then S04. No provider key is needed.

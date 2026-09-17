@@ -5,10 +5,10 @@
 From the repository root:
 
 ```bash
-python3 scripts/setup_lab.py
-python3 -m unittest discover -s tests -v
-python3 -m jev_lab check
-python3 -m jev_lab
+uv run python3 scripts/setup_lab.py
+uv run python3 -m unittest discover -s tests -v
+uv run python3 -m jev_lab check
+uv run python3 -m jev_lab
 ```
 
 Open `http://127.0.0.1:8765`. No package installation or API key is needed for the teaching application. The server binds only to the loopback interface. Stop with Control-C. Use `--port 8766` after `serve` when the default port is occupied.
@@ -28,7 +28,7 @@ read -s TYPESAFE_API_KEY
 export TYPESAFE_API_KEY
 export JEV_ALLOW_LIVE=1
 export JEV_MODEL=jev-1.13.0
-python3 -m jev_lab
+uv run python3 -m jev_lab
 ```
 
 The first command waits for the key without echoing it. This avoids placing the literal key in shell history. The program does not automatically read a `.env` file. Do not paste the key into the browser or a coding-agent conversation. Restart an already-running server after changing environment variables.
@@ -36,7 +36,7 @@ The first command waits for the key without echoing it. This avoids placing the 
 Choose Live TypeSafe API, check the explicit consent box and run one bundled case. A server-side key alone does not cause an automatic call. For a terminal smoke test:
 
 ```bash
-python3 -m jev_lab smoke --mode live --allow-network --out runs/first-live.json
+uv run python3 -m jev_lab smoke --mode live --allow-network --out runs/first-live.json
 ```
 
 This sends one synthetic case. It does not verify your organization’s approval, calibrate the model, establish cost at scale or exercise a competitor.

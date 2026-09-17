@@ -37,9 +37,7 @@ class ComparatorTests(unittest.TestCase):
         self.assertEqual((arm["attempts"], arm["succeeded"], arm["failed"]), (2, 0, 2))
         self.assertEqual(len(arm["failures"]), 2)
         self.assertEqual(sorted(f["case_id"] for f in arm["failures"]), ["S01", "S02"])
-        self.assertTrue(
-            all("no fallback" in f["error"].lower() for f in arm["failures"])
-        )
+        self.assertTrue(all("no fallback" in f["error"].lower() for f in arm["failures"]))
         self.assertTrue(all(f["cost_unknown"] for f in arm["failures"]))
 
     def test_a_failing_arm_does_not_stop_the_other_arm(self):
@@ -48,17 +46,13 @@ class ComparatorTests(unittest.TestCase):
         self.assertEqual(report["arms"][1]["succeeded"], 1)
 
     def test_arms_are_never_pooled_into_one_evaluation(self):
-        report = comparator.compare(
-            ["S01", "S02"], [adapters.build("replay"), AlwaysFails()]
-        )
+        report = comparator.compare(["S01", "S02"], [adapters.build("replay"), AlwaysFails()])
         for arm in report["arms"]:
             self.assertEqual(
                 arm["tracks"]["comparable_distribution"]["pooled_with_other_arms"],
                 False,
             )
-        self.assertEqual(
-            {a["kind"] for a in report["arms"]}, {"synthetic_replay", "live_broken"}
-        )
+        self.assertEqual({a["kind"] for a in report["arms"]}, {"synthetic_replay", "live_broken"})
 
     def test_replay_arm_supplies_distribution_metrics(self):
         track = comparator.compare(["S01", "S02"], self.arms())["arms"][0]["tracks"][
@@ -67,6 +61,13 @@ class ComparatorTests(unittest.TestCase):
         self.assertTrue(track["available"])
         self.assertEqual(track["metrics"]["n"], 2)
         self.assertIn("owner", track["metric_scope"])
+
+    def test_planted_s04_is_not_scored_in_distribution_metrics(self):
+        arm = comparator.compare(["S01", "S04"], self.arms())["arms"][0]
+        self.assertEqual({row["case_id"] for row in arm["cases"]}, {"S01", "S04"})
+        track = arm["tracks"]["comparable_distribution"]
+        self.assertTrue(track["available"])
+        self.assertEqual(track["metrics"]["n"], 1)
 
     def test_arm_without_distributions_reports_unavailable_not_zero(self):
         report = comparator.compare(["S01", "S02"], [AlwaysFails()])
@@ -78,9 +79,7 @@ class ComparatorTests(unittest.TestCase):
     def test_minimal_decision_track_is_reported_separately_from_distributions(self):
         arm = comparator.compare(["S01", "S02"], self.arms())["arms"][0]
         self.assertEqual(arm["tracks"]["minimal_decision"]["answered"], 2)
-        self.assertEqual(
-            set(arm["tracks"]), {"minimal_decision", "comparable_distribution"}
-        )
+        self.assertEqual(set(arm["tracks"]), {"minimal_decision", "comparable_distribution"})
 
     def test_report_does_not_rank_arms_or_claim_accuracy(self):
         report = comparator.compare(["S01", "S02"], [adapters.build("replay")])
@@ -93,9 +92,7 @@ class ComparatorTests(unittest.TestCase):
         report = comparator.compare(["S01"], [adapters.build("native")])
         arm = report["arms"][0]
         self.assertFalse(arm["live_verified"])
-        self.assertTrue(
-            any("not" in w.lower() and "live" in w.lower() for w in report["warnings"])
-        )
+        self.assertTrue(any("not" in w.lower() and "live" in w.lower() for w in report["warnings"]))
 
     def test_unknown_case_is_rejected_before_any_call(self):
         with self.assertRaises(ValueError):

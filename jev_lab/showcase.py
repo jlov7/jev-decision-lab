@@ -9,13 +9,14 @@ its cost marked unknown.
 
 from __future__ import annotations
 
+import json
 import re
 import statistics
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
-from . import adapters, comparator, engine, provider
+from . import adapters, comparator, engine, llm_arm, provider
 
 MAX_STATE_CHARS = 6000
 MAX_QUESTIONS = 8
@@ -23,8 +24,21 @@ MAX_OPTIONS = 12
 MAX_LEVELS = 10
 MAX_INSTRUCTION_CHARS = 1500
 MAX_DESCRIPTION_CHARS = 200
+MAX_HTTP_BODY = 16384
 QUESTION_ID = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
 MAX_WORKERS = 6
+
+
+def _sum_known_ints(values: list) -> int | None:
+    """Sum non-negative ints. Any missing or invalid count makes the total unknown, not zero."""
+    if not values:
+        return None
+    known = []
+    for value in values:
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            return None
+        known.append(value)
+    return sum(known)
 
 
 def _percentile(values: list[float], fraction: float):
@@ -50,6 +64,7 @@ def burst(
         raise ValueError("Repeated case IDs must not inflate the sample")
     cases = [engine.case_by_id(case_id) for case_id in case_ids]
     engine.number(threshold)
+    prepaid = None
     if mode == "live":
         if consent is not True:
             raise PermissionError(
@@ -59,18 +74,13 @@ def burst(
             raise PermissionError(
                 "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."
             )
-        remaining = provider.BUDGET.limit - provider.BUDGET.used
-        if remaining < len(cases):
-            raise RuntimeError(
-                f"Burst needs {len(cases)} attempt slots but {remaining} remain in this process. "
-                "Nothing was sent. Restart with JEV_MAX_LIVE_CALLS set deliberately, at most 100."
-            )
+        prepaid = provider.BUDGET.hold(len(cases))
     elif mode != "replay":
         raise ValueError("Mode must be replay or live")
 
     def one(case: dict) -> dict:
         try:
-            receipt = engine.run(case["id"], mode, threshold, consent)
+            receipt = engine.run(case["id"], mode, threshold, consent, prepaid=prepaid)
             return {"case_id": case["id"], "ok": True, "receipt": receipt}
         except (ValueError, PermissionError, RuntimeError) as exc:
             return {"case_id": case["id"], "ok": False, "error": str(exc), "cost_unknown": True}
@@ -107,8 +117,12 @@ def burst(
             "max": max(latencies) if latencies else None,
             "mean": round(statistics.fmean(latencies), 2) if latencies else None,
         },
-        "input_tokens": sum(u.get("input_tokens") or 0 for u in usages) if usages else None,
-        "output_tokens": sum(u.get("output_tokens") or 0 for u in usages) if usages else None,
+        "input_tokens": _sum_known_ints([u.get("input_tokens") for u in usages])
+        if usages
+        else None,
+        "output_tokens": _sum_known_ints([u.get("output_tokens") for u in usages])
+        if usages
+        else None,
         "estimated_cost_usd": sum(known_costs)
         if known_costs and len(known_costs) == len(successes)
         else None,
@@ -130,6 +144,30 @@ def burst(
             else "Synthetic replay: authored teaching fixtures, no model call, no latency and no cost."
         ),
     }
+
+
+def publish_burst(result: dict, store) -> dict:
+    """Persist receipts and return the public row shape the live-lab table renders."""
+    for row in result["results"]:
+        if not row["ok"]:
+            continue
+        stored = store(row.pop("receipt"))
+        decision = stored["decision"]
+        provenance = stored["provenance"]
+        row.update(
+            {
+                "receipt_id": stored["receipt_id"],
+                "route": decision["route"],
+                "owner": decision["owner"],
+                "owner_probability": decision["owner_probability"],
+                "critical_probability": decision["critical_probability"],
+                "model": stored["response"]["model"],
+                "latency_ms": provenance["latency_ms"],
+                "usage": provenance["usage"],
+                "estimated_cost_usd": provenance["estimated_cost_usd"],
+            }
+        )
+    return result
 
 
 def _string(value, limit: int, what: str) -> str:
@@ -187,11 +225,26 @@ def playground_request(state, questions) -> dict:
         else:
             raise ValueError(f"Question {qid} type must be choice, score or noul")
         clean[qid] = entry
-    return {
+    request = {
         "model": engine.request_for(engine.cases()[0])["model"],
         "state": state,
         "questions": clean,
     }
+    envelope = json.dumps(
+        {"state": state, "questions": clean, "consent": True}, allow_nan=False
+    ).encode()
+    if len(envelope) > MAX_HTTP_BODY:
+        raise ValueError(
+            f"Playground request is {len(envelope)} bytes; the lab HTTP ceiling is {MAX_HTTP_BODY}. "
+            "Shorten the state or the criteria. Nothing was sent."
+        )
+    payload = json.dumps(request, allow_nan=False).encode()
+    if len(payload) > provider.MAX_INPUT_BYTES:
+        raise ValueError(
+            f"Playground request is {len(payload)} bytes; the provider ceiling is "
+            f"{provider.MAX_INPUT_BYTES}. Shorten the state or the criteria. Nothing was sent."
+        )
+    return request
 
 
 def playground(state, questions, consent: bool = False) -> dict:
@@ -217,18 +270,66 @@ def playground(state, questions, consent: bool = False) -> dict:
     }
 
 
-def compare(arm_names: list[str], case_ids: list[str], consent: bool = False) -> dict:
-    """Per-arm comparison over the same cases, plus the evaluator's expected owner per case."""
+def prepare_arms(arm_names: list[str], n_cases: int, consent: bool = False) -> list:
+    """Build arms once. Reserve live slots only after every live arm can proceed."""
     if not isinstance(arm_names, list) or not arm_names:
         raise ValueError("Choose at least one comparison arm")
-    arms = [adapters.build(name) for name in arm_names]
-    if any(arm.live for arm in arms) and consent is not True:
+    if isinstance(n_cases, bool) or not isinstance(n_cases, int) or n_cases < 1:
+        raise ValueError("Compare needs at least one case")
+    unknown = [name for name in arm_names if name not in adapters.ARM_NAMES]
+    if unknown:
+        raise ValueError(
+            f"Unknown provider arm {unknown[0]!r}. Registered arms: {sorted(adapters.ARM_NAMES)}"
+        )
+    if any(name in adapters.LIVE_ARMS for name in arm_names) and consent is not True:
         raise PermissionError("Explicit consent is required before any live arm is called.")
+    native_on = "native" in arm_names and provider.live_enabled()
+    claude_on = "claude" in arm_names and llm_arm.live_enabled()
+    if claude_on and not llm_arm.sdk_available():
+        raise PermissionError(
+            "The Claude comparison arm needs the optional SDK: run `uv sync --extra compare`. "
+            "Nothing was sent."
+        )
+    shortfalls = []
+    if native_on and provider.BUDGET.remaining() < n_cases:
+        shortfalls.append(("Jev", provider.BUDGET.remaining()))
+    if claude_on and llm_arm.BUDGET.remaining() < n_cases:
+        shortfalls.append(("Claude", llm_arm.BUDGET.remaining()))
+    if shortfalls:
+        label, left = shortfalls[0]
+        raise RuntimeError(
+            f"Compare needs {n_cases} {label} attempt slots but {left} remain. Nothing was sent."
+        )
+    prepaid = {}
+    if native_on:
+        prepaid["native"] = provider.BUDGET.hold(n_cases)
+    if claude_on:
+        prepaid["claude"] = llm_arm.BUDGET.hold(n_cases)
+    return [adapters.build(name, prepaid=prepaid.get(name)) for name in arm_names]
+
+
+def compare(arm_names: list[str], case_ids: list[str], consent: bool = False) -> dict:
+    """Per-arm comparison over the same cases, plus the evaluator's expected owner per case."""
     case_ids = case_ids or [c["id"] for c in engine.cases()]
+    if len(set(case_ids)) != len(case_ids):
+        raise ValueError("Repeated case IDs must not inflate the sample")
+    for case_id in case_ids:
+        engine.case_by_id(case_id)
+    arms = prepare_arms(arm_names, len(case_ids), consent)
     report = comparator.compare(case_ids, arms)
     labels = engine.load("labels")
     report["expected_owner"] = {
         case_id: labels[case_id]["expected_owner"] for case_id in report["cases"]
     }
+    report["planted_error"] = {
+        case_id: bool(labels[case_id].get("planted_error")) for case_id in report["cases"]
+    }
+    if any(report["planted_error"].values()):
+        report["warnings"] = list(report.get("warnings") or []) + [
+            (
+                "S04 is a planted teaching error: the authored owner is confidently wrong. "
+                "It is labelled here so it is not counted as a measured model failure."
+            )
+        ]
     report["created_at"] = datetime.now(timezone.utc).isoformat()
     return report

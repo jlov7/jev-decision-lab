@@ -4,13 +4,11 @@ import argparse
 import json
 from pathlib import Path
 
-from . import adapters, comparator, engine, experiments, metrics, server
+from . import engine, experiments, metrics, server, showcase
 
 
 def main():
-    p = argparse.ArgumentParser(
-        description="Synthetic-first enterprise judgment experiments"
-    )
+    p = argparse.ArgumentParser(description="Synthetic-first enterprise judgment experiments")
     p.add_argument(
         "command",
         nargs="?",
@@ -22,9 +20,7 @@ def main():
     p.add_argument("--allow-network", action="store_true")
     p.add_argument("--out", default="runs/result.json")
     p.add_argument("--repeats", type=int, default=1)
-    p.add_argument(
-        "--arms", default="replay", help="Comma-separated provider arms for compare"
-    )
+    p.add_argument("--arms", default="replay", help="Comma-separated provider arms for compare")
     p.add_argument(
         "--cases",
         default="",
@@ -34,9 +30,7 @@ def main():
     if args.command == "serve":
         return server.serve(args.port)
     if args.mode == "live" and not args.allow_network:
-        p.error(
-            "Live commands require --allow-network and server-side environment configuration"
-        )
+        p.error("Live commands require --allow-network and server-side environment configuration")
     if args.command == "check":
         for c in engine.cases():
             engine.run(c["id"])
@@ -46,26 +40,19 @@ def main():
         if args.mode != "live" or not args.allow_network:
             p.error("bench requires --mode live --allow-network")
         result = experiments.benchmark(repeats=args.repeats)
-        failed = any(
-            not s["all_successful"] for r in result["results"] for s in r["shapes"]
-        )
+        failed = any(not s["all_successful"] for r in result["results"] for s in r["shapes"])
     elif args.command == "compare":
         names = [n.strip() for n in args.arms.split(",") if n.strip()]
-        try:
-            arms = [adapters.build(n) for n in names]
-        except ValueError as exc:
-            return p.error(str(exc))
-        if any(arm.live for arm in arms) and not (
-            args.mode == "live" and args.allow_network
-        ):
-            return p.error(
-                "compare with a live arm requires --mode live --allow-network "
-                "and server-side environment configuration"
-            )
         case_ids = [s.strip() for s in args.cases.split(",") if s.strip()] or [
             c["id"] for c in engine.cases()
         ]
-        result = comparator.compare(case_ids, arms)
+        consent = args.mode == "live" and args.allow_network
+        try:
+            result = showcase.compare(names, case_ids, consent=consent)
+        except ValueError as exc:
+            return p.error(str(exc))
+        except PermissionError as exc:
+            return p.error(f"{exc} Live arms also need --mode live --allow-network.")
         failed = any(arm["failed"] for arm in result["arms"])
     else:
         ids = (
@@ -76,9 +63,7 @@ def main():
         receipts, errors = [], []
         for case_id in ids:
             try:
-                receipts.append(
-                    engine.run(case_id, args.mode, consent=args.allow_network)
-                )
+                receipts.append(engine.run(case_id, args.mode, consent=args.allow_network))
             except (ValueError, PermissionError, RuntimeError) as exc:
                 errors.append({"case_id": case_id, "error": str(exc)})
                 break

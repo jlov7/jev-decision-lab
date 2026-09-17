@@ -3,13 +3,13 @@ import os
 import unittest
 from unittest.mock import patch
 
-from jev_lab import engine, provider, showcase
+from jev_lab import engine, llm_arm, provider, showcase
 
 LIVE_ENV = {"JEV_ALLOW_LIVE": "1", "TYPESAFE_API_KEY": "test-only-not-real"}
 ALL_IDS = [c["id"] for c in engine.cases()]
 
 
-def live_fixture(request):
+def live_fixture(request, prepaid=None):
     """Stand-in for provider.live: the authored fixture relabelled as the pinned model."""
     case_id = next(c["id"] for c in engine.cases() if c["state"] == request["state"])
     response = copy.deepcopy(provider.replay(case_id))
@@ -87,7 +87,7 @@ class BurstTests(unittest.TestCase):
         self.assertEqual(live.call_count, 0)
 
     def test_one_failure_is_retained_and_does_not_stop_the_burst(self):
-        def flaky(request):
+        def flaky(request, prepaid=None):
             if "wrong team" in request["state"]["message"] or request["state"][
                 "message"
             ].startswith("The carrier delivered on time. Receiving"):
@@ -192,7 +192,7 @@ class PlaygroundRequestTests(unittest.TestCase):
     def test_playground_returns_validated_response_with_provenance(self):
         g = self.good()
 
-        def fake_live(request):
+        def fake_live(request, prepaid=None):
             response = {
                 "model": request["model"],
                 "answers": {
@@ -254,6 +254,21 @@ class CompareTests(unittest.TestCase):
     def test_unknown_arm_is_rejected(self):
         with self.assertRaises(ValueError):
             showcase.compare(["replay", "mystery"], ["S01"], consent=False)
+
+    def test_missing_claude_sdk_does_not_hold_native_slots(self):
+        env = {**LIVE_ENV, "ANTHROPIC_API_KEY": "test-only-not-real"}
+        native_budget = provider.CallBudget(20)
+        claude_budget = provider.CallBudget(20)
+        with (
+            patch.dict(os.environ, env),
+            patch("jev_lab.llm_arm.sdk_available", return_value=False),
+            patch.object(provider, "BUDGET", native_budget),
+            patch.object(llm_arm, "BUDGET", claude_budget),
+            self.assertRaises(PermissionError),
+        ):
+            showcase.prepare_arms(["native", "claude"], 4, consent=True)
+        self.assertEqual(native_budget.used, 0)
+        self.assertEqual(claude_budget.used, 0)
 
 
 if __name__ == "__main__":

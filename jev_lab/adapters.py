@@ -13,7 +13,7 @@ same objects. Native names the yes/no primitive ``noul`` and returns distributio
 for choice and score; the AI SDK names it ``boolean``, returns no distribution for
 choice or score, and exposes a separate provider confidence statistic. This module
 normalizes both without pretending they are interchange-able, and never fabricates a
-distribution the provider did not return (route-doc rule at ACCESS_AND_TRADEOFFS:110).
+distribution the provider did not return (docs/ACCESS_AND_TROUBLESHOOTING.md).
 
 No call in this module has been verified against a live route. ``live_verified`` is
 False on every arm and stays that way until an authenticated response is observed.
@@ -30,7 +30,7 @@ from . import engine, provider
 SCHEMA_VERSION = "adapter-v1.0"
 TRACKS = ("minimal_decision", "comparable_distribution")
 
-# Pinned to the documented route requirements; see docs/ACCESS_AND_TRADEOFFS.md:93.
+# Pinned to the documented route requirements; see docs/ACCESS_AND_TROUBLESHOOTING.md.
 GATEWAY_PACKAGE_PIN = "ai@7.0.105"
 GATEWAY_MODEL = "typesafe-ai/jev"
 GATEWAY_PRICE_PER_MILLION_INPUT = 0.042
@@ -75,6 +75,7 @@ class ReplayArm(ProviderArm):
         if not case_id:
             raise ValueError("Replay requires a case id; fixtures are keyed by case.")
         response = provider.replay(case_id)
+        engine.validate(request, response, live=False)
         provenance = {
             "kind": "synthetic_replay",
             "model_calls": 0,
@@ -100,11 +101,13 @@ class NativeArm(ProviderArm):
     live = True
     pinned_version = provider.ENDPOINT
 
+    def __init__(self, prepaid=None):
+        self.prepaid = prepaid
+
     def call(self, request: dict, case_id: str | None = None) -> dict:
-        response, provenance = provider.live(request)
-        provenance = dict(
-            provenance, live_verified=False, adapter_schema_version=SCHEMA_VERSION
-        )
+        response, provenance = provider.live(request, prepaid=self.prepaid)
+        engine.validate(request, response, live=True)
+        provenance = dict(provenance, live_verified=False, adapter_schema_version=SCHEMA_VERSION)
         return {
             "raw": response,
             "provenance": provenance,
@@ -143,9 +146,7 @@ class GatewayArm(ProviderArm):
             "model": GATEWAY_MODEL,
             "state": copy.deepcopy(request["state"]),
             "questions": questions,
-            "providerOptions": {
-                "gateway": {"zeroDataRetention": True, "noTraining": True}
-            },
+            "providerOptions": {"gateway": {"zeroDataRetention": True, "noTraining": True}},
         }
 
     def call(self, request: dict, case_id: str | None = None) -> dict:
@@ -158,9 +159,7 @@ class GatewayArm(ProviderArm):
         payload = self.build_payload(request)
         body = json.dumps(payload, allow_nan=False).encode()
         if len(body) > MAX_INPUT_BYTES:
-            raise ValueError(
-                "Request exceeds the lab 16,000-byte ceiling. Nothing was sent."
-            )
+            raise ValueError("Request exceeds the lab 16,000-byte ceiling. Nothing was sent.")
         started = time.perf_counter()
         response = self.transport(payload)
         latency = round((time.perf_counter() - started) * 1000, 2)
@@ -172,19 +171,26 @@ class GatewayArm(ProviderArm):
 
 
 _ARMS = {"replay": ReplayArm, "native": NativeArm, "gateway": GatewayArm}
-ARM_NAMES = ("replay", "native", "gateway", "claude")
+ARM_NAMES = ("replay", "native", "gateway", "claude", "rules")
+LIVE_ARMS = frozenset({"native", "gateway", "claude"})
 
 
-def build(name: str, transport=None) -> ProviderArm:
+def build(name: str, transport=None, prepaid=None) -> ProviderArm:
     if name == "claude":
         from .llm_arm import ClaudeArm  # optional SDK; imported lazily
 
-        return ClaudeArm()
+        return ClaudeArm(prepaid=prepaid)
+    if name == "rules":
+        from .rules_arm import RulesArm  # cycle: RulesArm subclasses ProviderArm
+
+        return RulesArm()
     if name not in _ARMS:
-        raise ValueError(
-            f"Unknown provider arm {name!r}. Registered arms: {sorted(ARM_NAMES)}"
-        )
-    return GatewayArm(transport=transport) if name == "gateway" else _ARMS[name]()
+        raise ValueError(f"Unknown provider arm {name!r}. Registered arms: {sorted(ARM_NAMES)}")
+    if name == "gateway":
+        return GatewayArm(transport=transport)
+    if name == "native":
+        return NativeArm(prepaid=prepaid)
+    return _ARMS[name]()
 
 
 def gateway_wire_type(question_type: str) -> str:
@@ -252,9 +258,9 @@ def normalize_native(request: dict, response: dict) -> dict:
             )
             chosen = answer.get("choice")
             if chosen not in probabilities:
-                raise ValueError(
-                    f"Native choice is outside the declared criteria: {qid}"
-                )
+                raise ValueError(f"Native choice is outside the declared criteria: {qid}")
+            if probabilities[chosen] < max(probabilities.values()) - 0.002:
+                raise ValueError(f"Choice is not a highest-probability option: {qid}")
             records[qid] = {
                 "wire_type": "choice",
                 "primitive": "category",
@@ -272,10 +278,13 @@ def normalize_native(request: dict, response: dict) -> dict:
             probabilities = engine.distribution(
                 answer.get("probabilities"), {str(i) for i in range(levels)}
             )
+            score = engine.number(answer.get("score"), 0, levels - 1)
+            if abs(score - sum(int(k) * v for k, v in probabilities.items())) > 0.02:
+                raise ValueError("Score does not match probability-weighted level index")
             records[qid] = {
                 "wire_type": "score",
                 "primitive": "ordered",
-                "answer": engine.number(answer.get("score"), 0, levels - 1),
+                "answer": score,
                 "distribution": {
                     "kind": "ordinal",
                     "probabilities": copy.deepcopy(probabilities),
@@ -329,16 +338,13 @@ def normalize_gateway(request: dict, response: dict) -> dict:
         expected = gateway_wire_type(question["type"])
         if wire_type != expected:
             raise ValueError(
-                f"Gateway wire type {wire_type!r} cannot answer question {qid} "
-                f"({question['type']})"
+                f"Gateway wire type {wire_type!r} cannot answer question {qid} ({question['type']})"
             )
         provider_confidence = _gateway_confidence(confidence, qid)
         if wire_type == "choice":
             chosen = answer.get("choice")
             if chosen not in question["criteria"]:
-                raise ValueError(
-                    f"Gateway choice is outside the declared criteria: {qid}"
-                )
+                raise ValueError(f"Gateway choice is outside the declared criteria: {qid}")
             records[qid] = {
                 "wire_type": wire_type,
                 "primitive": "category",
@@ -388,17 +394,9 @@ def gateway_provenance(response: dict, latency_ms: float) -> dict:
     usage = copy.deepcopy(usage) if isinstance(usage, dict) else {}
     input_tokens = usage.get("input_tokens")
     output_tokens = usage.get("output_tokens")
-    if (
-        not isinstance(input_tokens, int)
-        or isinstance(input_tokens, bool)
-        or input_tokens < 0
-    ):
+    if not isinstance(input_tokens, int) or isinstance(input_tokens, bool) or input_tokens < 0:
         input_tokens = None
-    if (
-        not isinstance(output_tokens, int)
-        or isinstance(output_tokens, bool)
-        or output_tokens < 0
-    ):
+    if not isinstance(output_tokens, int) or isinstance(output_tokens, bool) or output_tokens < 0:
         output_tokens = None
     usage["output_tokens"] = output_tokens
     usage["output_tokens_known"] = output_tokens is not None

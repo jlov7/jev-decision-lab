@@ -122,7 +122,9 @@ def _case_row(case: dict, result: dict) -> dict:
         "case_id": case["id"],
         "pack": case["pack"],
         "model": provenance.get("model") or result["raw"].get("model"),
-        "answers": {qid: record["answer"] for qid, record in result["normalized"]["records"].items()},
+        "answers": {
+            qid: record["answer"] for qid, record in result["normalized"]["records"].items()
+        },
         "latency_ms": provenance.get("latency_ms"),
         "usage": provenance.get("usage"),
         "estimated_cost_usd": provenance.get("estimated_cost_usd"),
@@ -133,9 +135,7 @@ def _live_verified(arm: ProviderArm, successes: list) -> bool:
     """True only if the arm and every successful call agree that a live response was seen."""
     if not successes or not getattr(arm, "live_verified", False):
         return False
-    return all(
-        result["provenance"].get("live_verified") is True for _, result in successes
-    )
+    return all(result["provenance"].get("live_verified") is True for _, result in successes)
 
 
 def _answered(result: dict) -> bool:
@@ -166,7 +166,8 @@ def _distribution_metrics(successes: list):
 
     A missing distribution is unavailable, not zero: the arm did not measure anything on
     this track, and reporting 0.0 would read as a measured failure. No distribution is
-    ever synthesized to fill the gap (route-doc rule at ACCESS_AND_TRADEOFFS:110).
+    ever synthesized to fill the gap (docs/ACCESS_AND_TROUBLESHOOTING.md). Planted teaching
+    errors stay in the case rows and are dropped here so they are not scored as failures.
     """
     if not successes:
         return (
@@ -177,24 +178,36 @@ def _distribution_metrics(successes: list):
                 "unavailable rather than as zero."
             ),
         )
+    labels = engine.load("labels")
+    measurable = [
+        (case, result)
+        for case, result in successes
+        if not labels.get(case["id"], {}).get("planted_error")
+    ]
+    if not measurable:
+        return (
+            False,
+            None,
+            (
+                "Every successful case is a planted teaching error, so distribution metrics are "
+                "unavailable rather than scored as a measured model failure."
+            ),
+        )
     missing = []
-    for case, result in successes:
+    for case, result in measurable:
         record = result["normalized"]["records"].get(METRIC_QUESTION)
         if record is None or record["distribution"] is None:
-            missing.append(
-                (case["id"], record["distribution_note"] if record else None)
-            )
+            missing.append((case["id"], record["distribution_note"] if record else None))
     if missing:
         detail = "; ".join(
-            f"{case_id}: {note or 'no distribution returned'}"
-            for case_id, note in missing
+            f"{case_id}: {note or 'no distribution returned'}" for case_id, note in missing
         )
         return (
             False,
             None,
             (
                 f"No distribution for question {METRIC_QUESTION!r} in {len(missing)} of "
-                f"{len(successes)} successful case(s), so every metric on this track is "
+                f"{len(measurable)} scorable case(s), so every metric on this track is "
                 f"unavailable rather than zero. None was fabricated. {detail}"
             ),
         )
@@ -205,7 +218,7 @@ def _distribution_metrics(successes: list):
             "provenance": {"kind": result["provenance"]["kind"]},
             "response": result["raw"],
         }
-        for case, result in successes
+        for case, result in measurable
     ]
     try:
         evaluated = metrics.evaluate(receipts, engine.load("labels"))
