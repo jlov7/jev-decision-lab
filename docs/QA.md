@@ -29,6 +29,19 @@ The file scan is lexical evidence only. It does not establish that the conceptua
 
 The Claude arm and the live burst have **not** been run against a live route in this build. They will run the first time the account owner sets the keys and ticks consent. The first live result should be read for validator behaviour before any number from it is quoted.
 
+## Version 0.3.1 review (Grok changes) — verified in a real browser
+
+| Check | Result |
+|---|---|
+| Suite and CI | 179 tests pass locally; CI green on Python 3.10 and 3.13 |
+| Strict policy variant | S04 default route Recommend a team; switching to *Hold on issue/owner disagreement* and replaying gives Human review with 0 new model calls |
+| Burst row click-through | Replay burst renders 12 inspectable rows; clicking S02 opens its stored receipt on the workbench via `/api/receipt` |
+| Compare with rules arm | Replay and rules arms render side by side; S04 marked as planted and excluded from agreement; rules arm shows the S02 delay trap (operations · delivery) |
+| Browser hygiene | No console errors, zero inline `style` attributes under the CSP, no horizontal overflow at 375px |
+| Prepaid holds | Unit tests cover atomic reservation, no double counting, and refusal before any send when slots are short; not exercised live |
+
+Still not executed: any authenticated Jev or Claude call.
+
 ## Browser limitation—do not hide this
 
 The Browser plugin was not available. System Chromium was available through Playwright, but direct navigation to the local server returned `ERR_BLOCKED_BY_ADMINISTRATOR`. No administrator policy was disabled. The browser test therefore rendered the local HTML/CSS/JavaScript and used a test-only fetch bridge to the **actual loopback HTTP server**.

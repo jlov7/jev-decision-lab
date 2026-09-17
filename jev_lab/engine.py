@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
-POLICY_VERSION = "route-v2.0"
+POLICY_VERSION = "route-v2.1"
 QUESTION_VERSION = "enterprise-atoms-v1.0"
 
 

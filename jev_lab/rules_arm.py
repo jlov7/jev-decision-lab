@@ -191,7 +191,7 @@ class RulesArm(ProviderArm):
             "price_as_of": None,
             "live_verified": False,
             "adapter_schema_version": SCHEMA_VERSION,
-            "warning": "Deterministic keyword rules, not a model. Delay-alert wording is treated as a delivery exception on purpose.",
+            "warning": "Deterministic keyword rules hand-fit to these twelve authored cases, not a tuned baseline and not a model. Its agreement count is a teaching device, never an accuracy figure. Delay-alert wording is treated as a delivery exception on purpose.",
         }
         return {
             "raw": raw,

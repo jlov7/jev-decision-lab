@@ -331,5 +331,12 @@ def compare(arm_names: list[str], case_ids: list[str], consent: bool = False) ->
                 "It is labelled here so it is not counted as a measured model failure."
             )
         ]
+    if "rules" in arm_names:
+        report["warnings"] = list(report.get("warnings") or []) + [
+            (
+                "The keyword-rules arm is hand-fit to these twelve authored cases. It shows what a "
+                "delay-word rule does; its agreement count is not a baseline accuracy."
+            )
+        ]
     report["created_at"] = datetime.now(timezone.utc).isoformat()
     return report

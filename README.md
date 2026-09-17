@@ -288,8 +288,11 @@ The first matching rule wins. The thresholds are teaching configuration, not cal
 | 6 | `insufficient_evidence` | P(sufficient) < 0.75 | **REQUEST_EVIDENCE** |
 | 7 | `owner_uncertain` | owner is *other*, or top-owner probability < threshold (default 0.85) | **HUMAN_REVIEW** |
 | 8 | `recommend_team` | nothing above fired | **ROUTE_TO_TEAM** |
+| 9 | `inconsistent_issue_owner` | only in the **strict** variant: the issue head implies one team and the owner head names another | **HUMAN_REVIEW** |
 
 One consistency check follows: if evidence is required but the `next_evidence` head says *none*, the heads disagree and a person must reconcile them.
+
+The policy has four replayable variants, all with zero new model calls: *original*, *stale* (evidence expired), *unverified* (source not verified) and *strict* (hold when the issue and owner heads disagree). In S04 the issue head says quality and the owner head says operations. Default policy follows the owner head and recommends the wrong team; strict policy holds it for a person. The receipt records which variant applied.
 
 Rules 1 to 3 read *facts* about the case (source verified, source fresh, mandatory review). Those facts are never sent to the model and the model can never change them. That is the point: a high probability cannot make an unverified source trustworthy.
 
@@ -309,6 +312,11 @@ A hash detects changed content. It is not a signature, an execution attestation,
 | `native` | live | TypeSafe HTTPS transport | Yes (provider) |
 | `claude` | live | Anthropic SDK, structured output, categories only | **No, reported as unavailable** |
 | `gateway` | documented only | Vercel AI Gateway mapping; the route is TypeScript-only, so this arm refuses without an injected transport | No (the SDK returns none for Choice/Score) |
+| `rules` | deterministic | Keyword rules hand-fit to the twelve cases, so the delay-word trap (S02) is visible beside the model. A teaching device, not a tuned baseline | No |
+
+Live arms draw from a **prepaid hold**: a burst or compare reserves all its attempt slots atomically before the first request, so it can never send a partial batch and never double-counts against the process cap.
+
+Case **S04** is flagged in the labels as a *planted error*. The compare table marks it, and owner-agreement counts exclude it, so an authored mistake is never scored as a measured model failure.
 
 Arms are evaluated **separately**, never pooled, never ranked. An arm that returns no distribution is reported as *unavailable* on that track, never as zero. Every failure is retained verbatim with `cost_unknown: true`.
 
@@ -340,6 +348,7 @@ jev-decision-lab/
 │   ├── provider.py            native TypeSafe transport, replay loader, per-process call budget
 │   ├── adapters.py            ProviderArm interface; replay, native and gateway arms; registry
 │   ├── llm_arm.py             Claude constrained-output baseline arm (optional SDK)
+│   ├── rules_arm.py           keyword-rules teaching arm, hand-fit to the twelve cases
 │   ├── comparator.py          per-arm reports, two tracks, unavailable-not-zero
 │   ├── showcase.py            live burst, playground request validation, compare wrapper
 │   ├── strategy.py            before-action simulation, model-garden worksheet
@@ -389,7 +398,7 @@ All routes are same-origin only (`127.0.0.1` or `localhost` on the served port).
 | Method · path | Body fields | Returns |
 |---|---|---|
 | `GET /api/config` | – | session token, live/compare enablement, model ids, attempt counters, price and date. Never a key. |
-| `GET /api/cases` | – | cases and packs |
+| `GET /api/cases` | – | cases and packs, with each case's teaching note and planted-error flag |
 | `GET /api/signals` | – | the prelaunch chronology |
 | `POST /api/run` | `case_id`, `mode`, `threshold`, `consent` | a receipt with a server-issued `receipt_id` |
 | `POST /api/reconsider` | `receipt_id`, `threshold`, `variant` | a child receipt; zero model calls |
@@ -398,7 +407,8 @@ All routes are same-origin only (`127.0.0.1` or `localhost` on the served port).
 | `POST /api/evaluate` | – | metrics over the twelve replay fixtures |
 | `POST /api/burst` | `mode`, `consent`, `case_ids`, `threshold` | per-case results with receipt ids and a latency/cost summary |
 | `POST /api/playground` | `state`, `questions`, `consent` | the validated live response with provenance; nothing stored |
-| `POST /api/compare` | `arms`, `case_ids`, `consent` | per-arm report plus the teaching label per case |
+| `POST /api/compare` | `arms`, `case_ids`, `consent` | per-arm report plus the teaching label and planted-error flag per case |
+| `POST /api/receipt` | `receipt_id` | a stored receipt by its server-issued id, so a burst row can be opened on the workbench |
 
 Errors: `400` malformed or contract-violating request, `403` consent or configuration missing, `413` oversized, `415` wrong content type, `502` provider failure (retained, not retried), `500` unexpected local error.
 
