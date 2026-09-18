@@ -14,7 +14,7 @@ If you have ten minutes: clone it, run one command, click through two cases in r
 
 ## Contents
 
-- [Start here](docs/START_HERE.md) (one page, for someone you hand this to)
+- [Start here](docs/START_HERE.md) (a one-page introduction for new readers)
 - [In plain English](#in-plain-english)
 - [What you get](#what-you-get)
 - [Quick start: 60 seconds, no key](#quick-start-60-seconds-no-key)
@@ -654,7 +654,7 @@ Before any performance claim, follow [docs/EVALUATION.md](docs/EVALUATION.md): i
 
 | Document | Read it when you want |
 |---|---|
-| [docs/START_HERE.md](docs/START_HERE.md) | The one page to hand someone |
+| [docs/START_HERE.md](docs/START_HERE.md) | A one-page introduction for new readers |
 | [docs/DESIGN.md](docs/DESIGN.md) | The design contract: goal, surfaces, invariants, non-goals |
 | [docs/EVALUATION.md](docs/EVALUATION.md) | What must be measured before any claim |
 | [docs/QA.md](docs/QA.md) | Exactly what was verified, how, and what was not, including every live run |
@@ -672,3 +672,7 @@ Official references: [TypeSafe primitives](https://docs.typesafe.ai/primitives) 
 ## Licence
 
 MIT, see [LICENSE](LICENSE). Third-party sources remain subject to their own terms; the bibliography links originals rather than redistributing them. The cases are authored and synthetic, and the deliverable-review pack refers to consultancies in general rather than any named firm.
+
+---
+
+<sub>Jev Decision Lab is an independent personal research and development project by Jason Lovell. It is not affiliated with, endorsed by, or representative of any employer, client or TypeSafe AI, and the views expressed are the author's own. Jev and TypeSafe are trademarks of their respective owners. The software is provided as is, without warranty, under the MIT licence; nothing here is professional advice.</sub>
