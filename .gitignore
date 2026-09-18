@@ -14,3 +14,4 @@ test-results/
 data/*.json
 docs/source-register.json
 .claude/
+.impeccable/

@@ -24,7 +24,7 @@ https://docs.typesafe.ai/api
 
 **Type:** official documentation. **Date:** undated/current documentation. **Accessed:** 2026-09-17.
 
-Native wire contract inspected; no authenticated live response obtained.
+Native wire contract inspected. No authenticated live response at this access date; authenticated `jev-1.13.0` responses were validated end to end on 2026-09-18 ([../evidence/README.md](../evidence/README.md)).
 
 ## S04: TypeSafe models and prices
 

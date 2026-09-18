@@ -3,7 +3,7 @@
 
 **Research date: September 17, 2026. Status: source-grounded research and a synthetic-first prototype, not a validated enterprise deployment.**
 
-Source IDs refer to [SOURCES.md](SOURCES.md). Product facts are distinguished from the author's engineering interpretation and proposed experiments. No authenticated Jev inference was performed for this report. The accompanying application contains authored teaching outputs and a native live adapter whose contract and failure behavior were tested with controlled responses.
+Source IDs refer to [SOURCES.md](SOURCES.md). Product facts are distinguished from the author's engineering interpretation and proposed experiments. No authenticated Jev inference was performed for this report. The accompanying application contains authored teaching outputs and a native live adapter; at this report's date its contract and failure behavior had been tested with controlled responses, and authenticated `jev-1.13.0` calls were recorded on 2026-09-18 ([../evidence/README.md](../evidence/README.md)).
 
 ## 1. Executive conclusion
 
