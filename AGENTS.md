@@ -1,11 +1,14 @@
-# Agent instructions
+# Notes for coding agents
 
-Read `docs/START_HERE.md` and `docs/BUILD_PACKET.md` before changing this repository.
+Read `README.md`, `docs/DESIGN.md` and `docs/EVALUATION.md` before changing anything.
 
-This is an independent, synthetic-first teaching and evaluation prototype. Replay probabilities are authored and must never be labeled as measured Jev output. Never fabricate live results, calibration, latency, savings, authorization or tracker ingestion. Use “consultancies,” not a named employer. Do not copy private project source documents into this repository.
+Invariants that must survive every change:
 
-No API key in a prompt, browser, file, log or Git commit. Server environment only. Live mode requires explicit enablement and user consent. No automatic retries or silent replay fallback. The playground accepts user-typed synthetic text only after consent, live only, size-capped and never stored; it is not an approved channel for work data. No external business effects. Do not expose the stdlib local server to the internet.
+- Replay probabilities are authored. Never present them as measured model output, and never fabricate live results, latency, cost, calibration or authorisation.
+- No key in a prompt, browser page, file, log or commit. Keys live in the server process only, pasted or from the terminal. Live calls need consent, a free attempt slot, no retries and no replay fallback.
+- Provider payloads carry state and questions only. Labels, expected routes, teaching notes and policy facts never leave the server. A test enforces this.
+- Responses are validated strictly and refused answers are retained, never patched.
+- Policy decides in code. A probability cannot grant permission.
+- Loopback only. No telemetry, no third-party assets, no company or client data in fixtures or examples.
 
-Keep provider payloads separate from gold labels and trusted authority facts. Validate native response contracts strictly. Probabilistic model outputs cannot grant permissions. Preserve model/question/policy versions and source freshness. Receipts are content-hashed, not signed attestations.
-
-Run tests before and after edits. Keep new behavior covered by failing-then-passing tests. Recheck current official provider docs for schema/version changes. Do not merge main or force-push without explicit approval. State verification boundaries accurately; see `docs/QA.md` for the browser environment limitation.
+Write the failing test first. Run the full suite, lint and the JavaScript syntax check before committing. Keep `docs/QA.md` honest about what was and was not verified. Use `uv run python3`; the project has no other package manager.

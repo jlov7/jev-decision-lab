@@ -1,6 +1,6 @@
 """Provider adapters: one explicit interface, two wire schemas, no shared guesswork.
 
-BUILD_PACKET.md:200 asks for provider adapters behind an explicit interface that
+docs/EVALUATION.md asks for provider adapters behind an explicit interface that
 returns the raw response alongside normalized predictions plus model, configuration,
 usage and latency, and that reports two separate tracks rather than forcing every
 provider to emit a long explanation:
@@ -13,7 +13,7 @@ same objects. Native names the yes/no primitive ``noul`` and returns distributio
 for choice and score; the AI SDK names it ``boolean``, returns no distribution for
 choice or score, and exposes a separate provider confidence statistic. This module
 normalizes both without pretending they are interchange-able, and never fabricates a
-distribution the provider did not return (docs/ACCESS_AND_TROUBLESHOOTING.md).
+distribution the provider did not return (README, "Reading the numbers honestly").
 
 ``live_verified`` records whether an arm's mapping has been checked against a real
 response. The native TypeSafe arm was verified on 18 September 2026: sixteen authenticated
@@ -32,7 +32,7 @@ from . import engine, provider
 SCHEMA_VERSION = "adapter-v1.0"
 TRACKS = ("minimal_decision", "comparable_distribution")
 
-# Pinned to the documented route requirements; see docs/ACCESS_AND_TROUBLESHOOTING.md.
+# Pinned to the documented route requirements; see README, "Provider arms and the two comparison tracks".
 GATEWAY_PACKAGE_PIN = "ai@7.0.105"
 GATEWAY_MODEL = "typesafe-ai/jev"
 GATEWAY_PRICE_PER_MILLION_INPUT = 0.042

@@ -1,33 +1,40 @@
-# Jev Decision Lab — design contract
+# Design contract
 
-Version 0.2 · 17 September 2026 · Research prototype, not production software.
+Version 0.5 · 18 September 2026 · A teaching and evaluation prototype, not production software.
 
 ## Goal
-Teach engineers and leaders how bounded probabilistic judgments can be composed with deterministic policy, evidence repair and selective reasoning, while making the limits inspectable.
 
-## Selected approach
-A single local application with three synthetic enterprise packs: supplier disruption, service incidents, and consultancy deliverable review. All packs share six typed judgments, a visible policy trace and a receipt format. A before-action sandbox demonstrates that a useful semantic answer is not permission to act. A model-garden worksheet allocates capability roles under explicit constraints. A signal audit explains pre-launch evidence without pretending to have inspected the actual tracker database.
+Show engineers and leaders what a bounded, probabilistic judgment model contributes to a real workflow, and what it does not. Every screen keeps four things visibly apart: the model's opinion, the evidence it had, the policy decision made in code, and the permission to act.
 
-This is preferable to a Doom clone (low business transfer), a generic classifier dashboard (weak strategic demonstration), or a full autonomous process (integration and authority obscure the Jev experiment). No duplicated mandate/settlement platform is built.
+## What it is
 
-## Global constraints
-- Use only bundled, authored synthetic records for model requests.
-- Default to offline replay. Never pass replay off as measured Jev output.
-- Live calls require a server-side key, an enable flag and per-run consent.
-- Keep input/output schema validation, dates, permissions and side effects outside the model.
-- Record model, question, policy and input versions. Do not claim a hash proves truth or attestation.
-- Never execute external business actions. The action gate is an explicitly simulated policy preview.
-- Compare probabilities with independent labels before selecting production thresholds.
-- No model automatically admits frontier evidence, changes taxonomy or discards weak signals.
-- No company-confidential or personal source files are copied into the app or sent to a provider.
-- Keep the application loopback-only. No cloud deployment, telemetry, third-party web assets or analytics.
+One local application, one process, no build step. Twelve authored synthetic cases in three enterprise packs (supplier disruption, service incidents, deliverable review) share six typed questions, a policy trace and a receipt format. Replay mode teaches the mechanics offline from authored fixtures. Live mode calls Jev on the user's own key after per-run consent.
 
-## Surfaces
-1. Workbench: scenario and case -> inspect state -> run six judgments -> inspect distributions -> apply policy -> export receipt.
-2. Before action: alter current simulated authority/freshness -> recheck without a new model call -> hold or simulated recommendation.
-3. Model garden: choose task and constraints -> inspect deterministic capability route and unresolved procurement questions.
-4. Signal audit: dated public signals -> distinction between detectability and observed ingestion -> proposed rescue-sampling design.
-5. Learn and evaluate: three primitives, calibration and error trade-offs, tiny fixture evaluation with an intentional high-confidence error.
+Surfaces:
+
+1. Workbench: pick a case, run six judgments, inspect distributions, replay the policy under different facts with no new call, export a receipt.
+2. Before action: change simulated authority or freshness, recheck without a model call, watch the action hold.
+3. Live lab: burst all twelve cases, ask Jev about text you wrote, compare Jev with generative baselines and a keyword rule, probe one case repeatedly, remove evidence one excerpt at a time, export a session report.
+4. Model garden: a deterministic worksheet on which kind of capability a task needs.
+5. Signal audit: a dated chronology of public signals before the launch.
+6. Learn and measure: the three primitives, the planted confident-wrong case, and calibration metrics over the fixtures.
+
+## Invariants
+
+- Only authored synthetic records, or text the user typed after consent, ever reach a provider.
+- Replay output is never presented as measured model output. A banner says which mode is active on every screen.
+- Live calls need a key in the server process (pasted or from the terminal), the consent box, and a free attempt slot. Nothing retries. Nothing falls back to replay.
+- Provider payloads never contain labels, expected routes, teaching notes or policy facts. A test enforces this.
+- Responses are validated strictly. A response that breaks the contract is refused and retained with its cost; nothing is invented to fill a gap.
+- Policy decides the route in code. A probability cannot grant permission. Before any simulated action, authority and freshness are rechecked without the model.
+- Receipts record request, response, versions and decision under a content hash. A hash proves integrity, not truth.
+- The server binds to loopback only, allows an explicit field set per endpoint, and sends a strict Content Security Policy. No telemetry, no third-party assets.
+- Arms in a comparison are reported side by side, never pooled or ranked. A distribution a provider did not return is unavailable, not zero.
+
+## Non-goals
+
+Not a benchmark, not a production control system, not a channel for company or client data, not a claim about Jev's accuracy. Not a game, not a generic classifier dashboard, not an autonomous process.
 
 ## Acceptance
-Fresh unit, transport-mock and local HTTP tests; JavaScript syntax check; Chromium desktop and mobile interaction checks. No live Jev test or measured superiority claim without a real key and recorded live receipts. The report and build packet distinguish delivered code from subsequent experiments.
+
+Unit, transport-mock and loopback HTTP tests; a JavaScript syntax check; lint; a real-browser interaction pass at desktop and phone widths. No live claim without a recorded live receipt. See [QA.md](QA.md) for the verification record and [EVALUATION.md](EVALUATION.md) for what a real evaluation would need.

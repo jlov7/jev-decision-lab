@@ -1,6 +1,7 @@
 """Curated retrospective public chronology, NOT a record of tracker ingestion."""
 import json
 from pathlib import Path
+
 rows = [
 ('2017-06-14','Calibration was already a measurable property','paper','On Calibration of Modern Neural Networks','https://proceedings.mlr.press/v70/guo17a.html','Published research date; no Jev relationship asserted','Probability quality needs evaluation; an API confidence field is not calibration evidence.'),
 ('2019-08-31','Classification without a task-specific training set','paper','Benchmarking Zero-shot Text Classification','https://arxiv.org/abs/1909.00161','arXiv v1 submission date, verified on the primary record','Zero-shot classification is prior art, not itself the new mechanism.'),

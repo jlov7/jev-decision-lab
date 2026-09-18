@@ -218,8 +218,8 @@ Bring one real decision your team makes repeatedly (do not bring real data). In 
 
 ### D. The platform or risk reviewer's checklist
 
-- Where does the key live? Only in the server process environment. Never in the browser, a file, a log or a commit.
-- What leaves the machine? Only bundled synthetic cases or text the user typed, only after a consent tick or CLI flag, only to the configured provider endpoint, with redirects disabled.
+- Where does the key live? In the server process's memory, pasted through the Connect screen or exported in the terminal. Never in a file, a log, a URL or a commit; the page sees four trailing characters.
+- What leaves the machine? Only bundled synthetic cases or text the user typed, only after a consent tick or CLI flag, only to the configured provider endpoints, with redirects disabled. The subscription arm runs the local `claude` command, which talks to Anthropic on the user's own account.
 - What is stored? Receipts in process memory, capped at 200, gone on restart. Exports are user-initiated files.
 - What can the model authorise? Nothing. Scores never grant permissions; the action boundary rechecks approvals independently.
 - What happens on failure? The failure is retained verbatim. Nothing retries. Nothing falls back to a synthetic answer.
@@ -238,14 +238,14 @@ flowchart LR
   subgraph Server["Python stdlib server · 127.0.0.1:8765"]
     S["server.py<br/>same-origin + session token<br/>strict field allow-lists"]
     E["engine.py<br/>request · validate · policy · receipt"]
-    SH["showcase.py<br/>burst · playground · compare"]
+    SH["showcase.py + probes.py<br/>burst · playground · compare · probe · ablate"]
     A["adapters.py + llm_arm.py<br/>provider arms"]
     C["comparator.py<br/>per-arm, never pooled"]
     D[("data/*.json<br/>cases · packs · replay · labels")]
   end
   subgraph Providers
     J["TypeSafe Jev<br/>api.typesafe.ai/v1/systemone"]
-    K["Anthropic Claude<br/>optional baseline"]
+    K["Generative baselines<br/>claude command · Anthropic API · OpenAI API"]
   end
   UI -- "fetch JSON" --> S
   S --> E
@@ -256,10 +256,10 @@ flowchart LR
   E --> A
   E --> D
   A -- "HTTPS, bearer, no redirects" --> J
-  A -- "official SDK, structured output" --> K
+  A -- "strict JSON schema, categories only" --> K
 ```
 
-The runtime is the Python standard library plus three static files. There is no build step, no framework, no database and no telemetry. The optional `anthropic` package is used only by the comparison arm.
+The runtime is the Python standard library plus seven static files. There is no build step, no framework, no database and no telemetry. The optional `anthropic` package is used only by the Claude API comparison arm; the OpenAI arm and the subscription arm need nothing extra.
 
 ### One request, end to end
 
@@ -424,10 +424,10 @@ jev-decision-lab/
 │   ├── seed_signals.py        the prelaunch chronology
 │   └── source_register.py     bibliography metadata
 ├── tests/                     219 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
-├── docs/                      START_HERE, research report, frontier audit, build packet, evaluation protocol, QA record, workshop
-├── evidence/                  retained test output and browser-check records
-├── runs/                      CLI outputs (replay evaluation and compare are committed as examples)
-└── .github/workflows/ci.yml   setup → tests → offline contract check → JS syntax
+├── docs/                      START_HERE, DESIGN, EVALUATION, QA (verification record), WORKSHOP, RESEARCH_REPORT, SOURCES, example session report
+├── evidence/                  the verbose test log and every live run's raw JSON
+├── LICENSE · SECURITY.md · CONTRIBUTING.md · CHANGELOG.md · AGENTS.md
+└── .github/workflows/ci.yml   setup → tests → offline contract check → lint → JS syntax, on Python 3.10 and 3.13
 ```
 
 ---
@@ -503,11 +503,11 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 
 ## Safety and data boundaries
 
-- **Keys** live only in the server process environment. The browser never sees one; `/api/config` never returns one; the setup dialog tells you to use `read -s`.
-- **Egress** goes only to `https://api.typesafe.ai/v1/systemone` and, optionally, the Anthropic API via the official SDK. Redirects are disabled so a bearer token is never forwarded elsewhere. Environment proxies are ignored.
+- **Keys** live in the server process's memory, pasted once through the Connect screen or exported in the terminal that starts the server. They are never written to disk or logged; the page and `/api/config` see four trailing characters at most.
+- **Egress** goes only to `https://api.typesafe.ai/v1/systemone` and, if you enable a baseline, to the Anthropic or OpenAI API, or to your local `claude` command. Redirects are disabled so a bearer token is never forwarded elsewhere. Environment proxies are ignored.
 - **Consent** is per action: a checkbox in the UI, or `--mode live --allow-network` on the CLI. A configured key alone never causes a call. Opening a page never causes a call.
 - **Payloads** contain the case state and the questions. Never labels, expected routes, teaching notes or policy facts. A test enforces this.
-- **Failures** are retained with their message and `cost_unknown: true`. There are no automatic retries and no fallback to synthetic output. A live error never silently becomes a replay answer.
+- **Failures** are retained. A request that never returned is marked cost unknown; an answer that arrived but broke the contract is kept with its raw response and its cost. There are no automatic retries and no fallback to synthetic output. A live error never silently becomes a replay answer.
 - **The playground** accepts text you type, size-capped, shape-validated, live only, never stored. It is for synthetic or public text. It is not an approved channel for work data, and personal-device access to Jev is not organisational approval.
 - **The server** binds to `127.0.0.1` only, sets a strict Content Security Policy, and keeps receipts in memory. Do not expose it to a network. Production would need authentication, access-controlled storage, real authority and effect services, and a separate security review.
 - **Model scores never grant permissions.** The action boundary checks state, freshness, approval and permission as explicit booleans; unknown means hold.
@@ -517,24 +517,25 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 219 tests
-uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
-node --check web/app.js web/live.js                 # optional JS syntax check
-uv run ruff check jev_lab tests                     # optional lint
+uv run python3 -m unittest discover -s tests -v    # 219 tests, about two seconds
+uv run jev-lab check                                # twelve fixtures validate, policy runs, no network
+uv run --with ruff ruff check jev_lab tests scripts  # lint
+node --check web/app.js web/live.js web/report.js   # JS syntax
 ```
 
 What the suite proves, by area:
 
-- **Contract:** question ids and types must match exactly; probabilities must be finite, in range and sum to one; the chosen option must be the argmax; the score must equal the probability-weighted level index; the legend must match; usage must be non-negative integers; a mismatched pinned model is rejected; nothing missing is ever invented.
+- **Contract:** question ids and types must match exactly; probabilities must be finite, in range and sum to one within the provider's two-decimal rounding; the chosen option must be the argmax; the score must match the probability-weighted level index within two rounding steps per level; the legend must match; usage must be non-negative integers; a mismatched pinned model is rejected; nothing missing is ever invented.
 - **Policy:** every rule, its precedence, the stale and unverified variants, the inconsistent-heads check, and that reconsideration makes zero model calls.
 - **Receipts:** tampering with any field is detected; forged receipt ids are rejected.
-- **Server:** cross-origin and missing-token requests get 403; unknown fields are rejected; path traversal fails; the key never appears in config; oversized bodies are refused.
-- **Provider:** live disabled by default; consent required; the budget cap; redirects blocked; HTTP errors mapped without retry; timeouts leave billing unknown.
+- **Server and connect:** cross-origin and missing-token requests get 403; unknown fields are rejected; path traversal fails; oversized bodies are refused; a pasted key never appears in config, error bodies or the failure log, is shown as four trailing characters, and is forgotten on request; a terminal key takes precedence.
+- **Provider:** live disabled by default; consent required; the attempt cap with atomic holds; redirects blocked; HTTP errors mapped without retry; timeouts leave billing unknown; a refused answer keeps its raw response and cost.
 - **Adapters and comparator:** the two tracks are kept apart; arms are never pooled; unavailable is never zero; every failure is retained; the Gateway arm refuses without a transport.
 - **Showcase:** burst checks the budget before sending anything; one failure does not stop the others; playground requests are shape- and size-validated; compare requires consent before any live arm.
-- **Claude arm:** refuses when unconfigured; requests structured output with no retries; rejects truncated, refused, out-of-vocabulary or non-boolean output; prices from a dated table; prompt contains no labels.
+- **Generative baselines:** each arm refuses when unconfigured; requests a strict JSON schema with no retries; rejects truncated, refused, out-of-vocabulary or non-boolean output; prices from a dated table; the prompt contains no labels; the subscription arm runs an argument list, never a shell, with tools disallowed.
+- **Experiments:** the probe holds its slots before sending and reports per-option spread; ablation edits copies, leaves the original untouched, and marks movement under the noise floor as noise.
 
-CI runs the same steps on every push. The UI was also exercised in a real browser against the running server at desktop and 375 px widths; that check caught, and led to the fix of, a Content Security Policy violation. Details in [docs/QA.md](docs/QA.md).
+CI runs the same steps on Python 3.10 and 3.13 on every push. The UI is also exercised in a real browser against the running server at desktop and 375 px widths after every change to it; that check caught a Content Security Policy violation early on. The full record, including every live run, is [docs/QA.md](docs/QA.md).
 
 ### The first live runs, 18 September 2026
 
@@ -592,9 +593,9 @@ Three things worth saying plainly:
 | `uv run jev-lab` says `Failed to spawn: jev-lab` | Your checkout predates the command. Run `git pull`, then `uv sync`. `uv run python3 -m jev_lab` always works. |
 | `No module named jev_lab` | Wrong working directory | Run from the repository root |
 | Banner says *Offline · key not in this server process* after exporting the key | The server was started before the export, or in a different terminal | Export in the same terminal, then restart the server. `.env` is not read. |
-| *Live mode is not configured* when clicking a live button | `JEV_ALLOW_LIVE=1` or the key is missing from the server process | Set both, restart |
+| *Live mode is not configured* when clicking a live button | No key in this server process | Paste one in Connect Jev, or restart with `TYPESAFE_API_KEY` and `JEV_ALLOW_LIVE=1` exported |
 | *Explicit consent is required* | The consent box is unticked | Tick it; consent is per run and per tab |
-| *Session API-attempt cap reached* | You have used the per-process cap (default 20 Jev, 40 Claude) | Restart with `JEV_MAX_LIVE_CALLS=60` or similar, deliberately |
+| *Session API-attempt cap reached* | You have used the per-process cap (default 20 Jev, 40 generative) | Restart with `JEV_MAX_LIVE_CALLS=100` or similar, deliberately |
 | *Burst needs 12 attempt slots but N remain* | Not enough cap left for a full burst; nothing was sent | Raise the cap or run fewer cases via the CLI `--cases` |
 | `TypeSafe HTTP 401` | Key invalid or revoked | Check the console; rotate; never print the key |
 | `TypeSafe HTTP 403` | Account or model entitlement | Confirm access with TypeSafe; do not retry repeatedly |
@@ -640,7 +641,7 @@ Before any performance claim, follow [docs/EVALUATION.md](docs/EVALUATION.md): i
 | Gate | What it requires | Status |
 |---|---|---|
 | Local teaching release | Tests, source review, limits visible | Done |
-| First authenticated call | A key and consent from the account owner; read the validator's verdict on the real response | Done 18 September 2026, see [Testing and verification](#the-first-live-run-18-september-2026) |
+| First authenticated call | A key and consent from the account owner; read the validator's verdict on the real response | Done 18 September 2026, see [the first live runs](#the-first-live-runs-18-september-2026) |
 | Request-shape experiment | `bench` with 39 attempt slots over three repetitions | Ready |
 | Fair provider comparison | Frozen labels, splits, provider versions, dated prices, full-cost accounting | Machinery ready; protocol in `docs/EVALUATION.md` |
 | Calibration engineering | Reviewer-owned calibration artifacts keyed by model, question hash and split | Not started |
@@ -653,21 +654,21 @@ Before any performance claim, follow [docs/EVALUATION.md](docs/EVALUATION.md): i
 
 | Document | Read it when you want |
 |---|---|
-| [docs/RESEARCH_REPORT.md](docs/RESEARCH_REPORT.md) | The full product explanation, economics, sector implications and incubation recommendation |
-| [docs/FRONTIER_MISS_AUDIT.md](docs/FRONTIER_MISS_AUDIT.md) | The dated prelaunch chronology and how to audit a tracker honestly |
-| [docs/BUILD_PACKET.md](docs/BUILD_PACKET.md) | The PRD, user journeys, interfaces, failure modes and build phases |
+| [docs/START_HERE.md](docs/START_HERE.md) | The one page to hand someone |
+| [docs/DESIGN.md](docs/DESIGN.md) | The design contract: goal, surfaces, invariants, non-goals |
 | [docs/EVALUATION.md](docs/EVALUATION.md) | What must be measured before any claim |
-| [docs/ACCESS_AND_TROUBLESHOOTING.md](docs/ACCESS_AND_TROUBLESHOOTING.md) | A longer version of the access guide, including a raw `curl` request and enterprise intake |
+| [docs/QA.md](docs/QA.md) | Exactly what was verified, how, and what was not, including every live run |
 | [docs/WORKSHOP.md](docs/WORKSHOP.md) | Scripts for a five-minute demo and a sixty-minute engineer session |
-| [docs/QA.md](docs/QA.md) | Exactly what was verified, how, and what was not |
+| [docs/RESEARCH_REPORT.md](docs/RESEARCH_REPORT.md) | The product explained, its economics, where it fits a real system, and what practitioners report |
 | [docs/SOURCES.md](docs/SOURCES.md) | Every source, dated, with inspection limits |
-| [docs/DESIGN.md](docs/DESIGN.md) | The design contract and global constraints |
-| [AGENTS.md](AGENTS.md) | Rules for coding agents working on this repository |
+| [docs/example-session-report.html](docs/example-session-report.html) | What the exported session report looks like |
+| [CHANGELOG.md](CHANGELOG.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) | Versions, how to contribute, how to report a problem |
+| [AGENTS.md](AGENTS.md) | Invariants for coding agents working on this repository |
 
 Official references: [TypeSafe primitives](https://docs.typesafe.ai/primitives) · [Confidence semantics](https://docs.typesafe.ai/confidence) · [API reference](https://docs.typesafe.ai/api) · [Models and prices](https://docs.typesafe.ai/models).
 
 ---
 
-## Repository policy
+## Licence
 
-Private research and prototype material. No open-source licence is granted. Third-party sources remain subject to their own terms; the bibliography links originals rather than redistributing them. Use "consultancies" rather than a named employer in any derived material.
+MIT, see [LICENSE](LICENSE). Third-party sources remain subject to their own terms; the bibliography links originals rather than redistributing them. The cases are authored and synthetic, and the deliverable-review pack refers to consultancies in general rather than any named firm.

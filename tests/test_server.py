@@ -2,12 +2,12 @@ import json
 import os
 import threading
 import unittest
-from unittest.mock import patch
 import urllib.error
 import urllib.request
+from unittest.mock import patch
 
 try:
-    from jev_lab import server, provider
+    from jev_lab import provider, server
 except ImportError:
     server = None
 

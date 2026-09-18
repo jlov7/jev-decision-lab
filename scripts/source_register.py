@@ -1,6 +1,7 @@
 """Bibliographic metadata and explicit evidence ceilings; no copied source corpus."""
 import json
 from pathlib import Path
+
 rows=[
 ('S01','TypeSafe: Introducing System One Models & Jev','https://typesafe.ai/blog/introducing-system-one-models-and-jev','2026-09-15','vendor launch','Full HTML inspected. Architecture and performance are vendor claims; schema safety is not semantic correctness.'),
 ('S02','TypeSafe quick start','https://docs.typesafe.ai/introduction/quickstart',None,'official documentation','Native account, Playground and API setup. Account-specific entitlements were not inspected.'),
@@ -44,6 +45,6 @@ items=[dict(id=i,title=t,url=u,published=d,kind=k,accessed='2026-09-17',boundary
 (root/'docs/source-register.json').write_text(json.dumps(items,indent=2)+'\n')
 text='# Sources and inspection boundaries\n\nResearch cutoff: September 17, 2026. References are primary wherever possible. Dates distinguish an initial submission from a later revision. No full third-party articles or transcripts are redistributed.\n\n'
 for r in items:
-    text+=f"## {r['id']} — {r['title']}\n\n{r['url']}\n\n**Type:** {r['kind']}. **Date:** {r['published'] or 'undated/current documentation'}. **Accessed:** {r['accessed']}.\n\n{r['boundary']}\n\n"
-text+='## Internal source boundary\n\nThe user supplied 29 frontier-map, programme, methodology and technical-card files. This review inspected their map, watch, routing, verification, programme and methodology content. Their references were not all re-audited. No raw acquisition logs, active crawler configuration, run cursor history or semantic rejection ledger were available. These files are source context, not evidence that a current production tracker ran as described. The raw private files are not copied into this repository. A local content scan is retained in `evidence/project-scan.json`.\n\n## Search coverage\n\nOfficial docs and launch materials, founder talks, academic antecedents, GitHub source availability, a long Hacker News thread, first-person practitioner reports, and targeted X/Reddit searches were examined. Direct indexed X/Reddit coverage was incomplete. No verified direct Jev article by Simon Willison was identified; Sean Goedecke is a different author. Reposts and aggregate pages were not counted as independent trials. This is a bounded source review, not an exhaustive census of social discussion.\n'
+    text+=f"## {r['id']}: {r['title']}\n\n{r['url']}\n\n**Type:** {r['kind']}. **Date:** {r['published'] or 'undated/current documentation'}. **Accessed:** {r['accessed']}.\n\n{r['boundary']}\n\n"
+text+='## Search coverage\n\nOfficial docs and launch materials, founder talks, academic antecedents, GitHub source availability, a long Hacker News thread, first-person practitioner reports, and targeted X/Reddit searches were examined. Direct indexed X/Reddit coverage was incomplete. No verified direct Jev article by Simon Willison was identified; Sean Goedecke is a different author. Reposts and aggregate pages were not counted as independent trials. This is a bounded source review, not an exhaustive census of social discussion.\n'
 (root/'docs/SOURCES.md').write_text(text)

@@ -32,7 +32,7 @@ Report accuracy or task-specific precision/recall, costly false negatives and fa
 
 Calibration is measured against outcomes, not declared by the provider. Keep top-class calibration distinct from the vendor confidence statistic. Plot risk against coverage. Slice by consequence, language, source type, missing evidence and the routing-selected population. An aggregate ECE can conceal severe local failures.
 
-### Why a “zero failures” demo is not enough
+### Why a "zero failures" demo is not enough
 
 With zero observed failures in `n` independent representative trials, a rough one-sided 95% upper bound on the failure probability is about `3/n`. Twelve clean cases would therefore provide little assurance about rare errors. This approximation is illustrative and depends on the sampling assumptions; correlated or synthetic cases do not satisfy the usual representative-trial interpretation.
 

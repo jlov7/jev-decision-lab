@@ -8,7 +8,7 @@ Three constraints from the source documents shape this module:
   * ``metrics.py:52`` - ``metrics.evaluate`` refuses to mix provenances in one call
     (``Never mix synthetic and live outputs in one evaluation``). Every arm is therefore
     evaluated on its own receipts, and arms meet only at this reporting layer.
-  * ``BUILD_PACKET.md:190`` - the bar is an authentic response with recorded provenance
+  * ``docs/EVALUATION.md`` - the bar is an authentic response with recorded provenance
     or a safely retained failure. Nothing here fabricates a result, retries, or falls
     back to replay output.
 
@@ -196,7 +196,7 @@ def _distribution_metrics(successes: list):
 
     A missing distribution is unavailable, not zero: the arm did not measure anything on
     this track, and reporting 0.0 would read as a measured failure. No distribution is
-    ever synthesized to fill the gap (docs/ACCESS_AND_TROUBLESHOOTING.md). Planted teaching
+    ever synthesized to fill the gap (docs/EVALUATION.md). Planted teaching
     errors stay in the case rows and are dropped here so they are not scored as failures.
     """
     if not successes:

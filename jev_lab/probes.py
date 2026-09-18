@@ -197,7 +197,7 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
     base = results[0]
     base_row = _answer_row(base["receipt"]) if base["ok"] else None
     out_variants = []
-    for (label, removed, _), result in zip(variants, results):
+    for (label, removed, _), result in zip(variants, results, strict=True):
         entry = {
             "label": label,
             "removed_evidence": removed,
@@ -260,7 +260,7 @@ def publish(result: dict, store) -> dict:
     """Store receipts, replace them with ids in the public result."""
     if result["kind"] == "stability_probe":
         ids = [store(r)["receipt_id"] for r in result.pop("receipts")]
-        for row, rid in zip(result["rows"], ids):
+        for row, rid in zip(result["rows"], ids, strict=True):
             row["receipt_id"] = rid
     else:
         for variant in result["variants"]:

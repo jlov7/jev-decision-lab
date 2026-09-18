@@ -2,7 +2,7 @@
 
 Research cutoff: September 17, 2026. References are primary wherever possible. Dates distinguish an initial submission from a later revision. No full third-party articles or transcripts are redistributed.
 
-## S01 — TypeSafe: Introducing System One Models & Jev
+## S01: TypeSafe: Introducing System One Models & Jev
 
 https://typesafe.ai/blog/introducing-system-one-models-and-jev
 
@@ -10,7 +10,7 @@ https://typesafe.ai/blog/introducing-system-one-models-and-jev
 
 Full HTML inspected. Architecture and performance are vendor claims; schema safety is not semantic correctness.
 
-## S02 — TypeSafe quick start
+## S02: TypeSafe quick start
 
 https://docs.typesafe.ai/introduction/quickstart
 
@@ -18,7 +18,7 @@ https://docs.typesafe.ai/introduction/quickstart
 
 Native account, Playground and API setup. Account-specific entitlements were not inspected.
 
-## S03 — TypeSafe API reference
+## S03: TypeSafe API reference
 
 https://docs.typesafe.ai/api
 
@@ -26,7 +26,7 @@ https://docs.typesafe.ai/api
 
 Native wire contract inspected; no authenticated live response obtained.
 
-## S04 — TypeSafe models and prices
+## S04: TypeSafe models and prices
 
 https://docs.typesafe.ai/models
 
@@ -34,7 +34,7 @@ https://docs.typesafe.ai/models
 
 Observed 2026-09-17; prices, limits and aliases can change.
 
-## S05 — TypeSafe confidence semantics
+## S05: TypeSafe confidence semantics
 
 https://docs.typesafe.ai/confidence
 
@@ -42,7 +42,7 @@ https://docs.typesafe.ai/confidence
 
 Distribution-derived confidence is distinct from probability and measured calibration.
 
-## S06 — TypeSafe Choice primitive
+## S06: TypeSafe Choice primitive
 
 https://docs.typesafe.ai/primitives/choice
 
@@ -50,7 +50,7 @@ https://docs.typesafe.ai/primitives/choice
 
 Categorical request and response semantics.
 
-## S07 — TypeSafe Score primitive
+## S07: TypeSafe Score primitive
 
 https://docs.typesafe.ai/primitives/score
 
@@ -58,7 +58,7 @@ https://docs.typesafe.ai/primitives/score
 
 Ordered descriptions, weighted level index and distribution; not expected monetary loss.
 
-## S08 — TypeSafe Noul primitive
+## S08: TypeSafe Noul primitive
 
 https://docs.typesafe.ai/primitives/noul
 
@@ -66,7 +66,7 @@ https://docs.typesafe.ai/primitives/noul
 
 Probability of yes; no separate confidence field.
 
-## S09 — How to build with TypeSafe
+## S09: How to build with TypeSafe
 
 https://docs.typesafe.ai/concepts/how-to-build-with-system-one
 
@@ -74,7 +74,7 @@ https://docs.typesafe.ai/concepts/how-to-build-with-system-one
 
 Workflow decomposition and native integration; not production outcome evidence.
 
-## S10 — TypeSafe machine-learning primer
+## S10: TypeSafe machine-learning primer
 
 https://docs.typesafe.ai/introduction/machine-learning-primer
 
@@ -82,7 +82,7 @@ https://docs.typesafe.ai/introduction/machine-learning-primer
 
 Vendor framing of post-training objectives; not a full RLCD technical report.
 
-## S11 — Vercel: Jev available on AI Gateway
+## S11: Vercel: Jev available on AI Gateway
 
 https://vercel.com/changelog/typesafe-ai-jev-now-available-on-ai-gateway
 
@@ -90,7 +90,7 @@ https://vercel.com/changelog/typesafe-ai-jev-now-available-on-ai-gateway
 
 AI SDK 7.0.105+ experimental evaluate; route-specific privacy controls. Not tested here.
 
-## S12 — TypeSafe privacy policy
+## S12: TypeSafe privacy policy
 
 https://typesafe.ai/legal/privacy-policy
 
@@ -98,7 +98,7 @@ https://typesafe.ai/legal/privacy-policy
 
 Current policy inspected; no-training promise differs from retention and data-location commitments.
 
-## S13 — TypeSafe website terms
+## S13: TypeSafe website terms
 
 https://typesafe.ai/legal/terms
 
@@ -106,7 +106,7 @@ https://typesafe.ai/legal/terms
 
 Site terms are not a substitute for the actual API/commercial agreement.
 
-## S14 — Every: Mini-Vibe Check of Jev
+## S14: Every: Mini-Vibe Check of Jev
 
 https://every.to/also-true-for-humans/mini-vibe-check-typesafe-s-jev-judged-everything-i-ve-written-in-0-7-seconds
 
@@ -114,7 +114,7 @@ https://every.to/also-true-for-humans/mini-vibe-check-typesafe-s-jev-judged-ever
 
 Small, selected writing tests; concurrent document requests; no enterprise-general result.
 
-## S15 — Near Here: Jev, Mistral and Gemini event validation
+## S15: Near Here: Jev, Mistral and Gemini event validation
 
 https://nearhere.events/blog/typesafe-jev-mistral-gemini-event-validation
 
@@ -122,7 +122,7 @@ https://nearhere.events/blog/typesafe-jev-mistral-gemini-event-validation
 
 Prompt selection, assistant-written labels, narrow additional set, unequal output/reasoning settings limit conclusions.
 
-## S16 — Sean Goedecke: structured output is interesting again
+## S16: Sean Goedecke: structured output is interesting again
 
 https://www.seangoedecke.com/jev-means-structured-output-is-interesting-again/
 
@@ -130,7 +130,7 @@ https://www.seangoedecke.com/jev-means-structured-output-is-interesting-again/
 
 Reasoned interpretation, not a measured trial.
 
-## S17 — Hacker News Jev launch discussion
+## S17: Hacker News Jev launch discussion
 
 https://news.ycombinator.com/item?id=49717558
 
@@ -138,7 +138,7 @@ https://news.ycombinator.com/item?id=49717558
 
 Discovery, objections and founder clarifications. Comments are not independent replication.
 
-## S18 — Founders You Should Know: March 25 recap
+## S18: Founders You Should Know: March 25 recap
 
 https://newsletter.foundersysk.com/p/founders-you-should-know-march-25th
 
@@ -146,7 +146,7 @@ https://newsletter.foundersysk.com/p/founders-you-should-know-march-25th
 
 March 25 event; direct TypeSafe automation direction. Current page, not archived historical bytes.
 
-## S19 — AI Engineer: What’s next after RLHF?
+## S19: AI Engineer: What’s next after RLHF?
 
 https://ai.engineer/talks/cJ0EOzey--o-whats-next-after-rlhf
 
@@ -154,7 +154,7 @@ https://ai.engineer/talks/cJ0EOzey--o-whats-next-after-rlhf
 
 Timestamped content verified; July 31 upload timing is secondary-corroborated, not independently retrieved from raw YouTube metadata.
 
-## S20 — TypeSafe: AI too good to be true, too bad to be useful
+## S20: TypeSafe: AI too good to be true, too bad to be useful
 
 https://typesafe.ai/blog/ai-too-good-to-be-true-too-bad-to-be-useful-typesafe-ai
 
@@ -162,7 +162,7 @@ https://typesafe.ai/blog/ai-too-good-to-be-true-too-bad-to-be-useful-typesafe-ai
 
 Current page date; embedded-video transcript not independently obtained.
 
-## S21 — TypeSafe: The Bitterest Lesson
+## S21: TypeSafe: The Bitterest Lesson
 
 https://typesafe.ai/blog/bitterest-lesson
 
@@ -170,7 +170,7 @@ https://typesafe.ai/blog/bitterest-lesson
 
 Task-first framing; does not disclose the full Jev implementation.
 
-## S22 — Guo et al.: On Calibration of Modern Neural Networks
+## S22: Guo et al.: On Calibration of Modern Neural Networks
 
 https://proceedings.mlr.press/v70/guo17a.html
 
@@ -178,7 +178,7 @@ https://proceedings.mlr.press/v70/guo17a.html
 
 Historical calibration research; no claimed direct lineage to Jev.
 
-## S23 — Yin et al.: Benchmarking Zero-shot Text Classification
+## S23: Yin et al.: Benchmarking Zero-shot Text Classification
 
 https://arxiv.org/abs/1909.00161
 
@@ -186,7 +186,7 @@ https://arxiv.org/abs/1909.00161
 
 Primary abstract and submission record inspected; earlier label-fully-unseen classification.
 
-## S24 — Bani-Harouni et al.: Rewarding Doubt
+## S24: Bani-Harouni et al.: Rewarding Doubt
 
 https://arxiv.org/abs/2503.02623
 
@@ -194,7 +194,7 @@ https://arxiv.org/abs/2503.02623
 
 v1 date; current v6 is February 28, 2026. Abstract supports logarithmic calibration reward, not TypeSafe lineage.
 
-## S25 — Damani et al.: Beyond Binary Rewards / RLCR
+## S25: Damani et al.: Beyond Binary Rewards / RLCR
 
 https://arxiv.org/abs/2507.16806
 
@@ -202,7 +202,7 @@ https://arxiv.org/abs/2507.16806
 
 v1 date; current v2 May 15, 2026. Correctness plus Brier calibration reward; not TypeSafe RLCD.
 
-## S26 — Stepanov et al.: GLiClass
+## S26: Stepanov et al.: GLiClass
 
 https://arxiv.org/abs/2508.07662v1
 
@@ -210,7 +210,7 @@ https://arxiv.org/abs/2508.07662v1
 
 Primary abstract: flexible lightweight zero/few-shot classification and PPO adaptation. No matched Jev benchmark.
 
-## S27 — RouteLLM
+## S27: RouteLLM
 
 https://arxiv.org/abs/2406.18665
 
@@ -218,7 +218,7 @@ https://arxiv.org/abs/2406.18665
 
 Earlier model-routing work; no Jev-specific inference.
 
-## S28 — Anthropic: Constitutional Classifiers
+## S28: Anthropic: Constitutional Classifiers
 
 https://www.anthropic.com/research/constitutional-classifiers
 
@@ -226,7 +226,7 @@ https://www.anthropic.com/research/constitutional-classifiers
 
 Earlier classifier-mediated controls; not a universal defense or zero-shot Jev equivalent.
 
-## S29 — Language Models (Mostly) Know What They Know
+## S29: Language Models (Mostly) Know What They Know
 
 https://arxiv.org/abs/2207.05221
 
@@ -234,7 +234,7 @@ https://arxiv.org/abs/2207.05221
 
 Earlier model uncertainty work; not deployment calibration proof.
 
-## S30 — RLCD: Reinforcement Learning from Contrastive Distillation
+## S30: RLCD: Reinforcement Learning from Contrastive Distillation
 
 https://arxiv.org/abs/2307.12950
 
@@ -242,7 +242,7 @@ https://arxiv.org/abs/2307.12950
 
 Acronym collision: different expansion and work from TypeSafe RLCD.
 
-## S31 — Thinking Machines: Introducing Inkling
+## S31: Thinking Machines: Introducing Inkling
 
 https://thinkingmachines.ai/news/introducing-inkling/
 
@@ -250,7 +250,7 @@ https://thinkingmachines.ai/news/introducing-inkling/
 
 Inkling is a model; Tinker is a customization platform. “Tinder” being a typo is only an interpretation.
 
-## S32 — TypeSafe System One adapter Python repository
+## S32: TypeSafe System One adapter Python repository
 
 https://github.com/typesafe-ai/system-one-adapter-python
 
@@ -258,7 +258,7 @@ https://github.com/typesafe-ai/system-one-adapter-python
 
 Repository contents inspected through GitHub connector; contains source, tests and docs, not only a README. Not installed or benchmarked here.
 
-## S33 — StartupHub: Beyond RLHF
+## S33: StartupHub: Beyond RLHF
 
 https://www.startuphub.ai/ai-news/ai-research/2026/beyond-rlhf-the-future-of-ai-automation
 
@@ -266,7 +266,7 @@ https://www.startuphub.ai/ai-news/ai-research/2026/beyond-rlhf-the-future-of-ai-
 
 Supports an early-August public-discussion trail; not primary algorithm evidence.
 
-## S34 — Sumz-up: What’s next after RLHF?
+## S34: Sumz-up: What’s next after RLHF?
 
 https://sumz-up.com/analysis/cj0eozey--o
 
@@ -274,7 +274,7 @@ https://sumz-up.com/analysis/cj0eozey--o
 
 Lists July 31 video date. Not an authoritative upload timestamp or independent technical evidence.
 
-## S35 — TypeSafe shared state
+## S35: TypeSafe shared state
 
 https://docs.typesafe.ai/concepts/state
 
@@ -282,17 +282,13 @@ https://docs.typesafe.ai/concepts/state
 
 State representation and context selection; no account-specific context maximum verified.
 
-## S36 — TypeSafe fan-out pattern
+## S36: TypeSafe fan-out pattern
 
 https://docs.typesafe.ai/patterns/fan-out
 
 **Type:** official documentation. **Date:** undated/current documentation. **Accessed:** 2026-09-17.
 
 Multiple independent questions; not statistical independence of errors.
-
-## Internal source boundary
-
-The user supplied 29 frontier-map, programme, methodology and technical-card files. This review inspected their map, watch, routing, verification, programme and methodology content. Their references were not all re-audited. No raw acquisition logs, active crawler configuration, run cursor history or semantic rejection ledger were available. These files are source context, not evidence that a current production tracker ran as described. The raw private files are not copied into this repository. A local content scan is retained in `evidence/project-scan.json`.
 
 ## Search coverage
 

@@ -1,7 +1,12 @@
-"""Chromium interaction smoke test. Requires playwright only for development QA."""
+"""Chromium interaction smoke test for development QA. Needs Playwright (`uv run --with playwright`).
+
+Set JEV_CHROMIUM to a Chromium executable to use one you already have; otherwise Playwright's own
+browser is used. Prints a summary and exits non-zero on any failed check or page error."""
 
 import json
+import os
 import re
+import sys
 import threading
 import urllib.error
 import urllib.request
@@ -18,9 +23,10 @@ thread.start()
 checks, errors = [], []
 try:
     with sync_playwright() as p:
-        browser = p.chromium.launch(
-            executable_path="/usr/bin/chromium", headless=True, args=["--no-sandbox"]
-        )
+        launch = {"headless": True}
+        if os.getenv("JEV_CHROMIUM"):
+            launch["executable_path"] = os.environ["JEV_CHROMIUM"]
+        browser = p.chromium.launch(**launch)
         page = browser.new_page(viewport={"width": 1440, "height": 1100}, device_scale_factor=1)
         page.on("pageerror", lambda e: errors.append(str(e)))
 
@@ -135,5 +141,6 @@ report = {
     "live_jev_executed": False,
     "status": "PASS",
 }
-(root / "evidence/browser-check.json").write_text(json.dumps(report, indent=2) + "\n")
+print(json.dumps(report, indent=2))
+sys.exit(1 if errors or not all(c.get("ok", True) for c in checks if isinstance(c, dict)) else 0)
 print(json.dumps(report, indent=2))

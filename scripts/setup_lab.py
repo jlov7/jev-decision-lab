@@ -1,6 +1,7 @@
 """Rebuild authored datasets and bibliography. Offline; no package installation."""
 import runpy
 from pathlib import Path
+
 root = Path(__file__).resolve().parents[1]
 (root/'data').mkdir(exist_ok=True)
 (root/'docs').mkdir(exist_ok=True)
