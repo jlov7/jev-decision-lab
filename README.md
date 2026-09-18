@@ -92,7 +92,7 @@ cd jev-decision-lab
 uv run jev-lab
 ```
 
-That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (201 tests, about two seconds).
+That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (202 tests, about two seconds).
 
 Open **http://127.0.0.1:8765**. You are in synthetic replay: the banner at the top says so, and stays visible on every screen.
 
@@ -331,6 +331,16 @@ Both live in the **Experiments** section of the Live lab. Each takes about a sec
 
 In replay mode both experiments show the layout with authored fixtures, and say so: every range is zero and nothing moves, because the fixture is the same file every time.
 
+**What they showed on 18 September 2026**, live, on S02 and S04, eight calls each for the probe and three each for the ablation (raw results in [evidence/experiments-live-2026-09-18.json](evidence/experiments-live-2026-09-18.json)):
+
+- S04 is a rock. Owner quality at 1.00 in all eight calls, issue quality at 1.00, route the same every time. The only movement was in the next-evidence head, 0.71 to 0.77.
+- S02 is genuinely ambiguous, and the probe shows it. Owner operations ranged 0.65 to 0.73 across eight calls, with the rest going to "other". The route still came out the same all eight times, because the policy asks for more evidence whenever sufficiency is low, and it was low every time. Stable decision, wobbly probability. That is the pattern to look for.
+- Ablation on S04 found the excerpt the judgment was leaning on. Remove the inspection report and sufficiency drops from 0.35 to 0.22; remove the carrier note and nothing moves beyond noise.
+- Ablation on S02 found both excerpts mattered a little and neither changed the decision. Removing either lowered sufficiency by about 0.08 and raised contradiction by 0.05 to 0.07.
+- The default 0.03 noise floor was too tight for S02, where the probe measured 0.08. Ablation now uses the widest range a live probe of the same case has measured in this server process, when that is larger than the default, and says which floor it used.
+
+![Experiments: eight-call stability probe on S02 with min, median and max bars per option; evidence ablation on S04 with the inspection excerpt highlighted as most influential](docs/images/experiments.png)
+
 ### Provider arms and the two comparison tracks
 
 `adapters.py` defines one interface, `ProviderArm.call(request) → {raw, provenance, normalized}`, and four arms:
@@ -393,7 +403,7 @@ jev-decision-lab/
 │   ├── seed_cases.py          the authored cases, questions, fixtures and labels
 │   ├── seed_signals.py        the prelaunch chronology
 │   └── source_register.py     bibliography metadata
-├── tests/                     201 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
+├── tests/                     202 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
 ├── docs/                      START_HERE, research report, frontier audit, build packet, evaluation protocol, QA record, workshop
 ├── evidence/                  retained test output and browser-check records
 ├── runs/                      CLI outputs (replay evaluation and compare are committed as examples)
@@ -482,7 +492,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 201 tests
+uv run python3 -m unittest discover -s tests -v    # 202 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint

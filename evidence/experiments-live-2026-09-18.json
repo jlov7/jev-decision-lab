@@ -1,0 +1,830 @@
+{
+  "probe_S02": {
+    "kind": "stability_probe",
+    "mode": "live",
+    "case_id": "S02",
+    "requested": 8,
+    "succeeded": 8,
+    "failed": 0,
+    "failures": [],
+    "wall_ms": 604.6,
+    "created_at": "2026-09-18T16:51:52.647320+00:00",
+    "rows": [
+      {
+        "issue": "routine",
+        "issue_probability": 0.69,
+        "owner": "operations",
+        "owner_probability": 0.69,
+        "severity": 0.19,
+        "critical_probability": 0.01,
+        "sufficient": 0.41,
+        "contradiction": 0.08,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 346.2,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "b49iWjZGFyZHaPTphBBooA"
+      },
+      {
+        "issue": "routine",
+        "issue_probability": 0.7,
+        "owner": "operations",
+        "owner_probability": 0.68,
+        "severity": 0.21,
+        "critical_probability": 0.01,
+        "sufficient": 0.39,
+        "contradiction": 0.08,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 325.94,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "PPw-dHGqSumh3siDSU1tdA"
+      },
+      {
+        "issue": "routine",
+        "issue_probability": 0.69,
+        "owner": "operations",
+        "owner_probability": 0.72,
+        "severity": 0.22,
+        "critical_probability": 0.01,
+        "sufficient": 0.38,
+        "contradiction": 0.09,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 382.96,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "iO9UYb4oKfP13DCCTl3u7w"
+      },
+      {
+        "issue": "routine",
+        "issue_probability": 0.7,
+        "owner": "operations",
+        "owner_probability": 0.73,
+        "severity": 0.23,
+        "critical_probability": 0.01,
+        "sufficient": 0.41,
+        "contradiction": 0.08,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 321.01,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "MW0lCGIeuq3y6Ag-82E-lg"
+      },
+      {
+        "issue": "routine",
+        "issue_probability": 0.71,
+        "owner": "operations",
+        "owner_probability": 0.65,
+        "severity": 0.22,
+        "critical_probability": 0.01,
+        "sufficient": 0.37,
+        "contradiction": 0.09,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 312.83,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "xAf0mlfzlbyoIGX3e-GHgQ"
+      },
+      {
+        "issue": "routine",
+        "issue_probability": 0.7,
+        "owner": "operations",
+        "owner_probability": 0.69,
+        "severity": 0.21,
+        "critical_probability": 0.01,
+        "sufficient": 0.41,
+        "contradiction": 0.09,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 396.37,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "bXhTsctPexy1Hud6F9rp9w"
+      },
+      {
+        "issue": "routine",
+        "issue_probability": 0.69,
+        "owner": "operations",
+        "owner_probability": 0.73,
+        "severity": 0.18,
+        "critical_probability": 0.01,
+        "sufficient": 0.4,
+        "contradiction": 0.09,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 241.77,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "nSOgJEWWggW1bm4FW6yt1w"
+      },
+      {
+        "issue": "routine",
+        "issue_probability": 0.69,
+        "owner": "operations",
+        "owner_probability": 0.7,
+        "severity": 0.18,
+        "critical_probability": 0.01,
+        "sufficient": 0.38,
+        "contradiction": 0.08,
+        "next_evidence": "tracking",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 261.73,
+        "estimated_cost_usd": 4.515e-05,
+        "receipt_id": "pyKikvKGG1gYGzdewZL05A"
+      }
+    ],
+    "spread": {
+      "issue": {
+        "type": "choice",
+        "top_choices": [
+          "routine"
+        ],
+        "options": {
+          "quality": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "delivery": {
+            "min": 0.28,
+            "median": 0.3,
+            "max": 0.3,
+            "range": 0.02
+          },
+          "other": {
+            "min": 0,
+            "median": 0.01,
+            "max": 0.01,
+            "range": 0.01
+          },
+          "commercial": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "routine": {
+            "min": 0.69,
+            "median": 0.695,
+            "max": 0.71,
+            "range": 0.02
+          }
+        }
+      },
+      "owner": {
+        "type": "choice",
+        "top_choices": [
+          "operations"
+        ],
+        "options": {
+          "quality": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "other": {
+            "min": 0.26,
+            "median": 0.295,
+            "max": 0.34,
+            "range": 0.08
+          },
+          "procurement": {
+            "min": 0.01,
+            "median": 0.01,
+            "max": 0.01,
+            "range": 0
+          },
+          "operations": {
+            "min": 0.65,
+            "median": 0.695,
+            "max": 0.73,
+            "range": 0.08
+          }
+        }
+      },
+      "severity": {
+        "type": "score",
+        "value": {
+          "min": 0.18,
+          "median": 0.21,
+          "max": 0.23,
+          "range": 0.05
+        },
+        "options": {
+          "0": {
+            "min": 0.86,
+            "median": 0.885,
+            "max": 0.9,
+            "range": 0.04
+          },
+          "1": {
+            "min": 0.03,
+            "median": 0.035,
+            "max": 0.05,
+            "range": 0.02
+          },
+          "2": {
+            "min": 0.06,
+            "median": 0.07,
+            "max": 0.08,
+            "range": 0.02
+          },
+          "3": {
+            "min": 0.01,
+            "median": 0.01,
+            "max": 0.01,
+            "range": 0
+          }
+        }
+      },
+      "sufficient": {
+        "type": "noul",
+        "value": {
+          "min": 0.37,
+          "median": 0.395,
+          "max": 0.41,
+          "range": 0.04
+        }
+      },
+      "contradiction": {
+        "type": "noul",
+        "value": {
+          "min": 0.08,
+          "median": 0.08499999999999999,
+          "max": 0.09,
+          "range": 0.01
+        }
+      },
+      "next_evidence": {
+        "type": "choice",
+        "top_choices": [
+          "tracking"
+        ],
+        "options": {
+          "clarification": {
+            "min": 0.12,
+            "median": 0.15,
+            "max": 0.17,
+            "range": 0.05
+          },
+          "terms": {
+            "min": 0.01,
+            "median": 0.02,
+            "max": 0.02,
+            "range": 0.01
+          },
+          "quality_record": {
+            "min": 0.18,
+            "median": 0.19,
+            "max": 0.24,
+            "range": 0.06
+          },
+          "tracking": {
+            "min": 0.42,
+            "median": 0.445,
+            "max": 0.48,
+            "range": 0.06
+          },
+          "none": {
+            "min": 0.17,
+            "median": 0.185,
+            "max": 0.19,
+            "range": 0.02
+          }
+        }
+      }
+    },
+    "routes": {
+      "REQUEST_EVIDENCE": 8
+    },
+    "route_stable": true,
+    "widest_option_range": {
+      "range": 0.08,
+      "question": "owner"
+    },
+    "latency_ms": {
+      "p50": 325.94,
+      "max": 396.37
+    },
+    "estimated_cost_usd": 0.0003612,
+    "warning": "8 calls on one authored case. This measures call-to-call variation of one model version on one input, not accuracy and not calibration. Ranges are in probability units after the provider's two-decimal rounding."
+  },
+  "ablate_S02": {
+    "kind": "evidence_ablation",
+    "mode": "live",
+    "case_id": "S02",
+    "requested": 3,
+    "succeeded": 3,
+    "failed": 0,
+    "wall_ms": 410.67,
+    "created_at": "2026-09-18T16:51:53.069729+00:00",
+    "baseline_ok": true,
+    "variants": [
+      {
+        "label": "baseline",
+        "removed_evidence": null,
+        "ok": true,
+        "answers": {
+          "issue": "routine",
+          "issue_probability": 0.72,
+          "owner": "operations",
+          "owner_probability": 0.7,
+          "severity": 0.22,
+          "critical_probability": 0.01,
+          "sufficient": 0.38,
+          "contradiction": 0.09,
+          "next_evidence": "tracking",
+          "route": "REQUEST_EVIDENCE",
+          "latency_ms": 295.21,
+          "estimated_cost_usd": 4.515e-05
+        },
+        "receipt_id": "FnxZGFlxqb_jGMJgBpC_1A"
+      },
+      {
+        "label": "without S02-E1",
+        "removed_evidence": {
+          "id": "S02-E1",
+          "text": "Receiving: All 120 units arrived at the promised time."
+        },
+        "ok": true,
+        "answers": {
+          "issue": "routine",
+          "issue_probability": 0.63,
+          "owner": "operations",
+          "owner_probability": 0.77,
+          "severity": 0.22,
+          "critical_probability": 0.01,
+          "sufficient": 0.3,
+          "contradiction": 0.14,
+          "next_evidence": "tracking",
+          "route": "REQUEST_EVIDENCE",
+          "latency_ms": 272.89,
+          "estimated_cost_usd": 4.3638000000000005e-05
+        },
+        "deltas": {
+          "owner_probability": 0.07,
+          "severity": 0,
+          "sufficient": -0.08,
+          "contradiction": 0.05
+        },
+        "owner_changed": false,
+        "issue_changed": false,
+        "route_changed": false,
+        "movement": 0.2,
+        "above_noise": true,
+        "receipt_id": "oN1etTnDI-joPDgGDPjdyQ"
+      },
+      {
+        "label": "without S02-E2",
+        "removed_evidence": {
+          "id": "S02-E2",
+          "text": "Carrier: Delivery complete with signed receipt."
+        },
+        "ok": true,
+        "answers": {
+          "issue": "routine",
+          "issue_probability": 0.73,
+          "owner": "operations",
+          "owner_probability": 0.73,
+          "severity": 0.21,
+          "critical_probability": 0.01,
+          "sufficient": 0.31,
+          "contradiction": 0.16,
+          "next_evidence": "tracking",
+          "route": "REQUEST_EVIDENCE",
+          "latency_ms": 404.31,
+          "estimated_cost_usd": 4.3932000000000006e-05
+        },
+        "deltas": {
+          "owner_probability": 0.03,
+          "severity": -0.01,
+          "sufficient": -0.07,
+          "contradiction": 0.07
+        },
+        "owner_changed": false,
+        "issue_changed": false,
+        "route_changed": false,
+        "movement": 0.1733,
+        "above_noise": true,
+        "receipt_id": "qVp8oXAF25zqL7vPdqWGZA"
+      }
+    ],
+    "most_influential": "S02-E1",
+    "noise_floor": 0.03,
+    "warning": "One call per variant. Differences below 0.03 in probability are within the call-to-call variation observed on this model version and are marked as noise. Removing evidence changes the input; it does not show what the model attended to."
+  },
+  "probe_S04": {
+    "kind": "stability_probe",
+    "mode": "live",
+    "case_id": "S04",
+    "requested": 8,
+    "succeeded": 8,
+    "failed": 0,
+    "failures": [],
+    "wall_ms": 697.46,
+    "created_at": "2026-09-18T16:51:53.780345+00:00",
+    "rows": [
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.1,
+        "critical_probability": 0.15,
+        "sufficient": 0.36,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 339.71,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "0V11VuLEsY3WoQg7SEixuQ"
+      },
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.12,
+        "critical_probability": 0.16,
+        "sufficient": 0.37,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 405.16,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "EbbDbkWJ0W8esEQn7OTssw"
+      },
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.06,
+        "critical_probability": 0.13,
+        "sufficient": 0.34,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 331.86,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "gdWgjZkNJFiOehG57xteqg"
+      },
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.1,
+        "critical_probability": 0.14,
+        "sufficient": 0.35,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 363.92,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "eZaa7c9g9191O55aJPTNTQ"
+      },
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.08,
+        "critical_probability": 0.13,
+        "sufficient": 0.35,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 299.86,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "MGoOspk2OA_hUXefl9Qrwg"
+      },
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.09,
+        "critical_probability": 0.14,
+        "sufficient": 0.37,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 375.36,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "FOaWGz1-htq1IlQWiMS7Fw"
+      },
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.06,
+        "critical_probability": 0.13,
+        "sufficient": 0.35,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 378.55,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "eESTizeZzs3OpLRCCPxqVg"
+      },
+      {
+        "issue": "quality",
+        "issue_probability": 1,
+        "owner": "quality",
+        "owner_probability": 1,
+        "severity": 2.1,
+        "critical_probability": 0.15,
+        "sufficient": 0.37,
+        "contradiction": 0.08,
+        "next_evidence": "quality_record",
+        "route": "REQUEST_EVIDENCE",
+        "latency_ms": 328.06,
+        "estimated_cost_usd": 4.4982e-05,
+        "receipt_id": "4Ha0dIYM-xvQFJVXyjvM_w"
+      }
+    ],
+    "spread": {
+      "issue": {
+        "type": "choice",
+        "top_choices": [
+          "quality"
+        ],
+        "options": {
+          "quality": {
+            "min": 1,
+            "median": 1,
+            "max": 1,
+            "range": 0
+          },
+          "commercial": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "routine": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "delivery": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "other": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          }
+        }
+      },
+      "owner": {
+        "type": "choice",
+        "top_choices": [
+          "quality"
+        ],
+        "options": {
+          "quality": {
+            "min": 1,
+            "median": 1,
+            "max": 1,
+            "range": 0
+          },
+          "other": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "operations": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "procurement": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          }
+        }
+      },
+      "severity": {
+        "type": "score",
+        "value": {
+          "min": 2.06,
+          "median": 2.0949999999999998,
+          "max": 2.12,
+          "range": 0.06
+        },
+        "options": {
+          "0": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "1": {
+            "min": 0.04,
+            "median": 0.05,
+            "max": 0.06,
+            "range": 0.02
+          },
+          "2": {
+            "min": 0.8,
+            "median": 0.81,
+            "max": 0.82,
+            "range": 0.02
+          },
+          "3": {
+            "min": 0.13,
+            "median": 0.14,
+            "max": 0.16,
+            "range": 0.03
+          }
+        }
+      },
+      "sufficient": {
+        "type": "noul",
+        "value": {
+          "min": 0.34,
+          "median": 0.355,
+          "max": 0.37,
+          "range": 0.03
+        }
+      },
+      "contradiction": {
+        "type": "noul",
+        "value": {
+          "min": 0.08,
+          "median": 0.08,
+          "max": 0.08,
+          "range": 0
+        }
+      },
+      "next_evidence": {
+        "type": "choice",
+        "top_choices": [
+          "quality_record"
+        ],
+        "options": {
+          "tracking": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "clarification": {
+            "min": 0.11,
+            "median": 0.11499999999999999,
+            "max": 0.13,
+            "range": 0.02
+          },
+          "terms": {
+            "min": 0,
+            "median": 0,
+            "max": 0,
+            "range": 0
+          },
+          "none": {
+            "min": 0.12,
+            "median": 0.16,
+            "max": 0.17,
+            "range": 0.05
+          },
+          "quality_record": {
+            "min": 0.71,
+            "median": 0.73,
+            "max": 0.77,
+            "range": 0.06
+          }
+        }
+      }
+    },
+    "routes": {
+      "REQUEST_EVIDENCE": 8
+    },
+    "route_stable": true,
+    "widest_option_range": {
+      "range": 0.06,
+      "question": "next_evidence"
+    },
+    "latency_ms": {
+      "p50": 363.92,
+      "max": 405.16
+    },
+    "estimated_cost_usd": 0.000359856,
+    "warning": "8 calls on one authored case. This measures call-to-call variation of one model version on one input, not accuracy and not calibration. Ranges are in probability units after the provider's two-decimal rounding."
+  },
+  "ablate_S04": {
+    "kind": "evidence_ablation",
+    "mode": "live",
+    "case_id": "S04",
+    "requested": 3,
+    "succeeded": 3,
+    "failed": 0,
+    "wall_ms": 366.98,
+    "created_at": "2026-09-18T16:51:54.161623+00:00",
+    "baseline_ok": true,
+    "variants": [
+      {
+        "label": "baseline",
+        "removed_evidence": null,
+        "ok": true,
+        "answers": {
+          "issue": "quality",
+          "issue_probability": 1,
+          "owner": "quality",
+          "owner_probability": 1,
+          "severity": 2.04,
+          "critical_probability": 0.1,
+          "sufficient": 0.35,
+          "contradiction": 0.08,
+          "next_evidence": "quality_record",
+          "route": "REQUEST_EVIDENCE",
+          "latency_ms": 299.19,
+          "estimated_cost_usd": 4.4982e-05
+        },
+        "receipt_id": "vZ0yD-Qy9Ny4Ivrp8PyzUQ"
+      },
+      {
+        "label": "without S04-E1",
+        "removed_evidence": {
+          "id": "S04-E1",
+          "text": "Inspection: Three batches failed the specified material test."
+        },
+        "ok": true,
+        "answers": {
+          "issue": "quality",
+          "issue_probability": 0.85,
+          "owner": "quality",
+          "owner_probability": 1,
+          "severity": 2.06,
+          "critical_probability": 0.16,
+          "sufficient": 0.22,
+          "contradiction": 0.11,
+          "next_evidence": "quality_record",
+          "route": "REQUEST_EVIDENCE",
+          "latency_ms": 358.59,
+          "estimated_cost_usd": 4.359600000000001e-05
+        },
+        "deltas": {
+          "owner_probability": 0,
+          "severity": 0.02,
+          "sufficient": -0.13,
+          "contradiction": 0.03
+        },
+        "owner_changed": false,
+        "issue_changed": false,
+        "route_changed": false,
+        "movement": 0.1667,
+        "above_noise": true,
+        "receipt_id": "QB9XOD06PA-kzquo1Kv5-g"
+      },
+      {
+        "label": "without S04-E2",
+        "removed_evidence": {
+          "id": "S04-E2",
+          "text": "Carrier: Delivery complete with no timing exception."
+        },
+        "ok": true,
+        "answers": {
+          "issue": "quality",
+          "issue_probability": 1,
+          "owner": "quality",
+          "owner_probability": 1,
+          "severity": 2.05,
+          "critical_probability": 0.11,
+          "sufficient": 0.36,
+          "contradiction": 0.09,
+          "next_evidence": "quality_record",
+          "route": "REQUEST_EVIDENCE",
+          "latency_ms": 295.89,
+          "estimated_cost_usd": 4.3722000000000006e-05
+        },
+        "deltas": {
+          "owner_probability": 0,
+          "severity": 0.01,
+          "sufficient": 0.01,
+          "contradiction": 0.01
+        },
+        "owner_changed": false,
+        "issue_changed": false,
+        "route_changed": false,
+        "movement": 0.0233,
+        "above_noise": false,
+        "receipt_id": "csJ1tczLmWUMVgComzGi3g"
+      }
+    ],
+    "most_influential": "S04-E1",
+    "noise_floor": 0.03,
+    "warning": "One call per variant. Differences below 0.03 in probability are within the call-to-call variation observed on this model version and are marked as noise. Removing evidence changes the input; it does not show what the model attended to."
+  }
+}

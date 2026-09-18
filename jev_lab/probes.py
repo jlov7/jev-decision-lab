@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import copy
 import statistics
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -22,6 +23,19 @@ PROBE_MIN, PROBE_MAX = 2, 8
 # Observed on 18 Sep 2026 across two twelve-case bursts: top-owner probability moved by at most
 # 0.03 between calls. Ablation deltas below that are reported as within-noise, not as effects.
 NOISE_FLOOR = 0.03
+# Per-process memory of what a live probe measured for each case: the widest range seen on any
+# single option. Ablation on the same case then uses the larger of this and NOISE_FLOOR, so an
+# ambiguous case (S02 measured 0.08 on 18 Sep 2026) is not read with a floor tuned on stable ones.
+MEASURED_RANGE: dict[str, float] = {}
+_MEASURED_LOCK = threading.Lock()
+
+
+def noise_floor_for(case_id: str) -> tuple[float, str]:
+    with _MEASURED_LOCK:
+        measured = MEASURED_RANGE.get(case_id)
+    if measured is not None and measured > NOISE_FLOOR:
+        return measured, "measured by a live probe of this case in this server process"
+    return NOISE_FLOOR, "default from the 18 September 2026 bursts; probe this case to measure its own"
 
 
 def _hold(mode: str, consent: bool, n: int):
@@ -127,6 +141,9 @@ def probe(case_id: str, repeats: int, mode: str = "replay", consent: bool = Fals
         ),
         default=(0, None),
     )
+    if mode == "live" and receipts and widest[1] is not None:
+        with _MEASURED_LOCK:
+            MEASURED_RANGE[case_id] = max(MEASURED_RANGE.get(case_id, 0.0), widest[0])
     return {
         "kind": "stability_probe",
         "mode": mode,
@@ -172,6 +189,7 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
     variants = [("baseline", None, case)] + [
         (f"without {e['id']}", e, _without(case, e["id"])) for e in evidence
     ]
+    floor, floor_source = noise_floor_for(case_id)
     prepaid = _hold(mode, consent, len(variants))
     started = time.perf_counter()
     results = _run_many([v[2] for v in variants], mode, threshold, consent, prepaid)
@@ -205,7 +223,7 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
                     4,
                 )
                 entry["above_noise"] = (
-                    entry["movement"] > NOISE_FLOOR or entry["owner_changed"] or entry["route_changed"]
+                    entry["movement"] > floor or entry["owner_changed"] or entry["route_changed"]
                 )
         else:
             entry["error"] = result["error"]
@@ -226,14 +244,14 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
         "baseline_ok": base["ok"],
         "variants": out_variants,
         "most_influential": most["removed_evidence"]["id"] if most and most["above_noise"] else None,
-        "noise_floor": NOISE_FLOOR,
+        "noise_floor": floor,
+        "noise_floor_source": floor_source,
         "warning": (
             "Synthetic replay returns the same authored fixture for every variant, so nothing moves. "
             "Run this live to see which evidence carries the judgment."
             if mode == "replay"
-            else f"One call per variant. Differences below {NOISE_FLOOR:.2f} in probability are within "
-            "the call-to-call variation observed on this model version and are marked as noise. Removing "
-            "evidence changes the input; it does not show what the model attended to."
+            else f"One call per variant. Movement below {floor:.2f} ({floor_source}) is marked as noise. "
+            "Removing evidence changes the input; it does not show what the model attended to."
         ),
     }
 

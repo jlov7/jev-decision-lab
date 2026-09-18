@@ -120,6 +120,43 @@ class AblationTests(unittest.TestCase):
             self.assertTrue(v["above_noise"])
         self.assertIn(result["most_influential"], {"S02-E1", "S02-E2"})
 
+    def test_live_probe_raises_the_floor_for_an_ambiguous_case(self):
+        CALLS["n"] = 0
+        probes.MEASURED_RANGE.clear()
+        self.addCleanup(probes.MEASURED_RANGE.clear)
+
+        seen = {"n": 0}
+
+        def wide(request, prepaid=None):
+            response, provenance = jittery(request)
+            with COUNT_LOCK:
+                seen["n"] += 1
+                n = seen["n"]
+            owner = response["answers"]["owner"]
+            top = owner["choice"]
+            other = next(k for k in owner["probabilities"] if k != top)
+            shift = 0.10 * (n % 2)  # alternate 0 and 0.10 on top of the jitter: range >= 0.08
+            owner["probabilities"][top] = round(owner["probabilities"][top] - shift, 4)
+            owner["probabilities"][other] = round(owner["probabilities"][other] + shift, 4)
+            return response, provenance
+
+        with (
+            patch.dict(os.environ, LIVE_ENV),
+            patch("jev_lab.provider.live", side_effect=wide),
+            patch.object(provider, "BUDGET", provider.CallBudget(50)),
+        ):
+            self.assertEqual(probes.noise_floor_for("S02")[0], probes.NOISE_FLOOR)
+            probe = probes.probe("S02", 6, mode="live", consent=True)
+            measured = probe["widest_option_range"]["range"]
+            self.assertGreater(measured, probes.NOISE_FLOOR)
+            floor, source = probes.noise_floor_for("S02")
+            self.assertEqual(floor, measured)
+            self.assertIn("measured", source)
+            result = probes.ablate("S02", mode="live", consent=True)
+        self.assertEqual(result["noise_floor"], measured)
+        self.assertIn("measured", result["noise_floor_source"])
+        self.assertEqual(probes.noise_floor_for("S04")[0], probes.NOISE_FLOOR, "other cases keep the default")
+
     def test_publish_swaps_receipts_for_ids(self):
         stored = []
 

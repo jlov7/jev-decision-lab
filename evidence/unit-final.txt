@@ -138,6 +138,7 @@ test_unknown_model_price_is_unknown_not_zero (test_llm_arm.NormalizationTests.te
 test_prompt_carries_state_and_questions_but_never_labels (test_llm_arm.SchemaTests.test_prompt_carries_state_and_questions_but_never_labels) ... ok
 test_schema_mirrors_the_three_primitives (test_llm_arm.SchemaTests.test_schema_mirrors_the_three_primitives) ... ok
 test_live_ablation_marks_movement_above_the_noise_floor (test_probes.AblationTests.test_live_ablation_marks_movement_above_the_noise_floor) ... ok
+test_live_probe_raises_the_floor_for_an_ambiguous_case (test_probes.AblationTests.test_live_probe_raises_the_floor_for_an_ambiguous_case) ... ok
 test_publish_swaps_receipts_for_ids (test_probes.AblationTests.test_publish_swaps_receipts_for_ids) ... ok
 test_replay_ablation_runs_baseline_plus_one_per_evidence (test_probes.AblationTests.test_replay_ablation_runs_baseline_plus_one_per_evidence) ... ok
 test_variants_are_edited_copies_and_the_original_case_is_untouched (test_probes.AblationTests.test_variants_are_edited_copies_and_the_original_case_is_untouched) ... ok
@@ -215,6 +216,6 @@ test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... o
 test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 201 tests in 1.699s
+Ran 202 tests in 1.714s
 
 OK

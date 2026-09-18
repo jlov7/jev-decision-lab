@@ -166,7 +166,7 @@ function renderAblate(r, c) {
       : r.mode === 'live'
         ? 'no single evidence item moved the judgment beyond the noise floor.'
         : 'replay layout only.') +
-    ` ${r.warning}`;
+    ` Noise floor ${r.noise_floor.toFixed(2)}. ${r.warning}`;
   const delta = (v, key) => {
     if (!v.deltas) return '<td>–</td>';
     const d = v.deltas[key];

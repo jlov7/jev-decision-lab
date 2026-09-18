@@ -82,7 +82,8 @@ Still not executed: any authenticated Jev or Claude call.
 | Stability probe | Replay probe on S02 with 6 repeats renders six question blocks and twenty range rows, route "Recommend a team in 6 of 6", widest range 0.00, replay warning shown, export enabled. Unit tests with a wobbling live stand-in report a 0.02 owner range, hold all slots before sending, refuse without consent or slots |
 | Evidence ablation | Replay ablation on S02 renders baseline plus two variants, replay warning shown. Unit tests confirm variants are edited copies (original case untouched, different case hash), deltas below the 0.03 noise floor are marked noise, a 0.20 drop in sufficiency is marked above noise |
 | Suite | 201 tests, three consecutive runs green (the fixture counter is lock-protected because the probe runs concurrently) |
-| Not yet executed | A live probe or ablation on the account: the server process had no attempt slots left after the compare runs |
+| Live run, 16:51 UTC | Server restarted with `JEV_MAX_LIVE_CALLS=100`. Probe S02 ×8: owner operations 0.65–0.73, route stable 8 of 8, p50 326 ms, about 0.036 cents. Probe S04 ×8: owner quality 1.00 ×8, widest range 0.06 on next evidence. Ablation S04: removing the inspection excerpt moved sufficiency 0.35 → 0.22 (above noise), removing the carrier note moved nothing. Ablation S02: both excerpts moved sufficiency by about 0.08. 22 attempts, zero console errors. Saved to `evidence/experiments-live-2026-09-18.json`; `docs/images/experiments.png` rendered from that file through the current UI |
+| Refinement from the live data | S02's measured range (0.08) exceeded the default 0.03 floor, so ablation now uses the widest range a live probe of the same case has measured in this process when larger, and reports the source. Test covers the switch and that other cases keep the default |
 
 ## Phase 3 plain English (0.4) — verified in a real browser
 
