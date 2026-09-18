@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import secrets
+import sys
 import threading
 from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -58,6 +59,19 @@ def lookup(key) -> dict:
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass  # No persisted request content, keys or model results.
+
+    def failure(self, status: int, exc: BaseException) -> None:
+        """One structured line per failed request: path, status, error class and message.
+
+        Never the body, the key or a model answer. Provider messages are already redacted."""
+        line = {
+            "event": "request_failed",
+            "path": urlparse(self.path).path,
+            "status": status,
+            "error": type(exc).__name__,
+            "message": str(exc)[:300] if status != 500 else "unexpected local error",
+        }
+        print(json.dumps(line), file=sys.stderr, flush=True)
 
     def origin_allowed(self) -> bool:
         hosts = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
@@ -224,8 +238,21 @@ class Handler(BaseHTTPRequestHandler):
                 ),
             )
         except PermissionError as exc:
+            self.failure(403, exc)
             self.send(403, {"error": str(exc)})
+        except engine.LiveValidationError as exc:
+            self.failure(400, exc)
+            self.send(
+                400,
+                {
+                    "error": str(exc),
+                    "provider_response": exc.response,
+                    "provenance": exc.provenance,
+                    "retained": "The provider answered; the answer broke the contract. Nothing was retried.",
+                },
+            )
         except (ValueError, TypeError, KeyError) as exc:
+            self.failure(400, exc)
             self.send(
                 400,
                 {
@@ -235,8 +262,10 @@ class Handler(BaseHTTPRequestHandler):
                 },
             )
         except RuntimeError as exc:
+            self.failure(502, exc)
             self.send(502, {"error": str(exc)})
-        except Exception:
+        except Exception as exc:
+            self.failure(500, exc)
             self.send(
                 500,
                 {

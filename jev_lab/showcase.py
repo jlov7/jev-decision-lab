@@ -82,6 +82,19 @@ def burst(
         try:
             receipt = engine.run(case["id"], mode, threshold, consent, prepaid=prepaid)
             return {"case_id": case["id"], "ok": True, "receipt": receipt}
+        except engine.LiveValidationError as exc:
+            p = exc.provenance
+            return {
+                "case_id": case["id"],
+                "ok": False,
+                "error": str(exc),
+                "provider_response": exc.response,
+                "model": exc.response.get("model"),
+                "latency_ms": p.get("latency_ms"),
+                "usage": p.get("usage"),
+                "estimated_cost_usd": p.get("estimated_cost_usd"),
+                "cost_unknown": p.get("estimated_cost_usd") is None,
+            }
         except (ValueError, PermissionError, RuntimeError) as exc:
             return {"case_id": case["id"], "ok": False, "error": str(exc), "cost_unknown": True}
 
@@ -91,25 +104,27 @@ def burst(
     wall_ms = round((time.perf_counter() - started) * 1000, 2)
 
     successes = [r["receipt"] for r in results if r["ok"]]
-    latencies = [
-        r["provenance"]["latency_ms"]
-        for r in successes
-        if r["provenance"]["latency_ms"] is not None
+    # A live answer that failed validation still happened: it has latency, usage and a bill.
+    answered_failures = [r for r in results if not r["ok"] and "provider_response" in r]
+    provenances = [r["provenance"] for r in successes] + answered_failures
+    latencies = [p["latency_ms"] for p in provenances if p.get("latency_ms") is not None]
+    usages = [p["usage"] for p in provenances if isinstance(p.get("usage"), dict)]
+    known_costs = [
+        p["estimated_cost_usd"] for p in provenances if p.get("estimated_cost_usd") is not None
     ]
-    usages = [
-        r["provenance"]["usage"]
-        for r in successes
-        if isinstance(r["provenance"].get("usage"), dict)
-    ]
-    costs = [r["provenance"]["estimated_cost_usd"] for r in successes]
-    known_costs = [c for c in costs if c is not None]
     kind = "live_typesafe" if mode == "live" else "synthetic_replay"
     summary = {
         "requested": len(cases),
         "succeeded": len(successes),
         "failed": len(results) - len(successes),
-        "model_calls": sum(r["provenance"]["model_calls"] for r in successes),
-        "models": sorted({r["response"]["model"] for r in successes}) if mode == "live" else [],
+        "model_calls": sum(r["provenance"]["model_calls"] for r in successes)
+        + len(answered_failures),
+        "models": sorted(
+            {r["response"]["model"] for r in successes}
+            | {r["model"] for r in answered_failures if r.get("model")}
+        )
+        if mode == "live"
+        else [],
         "latency_ms": {
             "min": min(latencies) if latencies else None,
             "p50": _percentile(latencies, 0.5),
@@ -124,7 +139,7 @@ def burst(
         if usages
         else None,
         "estimated_cost_usd": sum(known_costs)
-        if known_costs and len(known_costs) == len(successes)
+        if known_costs and len(known_costs) == len(results)
         else None,
         "cost_unknown_cases": len(results) - len(known_costs),
     }

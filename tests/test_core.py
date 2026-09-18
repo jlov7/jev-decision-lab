@@ -61,6 +61,27 @@ class ContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             engine.validate(self.request, self.response)
 
+    def test_two_decimal_wire_rounding_is_tolerated(self):
+        # Observed live 2026-09-18: Jev returns probabilities rounded to two decimals, so a
+        # five-option distribution can legitimately sum to 0.98 or 1.02.
+        issue = self.response["answers"]["issue"]
+        issue["probabilities"] = {k: 0.0 for k in issue["probabilities"]}
+        issue["probabilities"].update({"routine": 0.94, "delivery": 0.03, "other": 0.03, "quality": 0.02})
+        issue["choice"] = "routine"
+        engine.validate(self.request, self.response)
+        issue["probabilities"]["quality"] = 0.05  # sum 1.05 exceeds any rounding explanation
+        with self.assertRaises(ValueError):
+            engine.validate(self.request, self.response)
+
+    def test_score_tolerates_rounded_distribution(self):
+        sev = self.response["answers"]["severity"]
+        sev["probabilities"] = {"0": 0.01, "1": 0.05, "2": 0.79, "3": 0.15}  # weighted 2.08
+        sev["score"] = 2.11
+        engine.validate(self.request, self.response)
+        sev["score"] = 2.15
+        with self.assertRaises(ValueError):
+            engine.validate(self.request, self.response)
+
     def test_options_exact(self):
         self.response["answers"]["owner"]["probabilities"]["invented"] = 0.0
         with self.assertRaises(ValueError):

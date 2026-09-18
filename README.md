@@ -87,7 +87,7 @@ Requirements: Python 3.10 or newer and a modern browser. [`uv`](https://docs.ast
 git clone https://github.com/jlov7/jev-decision-lab.git
 cd jev-decision-lab
 uv run python3 scripts/setup_lab.py      # rebuild the authored datasets from the reviewed seed scripts
-uv run python3 -m unittest discover -s tests   # 179 tests, about two seconds
+uv run python3 -m unittest discover -s tests   # 186 tests, about two seconds
 uv run python3 -m jev_lab                # serve on http://127.0.0.1:8765
 ```
 
@@ -448,7 +448,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 179 tests
+uv run python3 -m unittest discover -s tests -v    # 186 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint
@@ -467,7 +467,26 @@ What the suite proves, by area:
 
 CI runs the same steps on every push. The UI was also exercised in a real browser against the running server at desktop and 375 px widths; that check caught, and led to the fix of, a Content Security Policy violation. Details in [docs/QA.md](docs/QA.md).
 
-**What has not been verified:** no authenticated Jev or Claude call was made during the build. The first live burst on your account is the first real measurement, and the validator's assumptions (model id echo, argmax tolerance, weighted-index check) are confirmed only by a real response.
+### The first live run, 18 September 2026
+
+The first authenticated burst was fired from the Live lab on the account owner's key, with consent, at 15:53 UTC. Twelve cases, six concurrent. The raw receipts are in [evidence/first-live-2026-09-18.json](evidence/first-live-2026-09-18.json).
+
+| Measure | Observed |
+|---|---|
+| Model echoed | `jev-1.13.0` on every answer |
+| Latency, client-observed | p50 343 ms, p95 512 ms, wall time 938 ms for all twelve |
+| Input tokens | 11,902 across eleven validated answers, about 1,080 per case |
+| Estimated cost | $0.0005 for the burst, about 0.05 cents |
+| Validated answers | 11 of 12 |
+| Owner agreement with the teaching labels | 10 of 11 validated, S04 included |
+
+Three things the real responses taught:
+
+1. **Jev rounds probabilities to two decimals.** S02's five-option distribution summed to slightly more than one and the original validator, which allowed 0.002, refused it. The tolerance is now derived from that rounding (half a unit in the last place per option), and a live answer that fails validation is retained with its raw response, latency, usage and cost instead of being discarded as "cost unknown".
+2. **On S04, live Jev picked the right team.** The authored fixture plants a confident wrong owner to teach that confidence cannot validate itself. The real model answered quality with probability 1.00. Keep both in view: the fixture is a lesson, the live answer is one observation.
+3. **Q02 is a genuine disagreement, not a bug.** The draft sentence is careful and supported, so Jev put 0.56 on "other" and 0.36 on assurance for the owner. The policy held it for a person because no owner cleared the threshold. That is the intended behaviour when a model is unsure.
+
+**What remains unverified:** the Claude comparison arm has not been called on this account, and twelve cases remain a smoke test.
 
 ---
 
@@ -511,7 +530,7 @@ CI runs the same steps on every push. The UI was also exercised in a real browse
 - **Replay probabilities are authored.** They teach mechanics. S04 is wrong on purpose. Nothing in replay measures Jev.
 - **Twelve live cases are a smoke test.** With zero observed failures in *n* representative independent trials, a rough one-sided 95% upper bound on the failure rate is about 3/*n*. Twelve clean cases say almost nothing about rare errors.
 - **Latency is client-observed.** It includes network time and, in a burst, concurrent scheduling. Wall time is shorter than the sum because calls overlap.
-- **Cost is an estimate** from reported usage and a dated public price ($0.042 per million input tokens; output free, as of 17 September 2026). It is not an invoice. Failed requests may still be billed and are reported as unknown.
+- **Cost is an estimate** from reported usage and a dated public price ($0.042 per million input tokens; output free, as of 17 September 2026). It is not an invoice. A request the provider answered but the validator refused keeps its reported usage and cost; a request that never returned is reported as unknown and may still be billed.
 - **Confidence is not probability of correctness.** TypeSafe's `confidence` summarises how peaked a distribution is. Calibration is measured against outcomes, not declared by a provider.
 - **Agreement with teaching labels is not accuracy.** The labels are authored, twelve, and partly designed to disagree with the fixtures.
 - **A Claude category and a Jev distribution are different objects.** The compare table shows both arms' decisions; only Jev supplies a distribution to compare.
@@ -525,7 +544,7 @@ Before any performance claim, follow [docs/EVALUATION.md](docs/EVALUATION.md): i
 | Gate | What it requires | Status |
 |---|---|---|
 | Local teaching release | Tests, source review, limits visible | Done |
-| First authenticated call | A key and consent from the account owner; read the validator's verdict on the real response | **Yours to run** |
+| First authenticated call | A key and consent from the account owner; read the validator's verdict on the real response | Done 18 September 2026, see [Testing and verification](#the-first-live-run-18-september-2026) |
 | Request-shape experiment | `bench` with 39 attempt slots over three repetitions | Ready |
 | Fair provider comparison | Frozen labels, splits, provider versions, dated prices, full-cost accounting | Machinery ready; protocol in `docs/EVALUATION.md` |
 | Calibration engineering | Reviewer-owned calibration artifacts keyed by model, question hash and split | Not started |

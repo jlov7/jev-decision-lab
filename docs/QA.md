@@ -51,6 +51,16 @@ Still not executed: any authenticated Jev or Claude call.
 | Live gate order | With no key, `run` and `burst` now report *Live mode disabled* before asking for consent, matching the playground |
 | Suite | 181 tests pass; no console errors; zero inline `style` attributes |
 
+## First live run — 18 September 2026, real account, real browser
+
+| Check | Result |
+|---|---|
+| Burst, twelve cases, live | 11 validated, 1 refused by the validator (S02: five-option distribution summed to more than 1.002 because the provider rounds to two decimals). Model `jev-1.13.0` echoed on all answers. p50 343 ms, p95 512 ms, wall 938 ms, 11,902 input tokens, about $0.0005 |
+| Playground, live | One free-form synthetic incident (badge readers rejecting cards after a deploy) answered: outage 0.99, operations 0.93, severity 1.2, next evidence telemetry. 1,018 input tokens, 368 ms |
+| Owner agreement | 10 of 11 validated cases matched the teaching label. S04 live answer was quality at 1.00 (the fixture plants operations). Q02 owner split other 0.56 / assurance 0.36, held for a person |
+| Follow-up fixes | Validator tolerances derived from two-decimal rounding; live answers that fail validation are retained with raw response, usage and cost; server prints one structured stderr line per failed request; workbench and burst rows show the retained answer |
+| Evidence | `evidence/first-live-2026-09-18.json` holds the burst summary and eleven receipts. No credential appears in it |
+
 ## Browser limitation—do not hide this
 
 The Browser plugin was not available. System Chromium was available through Playwright, but direct navigation to the local server returned `ERR_BLOCKED_BY_ADMINISTRATOR`. No administrator policy was disabled. The browser test therefore rendered the local HTML/CSS/JavaScript and used a test-only fetch bridge to the **actual loopback HTTP server**.

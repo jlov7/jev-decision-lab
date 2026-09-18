@@ -13,6 +13,20 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 POLICY_VERSION = "route-v2.1"
+# Jev returns probabilities rounded to two decimals (observed live 2026-09-18). Tolerances are
+# derived from that rounding so a five-option distribution summing to 1.02 is accepted and a
+# genuinely broken one is still refused.
+WIRE_DECIMALS = 2
+ROUNDING = 0.5 / 10**WIRE_DECIMALS
+
+
+class LiveValidationError(ValueError):
+    """A live provider answered, but the answer broke the contract. Keep what came back."""
+
+    def __init__(self, message: str, response: dict, provenance: dict):
+        super().__init__(message)
+        self.response = response
+        self.provenance = provenance
 QUESTION_VERSION = "enterprise-atoms-v1.0"
 
 
@@ -63,7 +77,7 @@ def distribution(value: Any, keys: set[str]) -> dict:
         raise ValueError("Probability option set does not match the question")
     for p in value.values():
         number(p)
-    if abs(sum(value.values()) - 1) > 0.002:
+    if abs(sum(value.values()) - 1) > ROUNDING * len(value) + 1e-9:
         raise ValueError("Probabilities must sum to one")
     return value
 
@@ -101,13 +115,15 @@ def validate(request: dict, response: dict, live: bool = False) -> dict:
         elif q["type"] == "choice":
             p = distribution(a.get("probabilities"), set(q["criteria"]))
             chosen = a.get("choice")
-            if chosen not in p or p[chosen] < max(p.values()) - 0.002:
+            if chosen not in p or p[chosen] < max(p.values()) - 2 * ROUNDING - 1e-9:
                 raise ValueError(f"Choice is not a highest-probability option: {qid}")
             number(a.get("confidence"))
         elif q["type"] == "score":
             p = distribution(a.get("probabilities"), {str(i) for i in range(len(q["criteria"]))})
             score = number(a.get("score"), 0, len(q["criteria"]) - 1)
-            if abs(score - sum(int(k) * v for k, v in p.items())) > 0.02:
+            levels = len(q["criteria"])
+            score_tolerance = ROUNDING * sum(range(levels)) + ROUNDING + 1e-9
+            if abs(score - sum(int(k) * v for k, v in p.items())) > score_tolerance:
                 raise ValueError("Score does not match probability-weighted level index")
             if a.get("legend") != {str(i): level for i, level in enumerate(q["criteria"])}:
                 raise ValueError("Score legend changed")
@@ -308,6 +324,10 @@ def run(
                 "Explicit consent is required to send this synthetic case to TypeSafe."
             )
         response, provenance = provider.live(request, prepaid=prepaid)
+        try:
+            validate(request, response, live=True)
+        except ValueError as exc:
+            raise LiveValidationError(str(exc), response, provenance) from exc
     else:
         raise ValueError("Mode must be replay or live")
     validate(request, response, live=mode == "live")

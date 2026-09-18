@@ -87,6 +87,34 @@ class BurstTests(unittest.TestCase):
                 showcase.burst(ALL_IDS, mode="live", consent=True)
         self.assertEqual(live.call_count, 0)
 
+    def test_validation_failure_retains_the_provider_response_and_its_cost(self):
+        def malformed(request, prepaid=None):
+            response, provenance = live_fixture(request)
+            if request["state"]["message"].startswith("Please close the delay alert"):
+                response["answers"]["owner"]["probabilities"]["operations"] = 0.5
+            return response, provenance
+
+        with (
+            patch.dict(os.environ, LIVE_ENV),
+            patch("jev_lab.provider.live", side_effect=malformed),
+            patch.object(provider, "BUDGET", provider.CallBudget(50)),
+        ):
+            result = showcase.burst(["S02", "S04"], mode="live", consent=True)
+        by_id = {r["case_id"]: r for r in result["results"]}
+        row = by_id["S02"]
+        self.assertFalse(row["ok"])
+        self.assertIn("sum to one", row["error"])
+        self.assertEqual(row["provider_response"]["answers"]["owner"]["probabilities"]["operations"], 0.5)
+        self.assertFalse(row["cost_unknown"])
+        self.assertEqual(row["usage"]["input_tokens"], 500)
+        self.assertAlmostEqual(row["estimated_cost_usd"], 500 / 1e6 * provider.PRICE_PER_MILLION_INPUT)
+        self.assertEqual(row["latency_ms"], 123.4)
+        s = result["summary"]
+        self.assertEqual((s["succeeded"], s["failed"], s["model_calls"]), (1, 1, 2))
+        self.assertEqual(s["input_tokens"], 1000)
+        self.assertEqual(s["cost_unknown_cases"], 0)
+        self.assertAlmostEqual(s["estimated_cost_usd"], 1000 / 1e6 * provider.PRICE_PER_MILLION_INPUT)
+
     def test_one_failure_is_retained_and_does_not_stop_the_burst(self):
         def flaky(request, prepaid=None):
             if "wrong team" in request["state"]["message"] or request["state"][

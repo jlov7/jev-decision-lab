@@ -69,7 +69,11 @@ async function api(path, body) {
         };
   const response = await fetch(path, options);
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
+  if (!response.ok) {
+    const failure = new Error(data.error || `Request failed (${response.status})`);
+    failure.detail = data;
+    throw failure;
+  }
   return data;
 }
 function provenance() {
@@ -233,8 +237,11 @@ async function run() {
     });
     render();
   } catch (e) {
+    const retained = e.detail && e.detail.provider_response;
+    if (retained) $('raw').textContent = JSON.stringify(e.detail, null, 2);
     error(
       e.message +
+        (retained ? ' The provider answered; its raw response is in the request panel below.' : '') +
         (state.receipt ? ' The prior result remains visible; no new result was produced.' : ''),
     );
   } finally {

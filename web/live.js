@@ -90,8 +90,16 @@ function renderBurst(r) {
   $('burstRows').innerHTML = r.results
     .map((x) => {
       const c = state.cases.find((k) => k.id === x.case_id) || { title: x.case_id };
-      if (!x.ok)
-        return `<div class="burst-row fail"><code>${esc(x.case_id)}</code><span class="title">${esc(c.title)}</span><span class="owner">–</span><span class="badge fail">Failed · cost unknown</span><div class="bar"><i class="none"></i></div><span class="ms none">–</span><span class="err">${esc(x.error)}</span></div>`;
+      if (!x.ok) {
+        const answered = Boolean(x.provider_response);
+        const badge = answered
+          ? `Answered · failed validation${x.cost_unknown ? '' : ` · ${cents(x.estimated_cost_usd)}`}`
+          : 'Failed · cost unknown';
+        const raw = answered
+          ? `<details class="burst-raw"><summary>Provider response retained for inspection</summary><pre>${esc(JSON.stringify(x.provider_response, null, 2))}</pre></details>`
+          : '';
+        return `<div class="burst-row fail"><code>${esc(x.case_id)}</code><span class="title">${esc(c.title)}</span><span class="owner">–</span><span class="badge fail">${badge}</span><div class="bar"><i class="none"></i></div><span class="ms ${x.latency_ms == null ? 'none' : ''}">${x.latency_ms == null ? '–' : fmtMs(x.latency_ms)}</span><span class="err">${esc(x.error)}</span>${raw}</div>`;
+      }
       const pct = x.latency_ms ? Math.max(3, (x.latency_ms / max) * 100) : 0;
       const owner = `${esc(x.owner)} ${(x.owner_probability * 100).toFixed(0)}%`;
       return `<button type="button" class="burst-row inspectable" data-receipt="${esc(x.receipt_id)}" data-case="${esc(x.case_id)}" aria-label="Inspect ${esc(x.case_id)} on the workbench"><code>${esc(x.case_id)}</code><span class="title">${esc(c.title)}</span><span class="owner">${owner}</span><span class="badge ${x.route === 'ROUTE_TO_TEAM' ? '' : 'hold'}">${esc(routes[x.route][0])}</span><div class="bar">${x.latency_ms === null ? '<i class="none"></i>' : `<i data-w="${pct}"></i>`}</div><span class="ms ${x.latency_ms === null ? 'none' : ''}">${fmtMs(x.latency_ms)}</span></button>`;

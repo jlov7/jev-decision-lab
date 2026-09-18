@@ -69,3 +69,22 @@ td.planted {
     transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 }
+.burst-row .burst-raw {
+  grid-column: 2 / -1;
+  font-size: 11px;
+  color: var(--muted);
+}
+.burst-row .burst-raw summary {
+  cursor: pointer;
+}
+.burst-row .burst-raw pre {
+  max-height: 260px;
+  overflow: auto;
+  margin: 6px 0 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 11px;
+}

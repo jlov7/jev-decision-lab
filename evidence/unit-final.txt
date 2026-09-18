@@ -81,6 +81,8 @@ test_pinned_model_mismatch_rejected (test_core.ContractTests.test_pinned_model_m
 test_probability_sum (test_core.ContractTests.test_probability_sum) ... ok
 test_score_legend (test_core.ContractTests.test_score_legend) ... ok
 test_score_mean (test_core.ContractTests.test_score_mean) ... ok
+test_score_tolerates_rounded_distribution (test_core.ContractTests.test_score_tolerates_rounded_distribution) ... ok
+test_two_decimal_wire_rounding_is_tolerated (test_core.ContractTests.test_two_decimal_wire_rounding_is_tolerated) ... ok
 test_required_modules_exist (test_core.ImplementationExists.test_required_modules_exist) ... ok
 test_brier (test_core.MetricsTests.test_brier) ... ok
 test_duplicate (test_core.MetricsTests.test_duplicate) ... ok
@@ -93,7 +95,9 @@ test_boolean_consent_not_string (test_core.PolicyTests.test_boolean_consent_not_
 test_conflict_requests_evidence (test_core.PolicyTests.test_conflict_requests_evidence) ... ok
 test_consent_required (test_core.PolicyTests.test_consent_required) ... ok
 test_critical_before_repair (test_core.PolicyTests.test_critical_before_repair) ... ok
+test_critical_reads_top_severity_level (test_core.PolicyTests.test_critical_reads_top_severity_level) ... ok
 test_hash_and_tamper (test_core.PolicyTests.test_hash_and_tamper) ... ok
+test_live_disabled_reported_before_consent (test_core.PolicyTests.test_live_disabled_reported_before_consent) ... ok
 test_mandatory (test_core.PolicyTests.test_mandatory) ... ok
 test_policy_metadata_not_in_model_request (test_core.PolicyTests.test_policy_metadata_not_in_model_request) ... ok
 test_replay_no_extra_call (test_core.PolicyTests.test_replay_no_extra_call) ... ok
@@ -132,44 +136,57 @@ test_s02_delay_keyword_over_escalates_to_operations (test_rules_arm.RulesArmTest
 test_s04_specification_words_select_quality (test_rules_arm.RulesArmTests.test_s04_specification_words_select_quality) ... ok
 test_server_implemented (test_server.ServerExists.test_server_implemented) ... ok
 test_action_preview_hold (test_server.ServerTests.test_action_preview_hold) ... ok
-test_arbitrary_state_cannot_be_sent (test_server.ServerTests.test_arbitrary_state_cannot_be_sent) ... ok
+test_arbitrary_state_cannot_be_sent (test_server.ServerTests.test_arbitrary_state_cannot_be_sent) ... {"event": "request_failed", "path": "/api/run", "status": 400, "error": "ValueError", "message": "Unexpected request fields; arbitrary state and credentials are not accepted"}
+ok
 test_config_no_key (test_server.ServerTests.test_config_no_key) ... ok
 test_cross_origin_blocked (test_server.ServerTests.test_cross_origin_blocked) ... ok
-test_fabricated_receipt_not_accepted (test_server.ServerTests.test_fabricated_receipt_not_accepted) ... ok
+test_fabricated_receipt_not_accepted (test_server.ServerTests.test_fabricated_receipt_not_accepted) ... {"event": "request_failed", "path": "/api/reconsider", "status": 400, "error": "ValueError", "message": "Receipt expired or unknown. Run the case again."}
+ok
 test_garden (test_server.ServerTests.test_garden) ... ok
+test_live_validation_failure_returns_the_retained_answer (test_server.ServerTests.test_live_validation_failure_returns_the_retained_answer) ... {"event": "request_failed", "path": "/api/run", "status": 400, "error": "LiveValidationError", "message": "Probabilities must sum to one"}
+ok
 test_no_path_traversal (test_server.ServerTests.test_no_path_traversal) ... ok
 test_replay_reconsider (test_server.ServerTests.test_replay_reconsider) ... ok
 test_synthetic_eval (test_server.ServerTests.test_synthetic_eval) ... ok
 test_token_required (test_server.ServerTests.test_token_required) ... ok
 test_action_preview_hold (test_server.ShowcaseEndpointTests.test_action_preview_hold) ... ok
-test_arbitrary_state_cannot_be_sent (test_server.ShowcaseEndpointTests.test_arbitrary_state_cannot_be_sent) ... ok
-test_burst_live_unconfigured_is_403_not_replay (test_server.ShowcaseEndpointTests.test_burst_live_unconfigured_is_403_not_replay) ... ok
+test_arbitrary_state_cannot_be_sent (test_server.ShowcaseEndpointTests.test_arbitrary_state_cannot_be_sent) ... {"event": "request_failed", "path": "/api/run", "status": 400, "error": "ValueError", "message": "Unexpected request fields; arbitrary state and credentials are not accepted"}
+ok
+test_burst_live_unconfigured_is_403_not_replay (test_server.ShowcaseEndpointTests.test_burst_live_unconfigured_is_403_not_replay) ... {"event": "request_failed", "path": "/api/burst", "status": 403, "error": "PermissionError", "message": "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."}
+ok
 test_burst_replay_stores_receipts (test_server.ShowcaseEndpointTests.test_burst_replay_stores_receipts) ... ok
 test_cases_include_teaching_notes (test_server.ShowcaseEndpointTests.test_cases_include_teaching_notes) ... ok
 test_compare_replay_arm (test_server.ShowcaseEndpointTests.test_compare_replay_arm) ... ok
 test_config_no_key (test_server.ShowcaseEndpointTests.test_config_no_key) ... ok
 test_config_reports_compare_state_without_secrets (test_server.ShowcaseEndpointTests.test_config_reports_compare_state_without_secrets) ... ok
 test_cross_origin_blocked (test_server.ShowcaseEndpointTests.test_cross_origin_blocked) ... ok
-test_fabricated_receipt_not_accepted (test_server.ShowcaseEndpointTests.test_fabricated_receipt_not_accepted) ... ok
+test_fabricated_receipt_not_accepted (test_server.ShowcaseEndpointTests.test_fabricated_receipt_not_accepted) ... {"event": "request_failed", "path": "/api/reconsider", "status": 400, "error": "ValueError", "message": "Receipt expired or unknown. Run the case again."}
+ok
 test_favicon_ico_is_served (test_server.ShowcaseEndpointTests.test_favicon_ico_is_served) ... ok
 test_favicon_served (test_server.ShowcaseEndpointTests.test_favicon_served) ... ok
 test_garden (test_server.ShowcaseEndpointTests.test_garden) ... ok
 test_live_script_is_served (test_server.ShowcaseEndpointTests.test_live_script_is_served) ... ok
 test_live_stylesheet_is_served (test_server.ShowcaseEndpointTests.test_live_stylesheet_is_served) ... ok
+test_live_validation_failure_returns_the_retained_answer (test_server.ShowcaseEndpointTests.test_live_validation_failure_returns_the_retained_answer) ... {"event": "request_failed", "path": "/api/run", "status": 400, "error": "LiveValidationError", "message": "Probabilities must sum to one"}
+ok
 test_no_path_traversal (test_server.ShowcaseEndpointTests.test_no_path_traversal) ... ok
-test_playground_bad_shape_is_400 (test_server.ShowcaseEndpointTests.test_playground_bad_shape_is_400) ... ok
-test_playground_unconfigured_is_403 (test_server.ShowcaseEndpointTests.test_playground_unconfigured_is_403) ... ok
+test_playground_bad_shape_is_400 (test_server.ShowcaseEndpointTests.test_playground_bad_shape_is_400) ... {"event": "request_failed", "path": "/api/playground", "status": 400, "error": "ValueError", "message": "Question q type must be choice, score or noul"}
+ok
+test_playground_unconfigured_is_403 (test_server.ShowcaseEndpointTests.test_playground_unconfigured_is_403) ... {"event": "request_failed", "path": "/api/playground", "status": 403, "error": "PermissionError", "message": "The playground needs a live connection: set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal. There is no replay for text you wrote yourself."}
+ok
 test_receipt_lookup_returns_the_stored_run (test_server.ShowcaseEndpointTests.test_receipt_lookup_returns_the_stored_run) ... ok
 test_replay_reconsider (test_server.ShowcaseEndpointTests.test_replay_reconsider) ... ok
 test_synthetic_eval (test_server.ShowcaseEndpointTests.test_synthetic_eval) ... ok
 test_token_required (test_server.ShowcaseEndpointTests.test_token_required) ... ok
-test_unknown_receipt_is_400 (test_server.ShowcaseEndpointTests.test_unknown_receipt_is_400) ... ok
+test_unknown_receipt_is_400 (test_server.ShowcaseEndpointTests.test_unknown_receipt_is_400) ... {"event": "request_failed", "path": "/api/receipt", "status": 400, "error": "ValueError", "message": "Receipt expired or unknown. Run the case again."}
+ok
 test_duplicate_or_unknown_case_is_rejected_before_any_call (test_showcase.BurstTests.test_duplicate_or_unknown_case_is_rejected_before_any_call) ... ok
 test_live_burst_needs_consent_and_configuration (test_showcase.BurstTests.test_live_burst_needs_consent_and_configuration) ... ok
 test_live_burst_refuses_when_the_attempt_budget_cannot_cover_it (test_showcase.BurstTests.test_live_burst_refuses_when_the_attempt_budget_cannot_cover_it) ... ok
 test_live_burst_summarises_latency_tokens_and_cost (test_showcase.BurstTests.test_live_burst_summarises_latency_tokens_and_cost) ... ok
 test_one_failure_is_retained_and_does_not_stop_the_burst (test_showcase.BurstTests.test_one_failure_is_retained_and_does_not_stop_the_burst) ... ok
 test_replay_burst_runs_every_case_with_no_latency_claim (test_showcase.BurstTests.test_replay_burst_runs_every_case_with_no_latency_claim) ... ok
+test_validation_failure_retains_the_provider_response_and_its_cost (test_showcase.BurstTests.test_validation_failure_retains_the_provider_response_and_its_cost) ... ok
 test_live_arm_requires_consent_before_any_call (test_showcase.CompareTests.test_live_arm_requires_consent_before_any_call) ... ok
 test_missing_claude_sdk_does_not_hold_native_slots (test_showcase.CompareTests.test_missing_claude_sdk_does_not_hold_native_slots) ... ok
 test_replay_compare_adds_side_by_side_rows_and_labels (test_showcase.CompareTests.test_replay_compare_adds_side_by_side_rows_and_labels) ... ok
@@ -181,6 +198,6 @@ test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... o
 test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 179 tests in 1.478s
+Ran 186 tests in 1.386s
 
 OK

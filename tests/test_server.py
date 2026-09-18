@@ -1,11 +1,13 @@
 import json
+import os
 import threading
 import unittest
+from unittest.mock import patch
 import urllib.error
 import urllib.request
 
 try:
-    from jev_lab import server
+    from jev_lab import server, provider
 except ImportError:
     server = None
 
@@ -48,6 +50,34 @@ class ServerTests(unittest.TestCase):
 
     def token(self):
         return self.get("/api/config")["session_token"]
+
+    def test_live_validation_failure_returns_the_retained_answer(self):
+        def malformed(request, prepaid=None):
+            response = json.loads(json.dumps(provider.replay("S02")))
+            response["model"] = request["model"]
+            response["usage"] = {"input_tokens": 500, "output_tokens": 40}
+            response["answers"]["owner"]["probabilities"]["operations"] = 0.5
+            return response, {
+                "kind": "live_typesafe",
+                "model_calls": 1,
+                "latency_ms": 100.0,
+                "usage": response["usage"],
+                "estimated_cost_usd": 0.000021,
+            }
+
+        env = {"JEV_ALLOW_LIVE": "1", "TYPESAFE_API_KEY": "test-key-not-real"}
+        with (
+            patch.dict(os.environ, env),
+            patch("jev_lab.provider.live", side_effect=malformed),
+            self.assertRaises(urllib.error.HTTPError) as caught,
+        ):
+            self.post("/api/run", {"case_id": "S02", "mode": "live", "consent": True}, self.token())
+        self.assertEqual(caught.exception.code, 400)
+        body = json.loads(caught.exception.read())
+        self.assertIn("sum to one", body["error"])
+        self.assertEqual(body["provider_response"]["answers"]["owner"]["probabilities"]["operations"], 0.5)
+        self.assertEqual(body["provenance"]["usage"]["input_tokens"], 500)
+        self.assertNotIn("test-key-not-real", json.dumps(body))
 
     def test_token_required(self):
         with self.assertRaises(urllib.error.HTTPError) as e:
