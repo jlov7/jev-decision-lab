@@ -26,14 +26,14 @@ Ask a domain owner which false negative would be most costly, what makes the cur
 
 ## What not to say during the demo
 
-Do not say the fixtures are real Jev results, that this is "100% accurate," that the hashes are signed proof, that an approval checkbox is a real authorization system, that a synthetic accuracy score is a production result, or that the model garden chooses the best current model. Do not claim the prelaunch timeline proves the tracker actually ingested those artifacts.
+Do not say the fixtures are real Jev results, that this is "100% accurate," that the hashes are signed proof, that an approval checkbox is a real authorization system, that a synthetic accuracy score is a production result, or that the model garden chooses the best current model. Do not claim the prelaunch timeline proves that any research tracker ingested those artifacts at the time.
 
 ## Listening / NotebookLM source pack
 
-Use the linked original sources rather than copied full transcripts: the official AI Engineer founder talk [S19], TypeSafe's primitive and confidence documentation [S05–S08], the launch's evaluation limitations [S01], the two practitioner tests [S14–S15], and the calibration antecedents [S24–S26]. Include this research report and the miss audit as clearly labeled analysis.
+Use the linked original sources rather than copied full transcripts: the official AI Engineer founder talk [S19], TypeSafe's primitive and confidence documentation [S05–S08], the launch's evaluation limitations [S01], the two practitioner tests [S14–S15], and the calibration antecedents [S24–S26]. Include this research report as clearly labelled analysis.
 
 Suggested audio prompt:
 
-> Explain Jev to an enterprise engineering team through a supplier exception and a consultancy draft. Distinguish source facts, vendor claims and our hypotheses. Make one speaker challenge the other on calibration, "no hallucinations," review cost and the exact prelaunch evidence. Explain the three output types, then the model–policy–authority boundary. End with a practical experiment and a result that would make us stop. Do not invent a proprietary architecture, live benchmark result, client deployment or tracker ingestion record.
+> Explain Jev to an enterprise engineering team through a supplier exception and a consultancy draft. Distinguish source facts, vendor claims and the lab's hypotheses. Make one speaker challenge the other on calibration, "no hallucinations," review cost and the exact prelaunch evidence. Explain the three output types, then the model–policy–authority boundary. End with a practical experiment and a result that would make us stop. Do not invent a proprietary architecture, live benchmark result, client deployment or tracker ingestion record.
 
 The source pack is a listening aid, not a substitute for the exact references or retained test evidence.

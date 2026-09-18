@@ -14,7 +14,7 @@ rows = [
 ('2026-09-10','A task-first thesis, just before launch','company','The Bitterest Lesson','https://typesafe.ai/blog/bitterest-lesson','Current company page date; not proof of historical indexing','The automation task framing was visible, but detailed Jev capabilities were not established.'),
 ('2026-09-15','Jev early-access launch','launch','Introducing System One Models & Jev','https://typesafe.ai/blog/introducing-system-one-models-and-jev','Official dated launch page','A new product and vendor mechanism claim; performance and calibration still need independent workload testing.'),
 ('2026-09-16','An additional integration route','launch','Jev available through Vercel AI Gateway','https://vercel.com/changelog/typesafe-ai-jev-now-available-on-ai-gateway','Official dated changelog','AI SDK evaluation interface and request privacy controls; not automatic enterprise approval.')]
-out = {'warning':'Retrospective source discovery, not an ingestion audit. Actual tracker first-seen times, queries and rejection records remain UNKNOWN. A displayed publication date does not prove that a crawler could retrieve the same content then.',
+out = {'warning':'Retrospective source discovery, not an ingestion audit. Whether any research tracker saw a given item at the time, and with what query, is unknown. A displayed publication date does not prove that a crawler could retrieve the same content then.',
        'signals':[dict(id=f'SIG-{i:02}',date=d,title=t,kind=k,source=s,url=u,date_basis=b,implication=m,tracker_ingestion='UNKNOWN') for i,(d,t,k,s,u,b,m) in enumerate(rows,1)]}
 root=Path(__file__).resolve().parents[1]
 (root/'data/signals.json').write_text(json.dumps(out,indent=2)+'\n')

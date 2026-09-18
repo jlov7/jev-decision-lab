@@ -3,15 +3,15 @@
 
 **Research date: September 17, 2026. Status: source-grounded research and a synthetic-first prototype, not a validated enterprise deployment.**
 
-Source IDs refer to [SOURCES.md](SOURCES.md). Product facts are distinguished from our engineering interpretation and proposed experiments. No authenticated Jev inference was performed for this report. The accompanying application contains authored teaching outputs and a native live adapter whose contract and failure behavior were tested with controlled responses.
+Source IDs refer to [SOURCES.md](SOURCES.md). Product facts are distinguished from the author's engineering interpretation and proposed experiments. No authenticated Jev inference was performed for this report. The accompanying application contains authored teaching outputs and a native live adapter whose contract and failure behavior were tested with controlled responses.
 
 ## 1. Executive conclusion
 
 The most useful question is not whether Jev replaces a frontier language model. It is whether a growing class of inexpensive, bounded semantic judgments lets us redesign workflows that currently either ask an expensive model to do everything or leave ambiguous conditions entirely to people.
 
-My recommendation is to investigate **judgment as a reusable software component**, with Jev as one candidate implementation. Start with an inspectable casework and knowledge-review laboratory, not an autonomous transaction demo. Make the demonstration show the difference between a model's opinion, the evidence available, the policy decision and the permission to act. The first version of that laboratory accompanies this report.
+The recommendation here is to investigate **judgment as a reusable software component**, with Jev as one candidate implementation. Start with an inspectable casework and knowledge-review laboratory, not an autonomous transaction demo. Make the demonstration show the difference between a model's opinion, the evidence available, the policy decision and the permission to act. The first version of that laboratory accompanies this report.
 
-There are three conclusions to carry into a leadership conversation. First, there is a credible new product interface and an economically interesting claim worth testing. Second, its value is conditional on local judgment quality, routing consequences and review cost, not a headline speed multiplier. Third, its underlying direction was visible before launch. A research tracker should not be expected to predict an undisclosed implementation, but it could reasonably have maintained a watch connecting calibration, discriminative models and workflow control.
+Three conclusions for anyone deciding whether to look further. First, there is a credible new product interface and an economically interesting claim worth testing. Second, its value is conditional on local judgment quality, routing consequences and review cost, not a headline speed multiplier. Third, its underlying direction was visible before launch. A research tracker should not be expected to predict an undisclosed implementation, but it could reasonably have maintained a watch connecting calibration, discriminative models and workflow control.
 
 ### The verified product anchor
 
@@ -137,7 +137,7 @@ The missing assumption in the first hypothesis is **decision usefulness**. A che
 
 The missing assumption in "sustains alignment" is **independence**. Two models may share errors, evidence and incentives. A separate API is not automatically an independent verifier. The hardest facts should be checked by their authoritative source or an independently specified outcome reader where possible.
 
-A stronger leadership paragraph is:
+A more defensible way to put it to a decision-maker:
 
 > We should test fast judgment as a reusable layer inside workflows. Bounded models can assess specific conditions before generation, after a draft and before an action, while code enforces authority and routes uncertainty toward better evidence, deeper reasoning or human review. The intended benefit is more accepted work with less wasted reasoning and review, not a blanket guarantee of alignment. We will measure calibration, consequential errors, coverage, latency and full cost before expanding authority.
 

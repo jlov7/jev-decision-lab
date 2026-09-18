@@ -2,10 +2,10 @@
 
 Three constraints from the source documents shape this module:
 
-  * ``docs/EVALUATION.md:25`` - keep the two tracks apart. An arm that returns only a
+  * ``docs/EVALUATION.md`` (comparison arms) - keep the two tracks apart. An arm that returns only a
     category is still comparable on the minimal decision track, but it is not comparable
     on distributions, and a verbal provider confidence is not a class probability.
-  * ``metrics.py:52`` - ``metrics.evaluate`` refuses to mix provenances in one call
+  * ``metrics.evaluate`` refuses to mix provenances in one call
     (``Never mix synthetic and live outputs in one evaluation``). Every arm is therefore
     evaluated on its own receipts, and arms meet only at this reporting layer.
   * ``docs/EVALUATION.md`` - the bar is an authentic response with recorded provenance
