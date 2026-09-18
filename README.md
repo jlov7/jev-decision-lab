@@ -1,10 +1,12 @@
 # Jev Decision Lab
 
-**See what a judgment model actually does, on your own account, in one afternoon.**
+**See what a judgment model does, on your own account, in an afternoon.**
 
-Jev Decision Lab is a small local application that puts TypeSafe's **Jev** model to work on realistic enterprise decisions and shows you everything about the exchange: the exact request, the typed answers and their probability distributions, how long each call took, what it cost, and, crucially, what your own code still had to decide afterwards. It runs on your laptop, calls nothing until you say so, and never touches company data.
+Jev is a model that does not write. You give it a situation and a handful of typed questions, and it gives back probabilities: which team, how severe, is the evidence enough, yes or no. This lab lets you watch that happen on realistic business cases, on your own TypeSafe account, and shows you every part of the exchange: the request that went out, the distributions that came back, the time it took, what it cost, and what your own code still had to decide afterwards.
 
-It exists to answer one question for engineers, strategists and leaders: *where does a cheap, fast, bounded judgment belong in a real workflow, and where does it not?*
+It runs on your laptop. It calls nothing until you paste a key and tick a box. It never sees company data unless you type it in, and it tells you not to.
+
+If you have ten minutes: clone it, run one command, click through two cases in replay mode. If you have an hour and a key: fire twelve cases at Jev, ask the same case eight times and watch how much the answers move, then take away one piece of evidence at a time and see which one the judgment was leaning on. Total spend so far across everything in this README: about a tenth of a cent.
 
 <p align="center"><img src="docs/images/hero.svg" alt="Animated overview: a situation flows into Jev, comes out as typed answers with probability distributions, passes through explicit policy and becomes a route" width="100%"></p>
 
@@ -12,6 +14,7 @@ It exists to answer one question for engineers, strategists and leaders: *where 
 
 ## Contents
 
+- [Start here](docs/START_HERE.md) (one page, for someone you hand this to)
 - [In plain English](#in-plain-english)
 - [What you get](#what-you-get)
 - [Quick start: 60 seconds, no key](#quick-start-60-seconds-no-key)
@@ -34,25 +37,25 @@ It exists to answer one question for engineers, strategists and leaders: *where 
 
 ## In plain English
 
-Most AI models write. You give them a prompt, they compose a reply, and your software then has to read that prose and work out what to do with it.
+Most AI models write. You give them a prompt, they compose a reply, and then your software has to read that prose and work out what to do with it. That reading step is where things go wrong quietly.
 
-**Jev does not write.** You send it a *state* (some text or JSON describing a situation) and a set of *typed questions*. Each question is one of three shapes:
+Jev skips the prose. You send it a *state* (text or JSON describing a situation) and a set of *typed questions*. Each question has one of three shapes:
 
 | Shape | You ask | You get back |
 |---|---|---|
-| **Choice** | "Which of these options?" | The chosen option, a probability for every option, and a confidence statistic |
-| **Score** | "Where on this ordered scale?" | A weighted position on the scale, a probability for every level, and a confidence statistic |
-| **Noul** | "Yes or no?" | The probability that the answer is yes |
+| Choice | "Which of these options?" | The chosen option, a probability for every option, and a confidence statistic |
+| Score | "Where on this ordered scale?" | A weighted position on the scale, a probability for every level, and a confidence statistic |
+| Noul | "Yes or no?" | The probability that the answer is yes |
 
-Because the answer can only be one of the values you declared, the output is always valid for your program. That is what TypeSafe means when it says the model "cannot hallucinate": the *shape* is guaranteed. Whether the *content* is right is a separate question, and this lab is built to make that separation impossible to miss.
+The answer can only be one of the values you declared, so the output is always valid for your program. That is what TypeSafe means when it says the model "cannot hallucinate": the shape is guaranteed. Whether the content is right is a different question, and most of this lab is about keeping those two questions apart.
 
-The lab wraps Jev in the three things a real system needs around any model:
+Around the model, the lab adds the three things any real system needs:
 
-1. **Explicit policy.** Code, not the model, decides the route: recommend a team, ask for more evidence, refresh stale sources, or send it to a person. Every rule that fired is shown.
-2. **Receipts.** Every run produces a content-hashed record of what was sent, what came back, which policy version applied, and what was decided.
-3. **An action boundary.** A recommendation is never a permission. Before any simulated action, current approvals and freshness are rechecked without another model call.
+1. **Policy in code.** Your rules decide the route (recommend a team, ask for more evidence, refresh stale sources, or send it to a person), and every rule that fired is shown. The model recommends. It never decides.
+2. **Receipts.** Every run produces a hashed record of what was sent, what came back, which policy version applied and what was decided. You can replay the policy on an old receipt with zero new calls.
+3. **An action boundary.** A recommendation is not a permission. Before any simulated action the lab rechecks approvals and freshness without asking the model again.
 
-Everything is driven by twelve **authored, synthetic** cases across three industries. Until you connect a key, the lab replays authored fixtures so you can learn the mechanics offline. Once you connect, the **Live lab** tab shows Jev answering for real: twelve cases fired at once, latency per case, tokens, cost, and a side-by-side against a Claude baseline.
+Twelve authored, synthetic cases across three industries drive everything. Until you connect a key, the lab replays authored fixtures so you can learn the mechanics offline, and a banner says so on every screen. Once you connect, the **Live lab** shows Jev answering for real.
 
 ### What this is not
 
@@ -377,6 +380,7 @@ jev-decision-lab/
 │   ├── rules_arm.py           keyword-rules teaching arm, hand-fit to the twelve cases
 │   ├── comparator.py          per-arm reports, two tracks, unavailable-not-zero
 │   ├── showcase.py            live burst, playground request validation, compare wrapper
+│   ├── probes.py              stability probe and evidence ablation experiments
 │   ├── strategy.py            before-action simulation, model-garden worksheet
 │   ├── metrics.py             accuracy, Wilson interval, Brier, log loss, ECE, risk/coverage
 │   ├── experiments.py         request-shape experiment (one batch vs six serial vs six parallel)
@@ -389,8 +393,8 @@ jev-decision-lab/
 │   ├── seed_cases.py          the authored cases, questions, fixtures and labels
 │   ├── seed_signals.py        the prelaunch chronology
 │   └── source_register.py     bibliography metadata
-├── tests/                     179 tests: contract, policy, server, adapters, comparator, showcase, Claude arm, CLI
-├── docs/                      research report, frontier audit, build packet, evaluation protocol, QA record, workshop
+├── tests/                     201 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
+├── docs/                      START_HERE, research report, frontier audit, build packet, evaluation protocol, QA record, workshop
 ├── evidence/                  retained test output and browser-check records
 ├── runs/                      CLI outputs (replay evaluation and compare are committed as examples)
 └── .github/workflows/ci.yml   setup → tests → offline contract check → JS syntax

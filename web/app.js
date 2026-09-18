@@ -396,6 +396,23 @@ $('asOf').onchange = signals;
 $('signalKind').onchange = signals;
 document.querySelectorAll('.nav').forEach((b) => (b.onclick = () => tab(b.dataset.tab)));
 $('connect').onclick = () => $('setup').showModal();
+(function startHere() {
+  let seen = false;
+  try {
+    seen = localStorage.getItem('jev-lab-start-here') === 'dismissed';
+  } catch (e) {
+    seen = false;
+  }
+  $('startHere').hidden = seen;
+  $('dismissStart').onclick = () => {
+    $('startHere').hidden = true;
+    try {
+      localStorage.setItem('jev-lab-start-here', 'dismissed');
+    } catch (e) {
+      /* private mode: the panel simply returns next visit */
+    }
+  };
+})();
 $('closeSetup').onclick = () => $('setup').close();
 $('export').onclick = () => {
   if (!state.receipt) return;

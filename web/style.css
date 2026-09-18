@@ -1425,3 +1425,25 @@ td .cell-sub {
   border-color: var(--accent);
   color: var(--accent);
 }
+
+/* first-visit panel */
+.start-here {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: #eef8f5;
+  font-size: 13px;
+}
+.start-here span {
+  color: var(--muted);
+}
+.start-here em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+}

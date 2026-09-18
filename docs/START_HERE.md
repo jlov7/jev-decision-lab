@@ -1,32 +1,47 @@
 # Start here
 
-**The root [README](../README.md) is now the complete guide**: plain-English explanation, quick start, connecting an account, user journeys, architecture, API and CLI references, configuration, safety boundaries, testing and troubleshooting. This page remains as a short index into the longer documents.
+Someone sent you this repository. Here is what it is and what to do in the first ten minutes.
 
-## Read, run, then test the proposition
+## What it is
 
-The package has two distinct deliverables: a source-grounded research/audit report, and an implemented local learning laboratory. The latter uses authored fixtures by default. It is not a live Jev benchmark or a production control system.
+A small app that runs on your own computer and shows you what TypeSafe's Jev model does with a business situation. Jev does not write text back. It answers typed questions with probabilities: which team should look at this, how severe is it, is the evidence enough, yes or no. The app puts those answers next to the rules your organisation would apply, so you can see what the model contributes and what your own code still has to decide.
 
-Start with [RESEARCH_REPORT.md](RESEARCH_REPORT.md) for the product explanation, technical limits, boss-hypothesis validation, model-garden framing, practitioner evidence, sector applications and incubation recommendation. Read [FRONTIER_MISS_AUDIT.md](FRONTIER_MISS_AUDIT.md) for the dated antecedents and the boundary between a visible direction and an unproven pipeline failure.
+It uses twelve made-up cases from three industries. Nothing in it is real company data, and it asks you to keep it that way.
 
-Run the lab using the root README. Then use [WORKSHOP.md](WORKSHOP.md) for a five-minute demonstration or an engineer session. The deliberately confident wrong case is important: do not remove it to make the presentation look better.
+## Ten minutes, no key
 
-[BUILD_PACKET.md](BUILD_PACKET.md) defines the existing architecture, exact interfaces, user journeys, failure modes and continuation phases. [EVALUATION.md](EVALUATION.md) specifies what must be measured before a claim. [ACCESS_AND_TROUBLESHOOTING.md](ACCESS_AND_TROUBLESHOOTING.md) takes an account to a first native call and distinguishes the Vercel route. [CODEX_HANDOFF.md](CODEX_HANDOFF.md) is the paste-ready continuation prompt. [QA.md](QA.md) states the tests and remaining verification. [SOURCES.md](SOURCES.md) links original evidence and explains inspection limits.
-
-## Immediate sequence
+You need Python 3.10 or newer and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-uv run python3 scripts/setup_lab.py
-uv run python3 -m unittest discover -s tests -v
-uv run python3 -m jev_lab check
-uv run python3 -m jev_lab
+git clone https://github.com/jlov7/jev-decision-lab.git
+cd jev-decision-lab
+uv run jev-lab
 ```
 
-Open `http://127.0.0.1:8765`. Try S02, expired evidence, removed approval, then S04. No provider key is needed.
+Open http://127.0.0.1:8765. You are in replay mode: the numbers are authored teaching fixtures, and a banner at the top says so.
 
-## What exists
+1. On the Workbench, case S02 is already selected: "The word delay is not a delay". Click **Run six judgments**. Open *Investigating team* to see the probabilities.
+2. Change *Source metadata simulation* to **Evidence has expired** and click **Replay policy**. The route changes with zero new model calls. Code applied a new constraint to an old judgment.
+3. Pick S04, "Confident, but the wrong team", and run it. The authored fixture is 98% sure of the wrong answer. That is deliberate. Confidence is not correctness, and the app is built to keep reminding you.
 
-Three scenario packs, twelve teaching cases, six typed questions, a native HTTP adapter, strict response validation, policy replay, content-hashed receipts, a before-action simulation, a Live lab (concurrent burst with latency and cost, a free-form playground, and a per-arm comparison against a constrained-output Claude baseline), a model-garden worksheet, a dated source chronology, evaluation metrics, a request-shape experiment CLI and tests.
+## An hour, with a key
 
-## What does not yet exist
+1. Get an API key from [console.typesafe.ai](https://console.typesafe.ai) under Settings → API keys.
+2. Click **Connect Jev** at the top right of the app, paste the key, click **Connect**. It stays in the app's own server process on your machine and nowhere else. Click **Forget this key** when you are done, or just stop the server.
+3. Open **Live lab**, tick the consent box, click **Fire 12 cases**. About a second later you have twelve real answers, their latency and their cost. Expect a fraction of a cent.
+4. Scroll to **Experiments**. Probe one case eight times and watch how far the probabilities move. Then remove the evidence one excerpt at a time and see which excerpt the judgment was leaning on.
 
-A recorded authenticated Jev run (the lab is built for it; the account owner runs it), a representative domain calibration result, an actual ingestion-log audit, enterprise approval, a real effect/authority service or a production deployment. These are explicit next stages, not hidden claims.
+Each server process caps live attempts at 20 by default. A burst uses 12. If you want a longer session, start the server with a higher cap:
+
+```bash
+JEV_MAX_LIVE_CALLS=100 uv run jev-lab
+```
+
+## What to keep in mind
+
+- Twelve cases are a smoke test, not a benchmark. The app says this everywhere numbers appear.
+- The model recommends; the code decides; a person approves. The app never performs a real action.
+- Never paste real work data into the playground. The cases are synthetic on purpose.
+- If a key ever appears in a log, a screenshot or a message, rotate it.
+
+The full guide is the [README](../README.md). The workshop script for running this with a group is [WORKSHOP.md](WORKSHOP.md).
