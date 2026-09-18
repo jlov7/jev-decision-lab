@@ -100,6 +100,15 @@ Still not executed: any authenticated Jev or Claude call.
 | Standalone render | The exported file opened from disk with no console errors and no failed requests; screenshot at `docs/images/session-report.png`; example committed as `docs/example-session-report.html` |
 | Not yet executed | Clicking the button in the desktop browser pane, which triggers a file download the pane does not expose. The live server process predates `report.js` in its static allow-list and needs a restart to serve it |
 
+## Generative baselines (0.5) — one live run through the Claude subscription
+
+| Check | Result |
+|---|---|
+| Claude subscription arm | `claude -p` with `--json-schema`, tools disallowed, no session persistence. First attempt with `--bare` failed as "Not logged in" because minimal mode skips sign-in; removed. Then S02 → routine/operations, S04 → quality/quality, about 28 s per call, billed to the subscription, structured output parsed from the envelope. Report saved as `evidence/compare-claude-code-2026-09-18.json` |
+| OpenAI and Anthropic API arms | Unit-tested against fake transports (strict schema, refusal, truncation, redaction, dated prices); not called live on this account |
+| Budget | All three generative arms share `JEV_MAX_COMPARE_CALLS`; prepare_arms refuses before sending when the pool cannot cover every arm |
+| Suite | 218 tests |
+
 ## Browser limitation—do not hide this
 
 The Browser plugin was not available. System Chromium was available through Playwright, but direct navigation to the local server returned `ERR_BLOCKED_BY_ADMINISTRATOR`. No administrator policy was disabled. The browser test therefore rendered the local HTML/CSS/JavaScript and used a test-only fetch bridge to the **actual loopback HTTP server**.

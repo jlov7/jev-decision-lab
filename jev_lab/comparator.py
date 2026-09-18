@@ -145,6 +145,7 @@ def _case_row(case: dict, result: dict) -> dict:
         "latency_ms": provenance.get("latency_ms"),
         "usage": provenance.get("usage"),
         "estimated_cost_usd": provenance.get("estimated_cost_usd"),
+        "billing": provenance.get("billing"),
     }
 
 

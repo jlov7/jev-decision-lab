@@ -371,7 +371,7 @@ function syncThreshold(from) {
 function consentHint() {
   $('consent').closest('label').classList.toggle('needed', $('mode').value === 'live');
   const liveWork =
-    $('burstMode').value === 'live' || $('armNative').checked || $('armClaude').checked;
+    $('burstMode').value === 'live' || $('armNative').checked || $('armClaude').checked || $('armClaudeCode').checked || $('armOpenAI').checked;
   $('liveConsent').closest('label').classList.toggle('needed', liveWork);
 }
 function downloadJSON(name, data) {

@@ -1,0 +1,508 @@
+{
+  "schema_version": "comparator-v1.0",
+  "ranked": false,
+  "cases": [
+    "S02",
+    "S04"
+  ],
+  "warnings": [
+    "Arms are reported side by side and are never pooled into one evaluation. This report does not rank arms and does not claim accuracy.",
+    "Live arms were not verified against a live provider route in this run: no authenticated call was made, so nothing here is evidence of live Jev behaviour.",
+    "A distribution a provider did not return is reported as unavailable, never as zero.",
+    "Synthetic replay probabilities are authored teaching fixtures. They measure no model capability and are not a benchmark.",
+    "S04 is a planted teaching error: the authored owner is confidently wrong. It is labelled here so it is not counted as a measured model failure.",
+    "The keyword-rules arm is hand-fit to these twelve authored cases. It shows what a delay-word rule does; its agreement count is not a baseline accuracy."
+  ],
+  "arms": [
+    {
+      "name": "claude-code",
+      "kind": "live_claude_code",
+      "live": true,
+      "pinned_version": "claude CLI",
+      "live_verified": false,
+      "attempts": 2,
+      "succeeded": 2,
+      "failed": 0,
+      "failures": [],
+      "cases": [
+        {
+          "case_id": "S02",
+          "pack": "supply",
+          "model": "claude-haiku-4-5",
+          "answers": {
+            "issue": "routine",
+            "owner": "operations",
+            "severity": 0,
+            "sufficient": 1.0,
+            "contradiction": 0.0,
+            "next_evidence": "none"
+          },
+          "latency_ms": 28070.61,
+          "usage": {
+            "input_tokens": 20,
+            "output_tokens": 2109,
+            "cache_read_input_tokens": 27849,
+            "cache_creation_input_tokens": 29755
+          },
+          "estimated_cost_usd": null,
+          "billing": "subscription"
+        },
+        {
+          "case_id": "S04",
+          "pack": "supply",
+          "model": "claude-haiku-4-5",
+          "answers": {
+            "issue": "quality",
+            "owner": "quality",
+            "severity": 2,
+            "sufficient": 1.0,
+            "contradiction": 0.0,
+            "next_evidence": "quality_record"
+          },
+          "latency_ms": 28870.45,
+          "usage": {
+            "input_tokens": 10,
+            "output_tokens": 2115,
+            "cache_read_input_tokens": 18536,
+            "cache_creation_input_tokens": 9310
+          },
+          "estimated_cost_usd": null,
+          "billing": "subscription"
+        }
+      ],
+      "tracks": {
+        "minimal_decision": {
+          "answered": 2
+        },
+        "comparable_distribution": {
+          "available": false,
+          "metrics": null,
+          "metric_scope": [
+            "owner"
+          ],
+          "reason": "No distribution for question 'owner' in 1 of 1 scorable case(s), so every metric on this track is unavailable rather than zero. None was fabricated. S02: Generative model returned a category only (minimal decision track). It provides no class distribution, so none was fabricated and this track is unavailable.",
+          "pooled_with_other_arms": false
+        }
+      }
+    },
+    {
+      "name": "replay",
+      "kind": "synthetic_replay",
+      "live": false,
+      "pinned_version": "synthetic-fixture-v1",
+      "live_verified": false,
+      "attempts": 2,
+      "succeeded": 2,
+      "failed": 0,
+      "failures": [],
+      "cases": [
+        {
+          "case_id": "S02",
+          "pack": "supply",
+          "model": "synthetic-fixture-v1",
+          "answers": {
+            "issue": "routine",
+            "owner": "operations",
+            "severity": 0.05,
+            "sufficient": 0.97,
+            "contradiction": 0.01,
+            "next_evidence": "none"
+          },
+          "latency_ms": null,
+          "usage": null,
+          "estimated_cost_usd": null,
+          "billing": null
+        },
+        {
+          "case_id": "S04",
+          "pack": "supply",
+          "model": "synthetic-fixture-v1",
+          "answers": {
+            "issue": "quality",
+            "owner": "operations",
+            "severity": 1.85,
+            "sufficient": 0.95,
+            "contradiction": 0.02,
+            "next_evidence": "quality_record"
+          },
+          "latency_ms": null,
+          "usage": null,
+          "estimated_cost_usd": null,
+          "billing": null
+        }
+      ],
+      "tracks": {
+        "minimal_decision": {
+          "answered": 2
+        },
+        "comparable_distribution": {
+          "available": true,
+          "metrics": {
+            "n": 1,
+            "accuracy": 1.0,
+            "accuracy_wilson_95": [
+              0.20654931437723745,
+              1
+            ],
+            "brier": 0.0021333066670000027,
+            "log_loss": 0.040821994520255166,
+            "ece_10": 0.040000000000000036,
+            "calibration_bins": [
+              {
+                "lower": 0.0,
+                "upper": 0.1,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.9,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.9,
+                "upper": 1.0,
+                "n": 1,
+                "accuracy": 1.0,
+                "mean_top_probability": 0.96
+              }
+            ],
+            "risk_coverage": [
+              {
+                "threshold": 0,
+                "accepted": 1,
+                "coverage": 1.0,
+                "error_rate": 0.0
+              },
+              {
+                "threshold": 0.5,
+                "accepted": 1,
+                "coverage": 1.0,
+                "error_rate": 0.0
+              },
+              {
+                "threshold": 0.7,
+                "accepted": 1,
+                "coverage": 1.0,
+                "error_rate": 0.0
+              },
+              {
+                "threshold": 0.8,
+                "accepted": 1,
+                "coverage": 1.0,
+                "error_rate": 0.0
+              },
+              {
+                "threshold": 0.85,
+                "accepted": 1,
+                "coverage": 1.0,
+                "error_rate": 0.0
+              },
+              {
+                "threshold": 0.9,
+                "accepted": 1,
+                "coverage": 1.0,
+                "error_rate": 0.0
+              },
+              {
+                "threshold": 0.95,
+                "accepted": 1,
+                "coverage": 1.0,
+                "error_rate": 0.0
+              },
+              {
+                "threshold": 0.99,
+                "accepted": 0,
+                "coverage": 0.0,
+                "error_rate": null
+              },
+              {
+                "threshold": 1.0,
+                "accepted": 0,
+                "coverage": 0.0,
+                "error_rate": null
+              }
+            ],
+            "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates.",
+            "by_pack": {
+              "supply": {
+                "n": 1,
+                "accuracy": 1.0,
+                "accuracy_wilson_95": [
+                  0.20654931437723745,
+                  1
+                ],
+                "brier": 0.0021333066670000027,
+                "log_loss": 0.040821994520255166,
+                "ece_10": 0.040000000000000036,
+                "calibration_bins": [
+                  {
+                    "lower": 0.0,
+                    "upper": 0.1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.3,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.3,
+                    "upper": 0.4,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.6,
+                    "upper": 0.7,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.7,
+                    "upper": 0.8,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1.0,
+                    "n": 1,
+                    "accuracy": 1.0,
+                    "mean_top_probability": 0.96
+                  }
+                ],
+                "risk_coverage": [
+                  {
+                    "threshold": 0,
+                    "accepted": 1,
+                    "coverage": 1.0,
+                    "error_rate": 0.0
+                  },
+                  {
+                    "threshold": 0.5,
+                    "accepted": 1,
+                    "coverage": 1.0,
+                    "error_rate": 0.0
+                  },
+                  {
+                    "threshold": 0.7,
+                    "accepted": 1,
+                    "coverage": 1.0,
+                    "error_rate": 0.0
+                  },
+                  {
+                    "threshold": 0.8,
+                    "accepted": 1,
+                    "coverage": 1.0,
+                    "error_rate": 0.0
+                  },
+                  {
+                    "threshold": 0.85,
+                    "accepted": 1,
+                    "coverage": 1.0,
+                    "error_rate": 0.0
+                  },
+                  {
+                    "threshold": 0.9,
+                    "accepted": 1,
+                    "coverage": 1.0,
+                    "error_rate": 0.0
+                  },
+                  {
+                    "threshold": 0.95,
+                    "accepted": 1,
+                    "coverage": 1.0,
+                    "error_rate": 0.0
+                  },
+                  {
+                    "threshold": 0.99,
+                    "accepted": 0,
+                    "coverage": 0.0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 1.0,
+                    "accepted": 0,
+                    "coverage": 0.0,
+                    "error_rate": null
+                  }
+                ],
+                "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates."
+              }
+            },
+            "metrics_warning": "Authored examples are not a representative benchmark. Replay measures no Jev capability. Live results on twelve teaching cases are still only a smoke test."
+          },
+          "metric_scope": [
+            "owner"
+          ],
+          "reason": null,
+          "pooled_with_other_arms": false
+        }
+      }
+    },
+    {
+      "name": "rules",
+      "kind": "deterministic_rules",
+      "live": false,
+      "pinned_version": "keyword-rules-v1",
+      "live_verified": false,
+      "attempts": 2,
+      "succeeded": 2,
+      "failed": 0,
+      "failures": [],
+      "cases": [
+        {
+          "case_id": "S02",
+          "pack": "supply",
+          "model": "keyword-rules-v1",
+          "answers": {
+            "issue": "delivery",
+            "owner": "operations",
+            "severity": 2,
+            "sufficient": 0.0,
+            "contradiction": 0.0,
+            "next_evidence": "tracking"
+          },
+          "latency_ms": null,
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "estimated_cost_usd": null,
+          "billing": null
+        },
+        {
+          "case_id": "S04",
+          "pack": "supply",
+          "model": "keyword-rules-v1",
+          "answers": {
+            "issue": "quality",
+            "owner": "quality",
+            "severity": 2,
+            "sufficient": 1.0,
+            "contradiction": 0.0,
+            "next_evidence": "quality_record"
+          },
+          "latency_ms": null,
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "estimated_cost_usd": null,
+          "billing": null
+        }
+      ],
+      "tracks": {
+        "minimal_decision": {
+          "answered": 2
+        },
+        "comparable_distribution": {
+          "available": false,
+          "metrics": null,
+          "metric_scope": [
+            "owner"
+          ],
+          "reason": "No distribution for question 'owner' in 1 of 1 scorable case(s), so every metric on this track is unavailable rather than zero. None was fabricated. S02: Keyword rules return a category only. They provide no class distribution, so none was fabricated and this track is unavailable.",
+          "pooled_with_other_arms": false
+        }
+      }
+    }
+  ],
+  "expected_owner": {
+    "S02": "operations",
+    "S04": "quality"
+  },
+  "planted_error": {
+    "S02": false,
+    "S04": true
+  },
+  "created_at": "2026-09-18T17:11:06.880846+00:00"
+}

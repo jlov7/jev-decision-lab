@@ -11,19 +11,21 @@ function liveStatus() {
     c.live_enabled ? `Live · ${c.model}` : 'Offline · no key in this server process',
     c.live_enabled,
   );
-  const claudeOn = c.compare_enabled && c.compare_sdk_available;
+  const b = c.baselines || {};
+  const on = Object.entries(b).filter(([, v]) => v.enabled);
+  const claudeOn = on.length > 0;
   setStatus(
     'claudeStatus',
     claudeOn
-      ? `Live · ${c.compare_model}`
-      : c.compare_enabled
-        ? 'Key present · run uv sync --extra compare'
-        : 'Offline · ANTHROPIC_API_KEY not set',
+      ? on.map(([k, v]) => `${BASELINE_SHORT[k] || k} · ${v.model}`).join(' · ')
+      : 'None configured · see How to connect',
     claudeOn,
   );
   $('attemptStatus').textContent =
-    `${c.live_attempts} of ${c.live_attempt_limit} Jev · ${c.compare_attempts} of ${c.compare_attempt_limit} Claude`;
-  $('armClaudeModel').textContent = c.compare_model;
+    `${c.live_attempts} of ${c.live_attempt_limit} Jev · ${c.compare_attempts} of ${c.compare_attempt_limit} generative`;
+  $('armClaudeModel').textContent = (b.claude || {}).model || c.compare_model;
+  $('armClaudeCodeModel').textContent = (b['claude-code'] || {}).model || '';
+  $('armOpenAIModel').textContent = (b.openai || {}).model || '';
   if (c.lab_version) document.querySelector('.brand > span').textContent = c.lab_version;
   connectionUi(c);
   if (state.cases.length) expCases();
@@ -34,7 +36,9 @@ function liveStatus() {
   if (!state.liveInitialised) {
     $('burstMode').value = c.live_enabled ? 'live' : 'replay';
     $('armNative').checked = c.live_enabled;
-    $('armClaude').checked = claudeOn;
+    $('armClaude').checked = Boolean((b.claude || {}).enabled);
+    $('armClaudeCode').checked = Boolean((b['claude-code'] || {}).enabled);
+    $('armOpenAI').checked = Boolean((b.openai || {}).enabled);
     $('armReplay').checked = !c.live_enabled;
     $('armRules').checked = !c.live_enabled;
     state.liveInitialised = true;
@@ -513,7 +517,9 @@ async function compareRun() {
   error('');
   const arms = [
     $('armNative').checked && 'native',
+    $('armClaudeCode').checked && 'claude-code',
     $('armClaude').checked && 'claude',
+    $('armOpenAI').checked && 'openai',
     $('armReplay').checked && 'replay',
     $('armRules').checked && 'rules',
   ].filter(Boolean);
@@ -525,12 +531,18 @@ async function compareRun() {
     return error(
       `Compare needs ${state.cases.length} Jev attempt slots and ${remaining} remain in this server process. Nothing was sent. Restart the server, or start it with a higher JEV_MAX_LIVE_CALLS.`,
     );
-  if (
-    arms.includes('claude') &&
-    !(state.config.compare_enabled && state.config.compare_sdk_available)
-  )
+  const baselines = state.config.baselines || {};
+  for (const name of ['claude-code', 'claude', 'openai']) {
+    if (arms.includes(name) && !(baselines[name] && baselines[name].enabled))
+      return error(
+        `${ARM_LABEL[name]} is not configured: it needs ${(baselines[name] || {}).needs || 'setup'}. Open How to connect, or untick that arm.`,
+      );
+  }
+  const generative = arms.filter((n) => ['claude-code', 'claude', 'openai'].includes(n)).length;
+  const left = state.config.compare_attempt_limit - state.config.compare_attempts;
+  if (generative && left < generative * state.cases.length)
     return error(
-      'The Claude baseline is not configured. Open How to connect, or untick the Claude arm.',
+      `Compare needs ${generative * state.cases.length} generative attempt slots and ${left} remain in this server process. Nothing was sent. Restart with a higher JEV_MAX_COMPARE_CALLS.`,
     );
   busy(true);
   try {
@@ -544,9 +556,12 @@ async function compareRun() {
     busy(false);
   }
 }
+const BASELINE_SHORT = { claude: 'Claude API', 'claude-code': 'Claude subscription', openai: 'OpenAI' };
 const ARM_LABEL = {
   native: 'Jev · native API',
-  claude: 'Claude · structured output',
+  claude: 'Claude · API key',
+  'claude-code': 'Claude · your subscription',
+  openai: 'OpenAI · API key',
   replay: 'Synthetic replay',
   gateway: 'Vercel AI Gateway',
   rules: 'Keyword rules · delay trap',
@@ -571,7 +586,7 @@ function renderCompare(r) {
         : '–';
       const medianLatency = median(rows.map((x) => x.latency_ms));
       const free = arm.kind === 'synthetic_replay' || arm.kind === 'deterministic_rules';
-      return `<div class="arm-card ${arm.failed ? 'failing' : ''}"><h3>${esc(ARM_LABEL[arm.name] || arm.name)}<small>${esc(model)}</small></h3>${metric('Answered', `${arm.succeeded} / ${arm.attempts}`)}${metric('Owner agrees with label', agreeText)}${metric('Median latency', medianLatency !== null ? fmtMs(medianLatency) : '–')}${metric('Total cost', free ? 'No call' : known.length ? `${fmtCost(known.reduce((a, b) => a + b, 0))}${known.length < rows.length ? ' +?' : ''}` : rows.length ? 'Unknown' : '–')}${fails}${arm.failed > 2 ? `<p class="compare-fail">…and ${arm.failed - 2} more failures retained in the report.</p>` : ''}</div>`;
+      return `<div class="arm-card ${arm.failed ? 'failing' : ''}"><h3>${esc(ARM_LABEL[arm.name] || arm.name)}<small>${esc(model)}</small></h3>${metric('Answered', `${arm.succeeded} / ${arm.attempts}`)}${metric('Owner agrees with label', agreeText)}${metric('Median latency', medianLatency !== null ? fmtMs(medianLatency) : '–')}${metric('Total cost', free ? 'No call' : known.length ? `${fmtCost(known.reduce((a, b) => a + b, 0))}${known.length < rows.length ? ' +?' : ''}` : rows.length ? (rows.every((r) => r.billing === 'subscription') ? 'Subscription' : 'Unknown') : '–')}${fails}${arm.failed > 2 ? `<p class="compare-fail">…and ${arm.failed - 2} more failures retained in the report.</p>` : ''}</div>`;
     })
     .join('');
   const head = r.arms.map((a) => `<th>${esc(ARM_LABEL[a.name] || a.name)}</th>`).join('');
@@ -587,10 +602,10 @@ function renderCompare(r) {
           }
           const issue = row.answers.issue ? `${esc(row.answers.issue)} · ` : '';
           if (planted[id]) {
-            return `<td class="planted">${esc(row.answers.owner)}<span class="planted-tag">planted teaching error</span><span class="cell-sub">${issue}${row.latency_ms === null ? 'no call' : fmtMs(row.latency_ms)} · ${row.estimated_cost_usd === null ? 'cost n/a' : fmtCost(row.estimated_cost_usd)}</span></td>`;
+            return `<td class="planted">${esc(row.answers.owner)}<span class="planted-tag">planted teaching error</span><span class="cell-sub">${issue}${row.latency_ms === null ? 'no call' : fmtMs(row.latency_ms)} · ${row.estimated_cost_usd === null ? (row.billing === 'subscription' ? 'subscription' : 'cost n/a') : fmtCost(row.estimated_cost_usd)}</span></td>`;
           }
           const ok = row.answers.owner === expected[id];
-          return `<td class="${ok ? 'agree' : 'disagree'}">${esc(row.answers.owner)}<span class="cell-sub">${issue}${row.latency_ms === null ? 'no call' : fmtMs(row.latency_ms)} · ${row.estimated_cost_usd === null ? 'cost n/a' : fmtCost(row.estimated_cost_usd)}</span></td>`;
+          return `<td class="${ok ? 'agree' : 'disagree'}">${esc(row.answers.owner)}<span class="cell-sub">${issue}${row.latency_ms === null ? 'no call' : fmtMs(row.latency_ms)} · ${row.estimated_cost_usd === null ? (row.billing === 'subscription' ? 'subscription' : 'cost n/a') : fmtCost(row.estimated_cost_usd)}</span></td>`;
         })
         .join('');
       const plantedCell = planted[id]
@@ -608,6 +623,8 @@ $('burstThreshold').oninput = () => syncThreshold('burstThreshold');
 $('burstMode').onchange = consentHint;
 $('armNative').onchange = consentHint;
 $('armClaude').onchange = consentHint;
+$('armClaudeCode').onchange = consentHint;
+$('armOpenAI').onchange = consentHint;
 $('liveConsent').onchange = consentHint;
 $('connectLive').onclick = () => $('setup').showModal();
 $('connectForm').onsubmit = connectSubmit;

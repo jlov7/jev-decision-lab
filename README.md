@@ -92,7 +92,7 @@ cd jev-decision-lab
 uv run jev-lab
 ```
 
-That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (203 tests, about two seconds).
+That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (218 tests, about two seconds).
 
 Open **http://127.0.0.1:8765**. You are in synthetic replay: the banner at the top says so, and stays visible on every screen.
 
@@ -140,18 +140,30 @@ Then try the **Playground**: pick *Start from Supplier disruption* to load a rea
 
 Each server process caps live attempts (default 20, set `JEV_MAX_LIVE_CALLS` to change it). A full burst or a full compare uses 12 each, so a longer session wants a higher cap. The Live lab shows attempts used and refuses a compare it cannot cover before sending anything.
 
-### Optional: the Claude comparison arm
+### Optional: a generative model to compare against
 
-The **Compare** section runs the same twelve cases through a constrained-output generative baseline (Claude Haiku 4.5 by default) so you can see Jev's answers, latency and cost next to a familiar alternative. It needs the official Anthropic SDK and an API key from console.anthropic.com, which is billed separately from a Claude subscription. Export it in the same terminal:
+The **Compare** section can put a general-purpose model beside Jev, asked for exactly the same categories, levels and yes/no answers through a strict JSON schema. It returns categories only, so it is compared on the *decision* track; it has no probability distribution and none is invented. Three ways to supply one. The lab uses whichever you have set up and says which.
+
+**Your Claude subscription, no key.** If Claude Code is installed and signed in on the machine running the lab, tick *Claude · your subscription* and the lab runs its `claude` command once per case, with tools switched off and nothing saved between calls. The calls count against your subscription and have no per-call price; the CLI's own list-price equivalent is recorded for reference. Expect twenty to thirty seconds per call, most of it the command starting up, against Jev's third of a second. Switch it off with `JEV_ALLOW_CLAUDE_CODE=0`; pick the model with `JEV_CLAUDE_CODE_MODEL`.
+
+**An Anthropic API key.** Billed per call from console.anthropic.com, separately from a subscription. Cleanest provenance and pinned model versions. Needs the official SDK:
 
 ```bash
 uv sync --extra compare
-read -s ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
+read -s ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY JEV_ALLOW_LIVE=1
 export JEV_COMPARE_MODEL=claude-haiku-4-5       # or claude-sonnet-5, claude-opus-5
 uv run jev-lab
 ```
 
-The baseline is asked for exactly the categories, levels and booleans each question declares, through the API's structured-output format. It returns categories only, so it is compared on the *decision* track; it has no probability distribution to compare, and none is invented.
+**An OpenAI API key.** Chat completions with a strict JSON schema, standard library only:
+
+```bash
+read -s OPENAI_API_KEY && export OPENAI_API_KEY JEV_ALLOW_LIVE=1
+export JEV_OPENAI_MODEL=gpt-5-mini              # priced from the 7 August 2025 list; verify
+uv run jev-lab
+```
+
+All generative arms share one per-process attempt cap, `JEV_MAX_COMPARE_CALLS` (default 40). A full compare on twelve cases uses twelve per arm.
 
 ![Compare: an arm card with answered, agreement, latency and cost, then a table of cases against the teaching label](docs/images/compare.png)
 
@@ -355,8 +367,10 @@ In replay mode both experiments show the layout with authored fixtures, and say 
 |---|---|---|---|
 | `replay` | synthetic | Authored fixtures keyed by case id | Yes (authored) |
 | `native` | live | TypeSafe HTTPS transport | Yes (provider) |
-| `claude` | live | Anthropic SDK, structured output, categories only | **No, reported as unavailable** |
+| `claude` | live | Anthropic API key, official SDK, strict JSON schema, categories only | **No, reported as unavailable** |
 | `gateway` | documented only | Vercel AI Gateway mapping; the route is TypeScript-only, so this arm refuses without an injected transport | No (the SDK returns none for Choice/Score) |
+| `claude-code` | live | Your Claude subscription through the local `claude` command, same strict JSON schema, categories only. Subscription-billed, no per-call price | **No, reported as unavailable** |
+| `openai` | live | OpenAI API key, chat completions with a strict JSON schema, categories only. Dated list price | **No, reported as unavailable** |
 | `rules` | deterministic | Keyword rules hand-fit to the twelve cases, so the delay-word trap (S02) is visible beside the model. A teaching device, not a tuned baseline | No |
 
 Live arms draw from a **prepaid hold**: a burst or compare reserves all its attempt slots atomically before the first request, so it can never send a partial batch and never double-counts against the process cap.
@@ -409,7 +423,7 @@ jev-decision-lab/
 │   ├── seed_cases.py          the authored cases, questions, fixtures and labels
 │   ├── seed_signals.py        the prelaunch chronology
 │   └── source_register.py     bibliography metadata
-├── tests/                     203 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
+├── tests/                     218 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
 ├── docs/                      START_HERE, research report, frontier audit, build packet, evaluation protocol, QA record, workshop
 ├── evidence/                  retained test output and browser-check records
 ├── runs/                      CLI outputs (replay evaluation and compare are committed as examples)
@@ -474,9 +488,14 @@ Everything is configured through the server process environment. Nothing is read
 | `JEV_ALLOW_LIVE` | unset | Must be `1` to permit any live call, for either provider. |
 | `JEV_MODEL` | `jev-1.13.0` | Pinned model id sent in every request. A live response naming a different model is rejected unless you pin an alias (`jev-latest`, `jev-preview`). |
 | `JEV_MAX_LIVE_CALLS` | `20` | Per-process cap on TypeSafe attempts (1 to 100). A burst or compare uses 12. |
-| `ANTHROPIC_API_KEY` | unset | Key for the optional Claude comparison arm. |
+| `ANTHROPIC_API_KEY` | unset | Key for the Claude API comparison arm. |
+| `OPENAI_API_KEY` | unset | Key for the OpenAI comparison arm. |
+| `JEV_OPENAI_MODEL` | `gpt-5-mini` | Model for the OpenAI arm. Priced from a dated list. |
+| `JEV_ALLOW_CLAUDE_CODE` | `1` | Set to `0` to stop the lab offering your local `claude` command as a baseline. |
+| `JEV_CLAUDE_CODE_MODEL` | `claude-haiku-4-5` | Model the `claude` command is asked for. |
+| `JEV_CLAUDE_CLI` | unset | Explicit path to the `claude` command if it is not on PATH. |
 | `JEV_COMPARE_MODEL` | `claude-haiku-4-5` | Model for the comparison arm. Priced for `claude-haiku-4-5`, `claude-sonnet-5`, `claude-opus-5`; others report cost as unknown. |
-| `JEV_MAX_COMPARE_CALLS` | `40` | Per-process cap on Claude attempts. |
+| `JEV_MAX_COMPARE_CALLS` | `40` | Per-process cap on generative-baseline attempts, shared by all three arms. |
 
 Attempts are reserved before sending and never refunded on a timeout, because the request may already have been processed. The caps are lab guardrails against accidental spend, not vendor limits.
 
@@ -498,7 +517,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 203 tests
+uv run python3 -m unittest discover -s tests -v    # 218 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint
@@ -542,7 +561,9 @@ Five things the real responses taught:
 
 ![Live compare: Jev beside the replay fixture and the keyword-rules arm on four cases](docs/images/compare.png)
 
-**What remains unverified:** the Claude comparison arm has not been called on this account, and twelve cases remain a smoke test.
+**Later the same day** the Claude-subscription arm ran on S02 and S04 through the local `claude` command: routine/operations and quality/quality, matching Jev's top choices, at about 28 seconds per call against Jev's third of a second ([evidence/compare-claude-code-2026-09-18.json](evidence/compare-claude-code-2026-09-18.json)). A generative model gives you the category; Jev gives you the category and how sure it is, a hundred times faster.
+
+**What remains unverified:** the Anthropic and OpenAI API-key arms have not been called on this account, and twelve cases remain a smoke test.
 
 ---
 

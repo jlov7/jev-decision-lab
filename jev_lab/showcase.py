@@ -301,17 +301,17 @@ def prepare_arms(arm_names: list[str], n_cases: int, consent: bool = False) -> l
     if any(name in adapters.LIVE_ARMS for name in arm_names) and consent is not True:
         raise PermissionError("Explicit consent is required before any live arm is called.")
     native_on = "native" in arm_names and provider.live_enabled()
-    claude_on = "claude" in arm_names and llm_arm.live_enabled()
-    if claude_on and not llm_arm.sdk_available():
+    if "claude" in arm_names and llm_arm.live_enabled() and not llm_arm.sdk_available():
         raise PermissionError(
             "The Claude comparison arm needs the optional SDK: run `uv sync --extra compare`. "
             "Nothing was sent."
         )
+    generative_on = [n for n in llm_arm.GENERATIVE_ARMS if n in arm_names and llm_arm.arm_enabled(n)]
     shortfalls = []
     if native_on and provider.BUDGET.remaining() < n_cases:
         shortfalls.append(("Jev", provider.BUDGET.remaining()))
-    if claude_on and llm_arm.BUDGET.remaining() < n_cases:
-        shortfalls.append(("Claude", llm_arm.BUDGET.remaining()))
+    if generative_on and llm_arm.BUDGET.remaining() < n_cases * len(generative_on):
+        shortfalls.append(("generative baseline", llm_arm.BUDGET.remaining()))
     if shortfalls:
         label, left = shortfalls[0]
         raise RuntimeError(
@@ -320,8 +320,8 @@ def prepare_arms(arm_names: list[str], n_cases: int, consent: bool = False) -> l
     prepaid = {}
     if native_on:
         prepaid["native"] = provider.BUDGET.hold(n_cases)
-    if claude_on:
-        prepaid["claude"] = llm_arm.BUDGET.hold(n_cases)
+    for name in generative_on:
+        prepaid[name] = llm_arm.BUDGET.hold(n_cases)
     return [adapters.build(name, prepaid=prepaid.get(name)) for name in arm_names]
 
 

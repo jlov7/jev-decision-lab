@@ -178,11 +178,19 @@ class GatewayArm(ProviderArm):
 
 
 _ARMS = {"replay": ReplayArm, "native": NativeArm, "gateway": GatewayArm}
-ARM_NAMES = ("replay", "native", "gateway", "claude", "rules")
-LIVE_ARMS = frozenset({"native", "gateway", "claude"})
+ARM_NAMES = ("replay", "native", "gateway", "claude", "claude-code", "openai", "rules")
+LIVE_ARMS = frozenset({"native", "gateway", "claude", "claude-code", "openai"})
 
 
 def build(name: str, transport=None, prepaid=None) -> ProviderArm:
+    if name == "claude-code":
+        from .llm_arm import ClaudeCodeArm
+
+        return ClaudeCodeArm(prepaid=prepaid)
+    if name == "openai":
+        from .llm_arm import OpenAIArm
+
+        return OpenAIArm(prepaid=prepaid)
     if name == "claude":
         from .llm_arm import ClaudeArm  # optional SDK; imported lazily
 

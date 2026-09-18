@@ -33,6 +33,20 @@ test_live_disabled (test_adversarial.TransportTests.test_live_disabled) ... ok
 test_no_redirect (test_adversarial.TransportTests.test_no_redirect) ... ok
 test_oversize_not_sent (test_adversarial.TransportTests.test_oversize_not_sent) ... ok
 test_timeout_no_fallback (test_adversarial.TransportTests.test_timeout_no_fallback) ... ok
+test_argv_is_a_list_with_no_shell_and_the_schema (test_baselines.ClaudeCodeArmTests.test_argv_is_a_list_with_no_shell_and_the_schema) ... ok
+test_error_envelopes_fail_closed (test_baselines.ClaudeCodeArmTests.test_error_envelopes_fail_closed) ... ok
+test_nonzero_exit_without_output_is_a_runtime_error (test_baselines.ClaudeCodeArmTests.test_nonzero_exit_without_output_is_a_runtime_error) ... ok
+test_not_logged_in_is_reported_in_plain_words (test_baselines.ClaudeCodeArmTests.test_not_logged_in_is_reported_in_plain_words) ... ok
+test_opt_out_and_override_paths (test_baselines.ClaudeCodeArmTests.test_opt_out_and_override_paths) ... ok
+test_refuses_when_the_command_is_unavailable (test_baselines.ClaudeCodeArmTests.test_refuses_when_the_command_is_unavailable) ... ok
+test_http_error_is_retained_without_the_key (test_baselines.OpenAIArmTests.test_http_error_is_retained_without_the_key) ... ok
+test_refusal_truncation_and_bad_json_fail_closed (test_baselines.OpenAIArmTests.test_refusal_truncation_and_bad_json_fail_closed) ... ok
+test_refuses_before_sending_without_key_or_flag (test_baselines.OpenAIArmTests.test_refuses_before_sending_without_key_or_flag) ... ok
+test_strict_schema_request_and_priced_provenance (test_baselines.OpenAIArmTests.test_strict_schema_request_and_priced_provenance) ... ok
+test_unknown_model_price_is_unknown_not_zero (test_baselines.OpenAIArmTests.test_unknown_model_price_is_unknown_not_zero) ... ok
+test_config_reports_each_baseline (test_baselines.RegistryAndBudgetTests.test_config_reports_each_baseline) ... ok
+test_generative_arms_share_the_compare_budget (test_baselines.RegistryAndBudgetTests.test_generative_arms_share_the_compare_budget) ... ok
+test_registry_knows_the_new_arms (test_baselines.RegistryAndBudgetTests.test_registry_knows_the_new_arms) ... ok
 test_compare_never_pools_arms_into_one_evaluation (test_cli_compare.CompareCommandTests.test_compare_never_pools_arms_into_one_evaluation)
 metrics.evaluate() refuses mixed provenance, so arms are evaluated ... ok
 test_consented_live_failure_is_retained_verbatim (test_cli_compare.CompareCommandTests.test_consented_live_failure_is_retained_verbatim)
@@ -218,6 +232,6 @@ test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... o
 test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 204 tests in 1.692s
+Ran 218 tests in 1.707s
 
 OK

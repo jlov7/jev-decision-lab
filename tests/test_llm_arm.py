@@ -123,7 +123,7 @@ class NormalizationTests(unittest.TestCase):
     def test_answers_are_minimal_decisions_with_no_invented_distribution(self):
         _, result = self.call(FakeResponse(GOOD))
         records = result["normalized"]["records"]
-        self.assertEqual(result["normalized"]["wire_schema"], "anthropic_structured_output")
+        self.assertEqual(result["normalized"]["wire_schema"], "json_schema_structured_output")
         self.assertEqual(records["owner"]["answer"], "operations")
         self.assertIsNone(records["owner"]["distribution"])
         self.assertIn("category only", records["owner"]["distribution_note"])

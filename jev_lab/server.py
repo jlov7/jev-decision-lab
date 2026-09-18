@@ -132,6 +132,24 @@ class Handler(BaseHTTPRequestHandler):
                     "compare_sdk_available": llm_arm.sdk_available(),
                     "compare_attempts": llm_arm.BUDGET.used,
                     "compare_attempt_limit": llm_arm.BUDGET.limit,
+                    "baselines": {
+                        "claude": {
+                            "enabled": llm_arm.live_enabled() and llm_arm.sdk_available(),
+                            "model": llm_arm.model_name(),
+                            "needs": "an Anthropic API key in the server terminal"
+                            + ("" if llm_arm.sdk_available() else " and uv sync --extra compare"),
+                        },
+                        "claude-code": {
+                            "enabled": llm_arm.claude_code_enabled(),
+                            "model": llm_arm.claude_code_model(),
+                            "needs": "the claude command on this machine, signed in",
+                        },
+                        "openai": {
+                            "enabled": llm_arm.openai_enabled(),
+                            "model": llm_arm.openai_model(),
+                            "needs": "an OpenAI API key in the server terminal",
+                        },
+                    },
                     "arms": list(showcase.adapters.ARM_NAMES),
                     "lab_version": provider.USER_AGENT.rsplit("/", 1)[-1],
                     "http_body_limit": showcase.MAX_HTTP_BODY,

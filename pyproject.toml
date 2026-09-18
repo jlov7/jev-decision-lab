@@ -1,6 +1,6 @@
 [project]
 name = "jev-decision-lab"
-version = "0.4.0"
+version = "0.5.0"
 description = "Synthetic-first enterprise judgment workbench for TypeSafe Jev, with live burst, playground and provider comparison"
 requires-python = ">=3.10"
 dependencies = []
