@@ -26,6 +26,11 @@ function liveStatus() {
   $('armClaudeModel').textContent = c.compare_model;
   if (c.lab_version) document.querySelector('.brand > span').textContent = c.lab_version;
   connectionUi(c);
+  if (state.cases.length) expCases();
+  if (!state.expInitialised) {
+    $('expMode').value = c.live_enabled ? 'live' : 'replay';
+    state.expInitialised = true;
+  }
   if (!state.liveInitialised) {
     $('burstMode').value = c.live_enabled ? 'live' : 'replay';
     $('armNative').checked = c.live_enabled;
@@ -39,6 +44,146 @@ function liveStatus() {
 async function refreshConfig() {
   state.config = await api('/api/config');
   liveStatus();
+}
+/* experiments */
+function expCases() {
+  if ($('expCase').options.length) return;
+  $('expCase').innerHTML = state.cases
+    .map((c) => `<option value="${esc(c.id)}">${esc(c.id)} · ${esc(c.title)}</option>`)
+    .join('');
+  $('expCase').value = 'S02';
+}
+function expGuard(mode, needed) {
+  if (mode !== 'live') return null;
+  if (!state.config.live_enabled)
+    return 'Jev is not connected in this server process. Open Connect Jev, or switch to replay to see the layout.';
+  if (!$('liveConsent').checked) return 'Tick the consent box at the top of Live lab first.';
+  const remaining = state.config.live_attempt_limit - state.config.live_attempts;
+  if (remaining < needed)
+    return `This needs ${needed} Jev attempt slots and ${remaining} remain in this server process. Nothing was sent.`;
+  return null;
+}
+const rangeBar = (o, label) =>
+  `<div class="range-row"><span class="range-label">${esc(label)}</span><div class="range-track"><i class="range-span" data-lo="${o.min}" data-hi="${o.max}"></i><b class="range-mid" data-at="${o.median}"></b></div><span class="range-nums">${o.min.toFixed(2)}–${o.max.toFixed(2)}</span></div>`;
+function placeRanges(root) {
+  root.querySelectorAll('.range-span').forEach((el) => {
+    const lo = Number(el.dataset.lo), hi = Number(el.dataset.hi);
+    el.style.left = `${(lo * 100).toFixed(1)}%`;
+    el.style.width = `${Math.max(0.8, (hi - lo) * 100).toFixed(1)}%`;
+  });
+  root.querySelectorAll('.range-mid').forEach((el) => {
+    el.style.left = `${(Number(el.dataset.at) * 100).toFixed(1)}%`;
+  });
+}
+async function probeRun() {
+  error('');
+  const mode = $('expMode').value, repeats = Number($('probeRepeats').value);
+  const blocked = expGuard(mode, repeats);
+  if (blocked) return error(blocked);
+  busy(true);
+  try {
+    const r = await api('/api/probe', {
+      case_id: $('expCase').value,
+      repeats,
+      mode,
+      consent: $('liveConsent').checked,
+      threshold: Number($('burstThreshold').value),
+    });
+    state.lastProbe = r;
+    renderProbe(r);
+    $('exportProbe').disabled = false;
+    await refreshConfig();
+  } catch (e) {
+    error(e.message);
+  } finally {
+    busy(false);
+  }
+}
+function renderProbe(r) {
+  const live = r.mode === 'live';
+  const routeText = Object.entries(r.routes)
+    .map(([k, n]) => `${routes[k][0]} in ${n} of ${r.succeeded}`)
+    .join(', ');
+  $('probeSummary').textContent =
+    `${r.case_id} · ${r.succeeded} of ${r.requested} answered` +
+    (live ? ` · p50 ${fmtMs(r.latency_ms.p50)} · ${r.estimated_cost_usd === null ? 'cost unknown' : cents(r.estimated_cost_usd)}` : '') +
+    ` · route: ${routeText || 'none'}` +
+    (r.widest_option_range.question
+      ? ` · widest range ${r.widest_option_range.range.toFixed(2)} on ${names[r.widest_option_range.question] || r.widest_option_range.question}`
+      : '') +
+    ` · ${r.warning}`;
+  const blocks = Object.entries(r.spread).map(([qid, s]) => {
+    let rows = '';
+    if (s.type === 'noul') rows = rangeBar(s.value, 'probability of yes');
+    else if (s.type === 'score') {
+      rows = Object.entries(s.options).map(([k, o]) => rangeBar(o, `level ${k}`)).join('');
+      rows += `<p class="small">Weighted score ${s.value.min.toFixed(2)}–${s.value.max.toFixed(2)}</p>`;
+    } else {
+      rows = Object.entries(s.options)
+        .sort((a, b) => b[1].median - a[1].median)
+        .map(([k, o]) => rangeBar(o, k))
+        .join('');
+      if (s.top_choices.length > 1)
+        rows += `<p class="small warn-text">Top choice changed between calls: ${s.top_choices.map(esc).join(', ')}</p>`;
+    }
+    return `<div class="probe-q"><h4>${esc(names[qid] || qid)} <span class="type">${esc(s.type)}</span></h4>${rows}</div>`;
+  });
+  $('probeRows').innerHTML = blocks.join('');
+  placeRanges($('probeRows'));
+  if (r.failures.length)
+    $('probeRows').innerHTML += `<p class="warn-text">${r.failures.length} call(s) failed and were kept: ${esc(r.failures.map((f) => f.error).join(' · '))}</p>`;
+}
+async function ablateRun() {
+  error('');
+  const mode = $('expMode').value;
+  const c = state.cases.find((x) => x.id === $('expCase').value);
+  const blocked = expGuard(mode, 1 + c.state.evidence.length);
+  if (blocked) return error(blocked);
+  busy(true);
+  try {
+    const r = await api('/api/ablate', {
+      case_id: c.id,
+      mode,
+      consent: $('liveConsent').checked,
+      threshold: Number($('burstThreshold').value),
+    });
+    state.lastAblate = r;
+    renderAblate(r, c);
+    $('exportAblate').disabled = false;
+    await refreshConfig();
+  } catch (e) {
+    error(e.message);
+  } finally {
+    busy(false);
+  }
+}
+function renderAblate(r, c) {
+  const most = r.most_influential;
+  $('ablateSummary').textContent =
+    `${r.case_id} · ${r.succeeded} of ${r.requested} variants answered · ` +
+    (most
+      ? `the judgment leaned most on ${most}.`
+      : r.mode === 'live'
+        ? 'no single evidence item moved the judgment beyond the noise floor.'
+        : 'replay layout only.') +
+    ` ${r.warning}`;
+  const delta = (v, key) => {
+    if (!v.deltas) return '<td>–</td>';
+    const d = v.deltas[key];
+    const cls = Math.abs(d) < r.noise_floor ? 'noise' : d > 0 ? 'up' : 'down';
+    return `<td class="${cls}">${d > 0 ? '+' : ''}${d.toFixed(2)}</td>`;
+  };
+  const rows = r.variants
+    .map((v) => {
+      if (!v.ok)
+        return `<tr class="fail"><td>${esc(v.label)}</td><td colspan="7">${esc(v.error)}</td></tr>`;
+      const a = v.answers;
+      const lead = most && v.removed_evidence && v.removed_evidence.id === most ? ' class="lead"' : '';
+      const text = v.removed_evidence ? `<span class="cell-sub">${esc(v.removed_evidence.text)}</span>` : '<span class="cell-sub">every excerpt present</span>';
+      return `<tr${lead}><td><b>${esc(v.label)}</b>${text}</td><td class="${v.owner_changed ? 'changed' : ''}">${esc(a.owner)} ${(a.owner_probability * 100).toFixed(0)}%${delta(v, 'owner_probability').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.severity.toFixed(2)}${delta(v, 'severity').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.sufficient.toFixed(2)}${delta(v, 'sufficient').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.contradiction.toFixed(2)}${delta(v, 'contradiction').replace(/<\/?td[^>]*>/g, ' ')}</td><td class="${v.route_changed ? 'changed' : ''}">${esc(routes[a.route][0])}</td><td>${v.deltas ? (v.above_noise ? `<b>${v.movement.toFixed(2)}</b>` : `<span class="noise">${v.movement.toFixed(2)} noise</span>`) : '–'}</td></tr>`;
+    })
+    .join('');
+  $('ablateRows').innerHTML = `<table class="ablate-table"><thead><tr><th>Variant</th><th>Owner (Δ)</th><th>Severity (Δ)</th><th>Sufficient (Δ)</th><th>Contradiction (Δ)</th><th>Route</th><th>Movement</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function connectionUi(c) {
   const connected = Boolean(c.live_enabled);
@@ -466,6 +611,11 @@ $('armClaude').onchange = consentHint;
 $('liveConsent').onchange = consentHint;
 $('connectLive').onclick = () => $('setup').showModal();
 $('connectForm').onsubmit = connectSubmit;
+$('probeRun').onclick = probeRun;
+$('ablateRun').onclick = ablateRun;
+$('probeRepeats').oninput = () => ($('probeRepeatsValue').textContent = $('probeRepeats').value);
+$('exportProbe').onclick = () => state.lastProbe && downloadJSON(`probe-${state.lastProbe.case_id}.json`, state.lastProbe);
+$('exportAblate').onclick = () => state.lastAblate && downloadJSON(`ablation-${state.lastAblate.case_id}.json`, state.lastAblate);
 $('forgetKey').onclick = forgetKey;
 $('burstRun').onclick = burst;
 $('pgRun').onclick = pgRun;

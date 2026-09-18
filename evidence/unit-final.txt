@@ -1,7 +1,3 @@
-   Building jev-decision-lab @ file:///path/to/jev-decision-lab
-      Built jev-decision-lab @ file:///path/to/jev-decision-lab
-Uninstalled 1 package in 0.70ms
-Installed 1 package in 1ms
 test_absent_confidence_metadata_is_none_not_zero (test_adapters.GatewayNormalizationTests.test_absent_confidence_metadata_is_none_not_zero) ... ok
 test_boolean_replaces_noul_and_stays_comparable (test_adapters.GatewayNormalizationTests.test_boolean_replaces_noul_and_stays_comparable) ... ok
 test_choice_has_no_distribution_and_says_so_instead_of_inventing_one (test_adapters.GatewayNormalizationTests.test_choice_has_no_distribution_and_says_so_instead_of_inventing_one) ... ok
@@ -141,6 +137,14 @@ test_truncated_output_fails_closed (test_llm_arm.NormalizationTests.test_truncat
 test_unknown_model_price_is_unknown_not_zero (test_llm_arm.NormalizationTests.test_unknown_model_price_is_unknown_not_zero) ... ok
 test_prompt_carries_state_and_questions_but_never_labels (test_llm_arm.SchemaTests.test_prompt_carries_state_and_questions_but_never_labels) ... ok
 test_schema_mirrors_the_three_primitives (test_llm_arm.SchemaTests.test_schema_mirrors_the_three_primitives) ... ok
+test_live_ablation_marks_movement_above_the_noise_floor (test_probes.AblationTests.test_live_ablation_marks_movement_above_the_noise_floor) ... ok
+test_publish_swaps_receipts_for_ids (test_probes.AblationTests.test_publish_swaps_receipts_for_ids) ... ok
+test_replay_ablation_runs_baseline_plus_one_per_evidence (test_probes.AblationTests.test_replay_ablation_runs_baseline_plus_one_per_evidence) ... ok
+test_variants_are_edited_copies_and_the_original_case_is_untouched (test_probes.AblationTests.test_variants_are_edited_copies_and_the_original_case_is_untouched) ... ok
+test_live_probe_refuses_before_sending_without_slots_or_consent (test_probes.ProbeTests.test_live_probe_refuses_before_sending_without_slots_or_consent) ... ok
+test_live_probe_reports_spread_and_holds_slots_first (test_probes.ProbeTests.test_live_probe_reports_spread_and_holds_slots_first) ... ok
+test_repeats_are_bounded (test_probes.ProbeTests.test_repeats_are_bounded) ... ok
+test_replay_probe_has_zero_range_and_says_so (test_probes.ProbeTests.test_replay_probe_has_zero_range_and_says_so) ... ok
 test_compare_marks_s04_as_planted_error (test_rules_arm.PlantedCompareTests.test_compare_marks_s04_as_planted_error) ... ok
 test_oversized_playground_is_rejected_before_a_provider_call (test_rules_arm.PlaygroundSizeTests.test_oversized_playground_is_rejected_before_a_provider_call) ... ok
 test_no_distribution_is_fabricated (test_rules_arm.RulesArmTests.test_no_distribution_is_fabricated) ... ok
@@ -211,6 +215,6 @@ test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... o
 test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 193 tests in 1.669s
+Ran 201 tests in 1.699s
 
 OK

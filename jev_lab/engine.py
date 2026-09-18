@@ -299,9 +299,20 @@ def run(
     consent: bool = False,
     prepaid=None,
 ) -> dict:
+    return run_case(case_by_id(case_id), mode, threshold, consent, prepaid)
+
+
+def run_case(
+    case: dict,
+    mode: str = "replay",
+    threshold: float = 0.85,
+    consent: bool = False,
+    prepaid=None,
+) -> dict:
+    """Judge one case dict. Ablation passes an edited copy; everything else passes the original."""
     from . import provider
 
-    case = case_by_id(case_id)
+    case_id = case["id"]
     number(threshold)
     request = request_for(case)
     if mode == "replay":

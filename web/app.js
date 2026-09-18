@@ -45,7 +45,7 @@ function error(text) {
 }
 function busy(value) {
   state.busy = value;
-  ['run', 'evaluate', 'gardenRun', 'burstRun', 'pgRun', 'compareRun', 'pgAdd'].forEach(
+  ['run', 'evaluate', 'gardenRun', 'burstRun', 'pgRun', 'compareRun', 'pgAdd', 'probeRun', 'ablateRun'].forEach(
     (id) => ($(id).disabled = value),
   );
   ['reconsider', 'export', 'action'].forEach((id) => ($(id).disabled = value || !state.receipt));

@@ -68,7 +68,7 @@ Everything is driven by twelve **authored, synthetic** cases across three indust
 | Tab | What it does | Needs a key? |
 |---|---|---|
 | **Workbench** | Pick a scenario and case, run six typed judgments, inspect every distribution, change the policy threshold or mark evidence stale and replay the policy with zero new model calls, recheck the action boundary, export a receipt | No (replay) / Yes (live) |
-| **Live lab** | **Burst:** fire all twelve cases concurrently and read p50/p95 latency, tokens and estimated cost. Click a row to inspect its receipt. **Playground:** write your own situation and questions, with a live byte counter against the HTTP and provider ceilings. **Compare:** Jev beside a constrained-output Claude baseline and a keyword-rules arm; S04 is labelled as a planted teaching error and excluded from owner-agreement counts | Burst/compare replay work offline; live Jev/Claude need a key |
+| **Live lab** | **Burst:** fire all twelve cases concurrently and read p50/p95 latency, tokens and estimated cost. Click a row to inspect its receipt. **Playground:** write your own situation and questions, with a live byte counter against the HTTP and provider ceilings. **Compare:** Jev beside a constrained-output Claude baseline and a keyword-rules arm; S04 is labelled as a planted teaching error and excluded from owner-agreement counts. **Experiments:** a stability probe (same case up to eight times, see how far every answer moves) and evidence ablation (remove one excerpt at a time, see which one carried the judgment) | Burst/compare replay work offline; live Jev/Claude need a key |
 | **Model garden** | A deterministic worksheet: given a task type and constraints, which *kind* of capability belongs, and what checks are owed before procurement | No |
 | **Signal audit** | A dated chronology of public signals before Jev's launch, filterable by as-of date, with explicit "ingestion unknown" caveats | No |
 | **Learn & measure** | The three primitives explained, the confident-wrong teaching case, and calibration metrics over the authored fixtures | No |
@@ -89,7 +89,7 @@ cd jev-decision-lab
 uv run jev-lab
 ```
 
-That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (193 tests, about two seconds).
+That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (201 tests, about two seconds).
 
 Open **http://127.0.0.1:8765**. You are in synthetic replay: the banner at the top says so, and stays visible on every screen.
 
@@ -318,6 +318,16 @@ A receipt binds: the request, the response, provenance (replay or live, latency,
 
 A hash detects changed content. It is not a signature, an execution attestation, or proof that nothing was omitted.
 
+### Two experiments a cheap model makes affordable
+
+Both live in the **Experiments** section of the Live lab. Each takes about a second and costs a fraction of a cent, and every call becomes a stored receipt.
+
+**Stability probe.** Send the same case up to eight times at once. For every question you get the lowest, middle and highest value the model returned, drawn as a bar: a narrow bar means it said the same thing every time, a wide one means it was not sure. The route is counted across the calls, so you can see whether the *decision* is stable even when the probabilities wobble. On 18 September 2026 two twelve-case bursts showed top-owner probabilities moving by at most 0.03 between calls. That figure is the lab's default noise floor.
+
+**Evidence ablation.** Run the case as written, then once more for each evidence excerpt with that excerpt removed. The row that moves the most tells you which excerpt the judgment was leaning on. Movement below the noise floor is marked as noise rather than reported as an effect. This changes the input and measures the output; it does not claim to show what the model attended to.
+
+In replay mode both experiments show the layout with authored fixtures, and say so: every range is zero and nothing moves, because the fixture is the same file every time.
+
 ### Provider arms and the two comparison tracks
 
 `adapters.py` defines one interface, `ProviderArm.call(request) → {raw, provenance, normalized}`, and four arms:
@@ -425,6 +435,10 @@ All routes are same-origin only (`127.0.0.1` or `localhost` on the served port).
 | `POST /api/playground` | `state`, `questions`, `consent` | the validated live response with provenance; nothing stored |
 | `POST /api/compare` | `arms`, `case_ids`, `consent` | per-arm report plus the teaching label and planted-error flag per case |
 | `POST /api/receipt` | `receipt_id` | a stored receipt by its server-issued id, so a burst row can be opened on the workbench |
+| `POST /api/probe` | `case_id`, `repeats` (2–8), `mode`, `consent`, `threshold` | the same case judged `repeats` times at once; per-option min, median and max for every question; route counts; receipts stored |
+| `POST /api/ablate` | `case_id`, `mode`, `consent`, `threshold` | baseline plus one variant per evidence excerpt removed; deltas against baseline, noise floor, the most influential excerpt |
+| `POST /api/connect` | `api_key` | hold a pasted TypeSafe key in server memory for this process; returns `source` and the last four characters, never the key |
+| `POST /api/disconnect` | – | forget the pasted key |
 
 Errors: `400` malformed or contract-violating request, `403` consent or configuration missing, `413` oversized, `415` wrong content type, `502` provider failure (retained, not retried), `500` unexpected local error.
 
@@ -464,7 +478,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 193 tests
+uv run python3 -m unittest discover -s tests -v    # 201 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint

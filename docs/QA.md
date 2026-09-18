@@ -75,6 +75,15 @@ Still not executed: any authenticated Jev or Claude call.
 | Key never leaves the process | `/api/config` carries only `key_source` and the last four characters; tests assert the key string is absent from config, from error bodies and from the failure log line (which prints "rejected" for `/api/connect`). Terminal key takes precedence and disables the paste box |
 | Suite | 193 tests |
 
+## Phase 2 experiments (0.4) — verified in a real browser, replay mode
+
+| Check | Result |
+|---|---|
+| Stability probe | Replay probe on S02 with 6 repeats renders six question blocks and twenty range rows, route "Recommend a team in 6 of 6", widest range 0.00, replay warning shown, export enabled. Unit tests with a wobbling live stand-in report a 0.02 owner range, hold all slots before sending, refuse without consent or slots |
+| Evidence ablation | Replay ablation on S02 renders baseline plus two variants, replay warning shown. Unit tests confirm variants are edited copies (original case untouched, different case hash), deltas below the 0.03 noise floor are marked noise, a 0.20 drop in sufficiency is marked above noise |
+| Suite | 201 tests, three consecutive runs green (the fixture counter is lock-protected because the probe runs concurrently) |
+| Not yet executed | A live probe or ablation on the account: the server process had no attempt slots left after the compare runs |
+
 ## Browser limitation—do not hide this
 
 The Browser plugin was not available. System Chromium was available through Playwright, but direct navigation to the local server returned `ERR_BLOCKED_BY_ADMINISTRATOR`. No administrator policy was disabled. The browser test therefore rendered the local HTML/CSS/JavaScript and used a test-only fetch bridge to the **actual loopback HTTP server**.

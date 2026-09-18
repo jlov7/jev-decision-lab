@@ -88,3 +88,124 @@ td.planted {
   color: var(--ink);
   font-size: 11px;
 }
+
+/* experiments */
+.experiments {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  margin-top: 18px;
+}
+@media (max-width: 900px) {
+  .experiments {
+    grid-template-columns: 1fr;
+  }
+}
+.experiment {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px;
+  background: #fff;
+}
+.experiment h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+.experiment p {
+  font-size: 13px;
+  color: var(--muted);
+}
+.experiment-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.experiment-controls input[type='range'] {
+  flex: 1;
+  min-width: 120px;
+}
+.probe-q {
+  margin-top: 14px;
+}
+.probe-q h4 {
+  font-size: 12px;
+  margin: 0 0 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.range-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 90px;
+  gap: 10px;
+  align-items: center;
+  font-size: 11px;
+  margin: 3px 0;
+}
+.range-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.range-track {
+  position: relative;
+  height: 10px;
+  background: #e9efee;
+  border-radius: 5px;
+}
+.range-span {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.55;
+  border-radius: 5px;
+}
+.range-mid {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 14px;
+  margin-left: -1px;
+  background: var(--ink);
+}
+.range-nums {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-align: right;
+  color: var(--muted);
+}
+.warn-text {
+  color: #962f32;
+  font-size: 12px;
+}
+.ablate-table {
+  font-size: 12px;
+}
+.ablate-table td .cell-sub {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  max-width: 260px;
+}
+.ablate-table tr.lead td {
+  background: #eef8f5;
+}
+.ablate-table tr.fail td {
+  color: #962f32;
+}
+.ablate-table .changed {
+  color: #962f32;
+  font-weight: 600;
+}
+.ablate-table .noise {
+  color: var(--muted);
+}
+.ablate-table .up {
+  color: #1f6f5a;
+}
+.ablate-table .down {
+  color: #962f32;
+}

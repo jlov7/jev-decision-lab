@@ -10,7 +10,7 @@ from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
-from . import engine, llm_arm, metrics, provider, showcase, strategy
+from . import engine, llm_arm, metrics, probes, provider, showcase, strategy
 
 TOKEN = secrets.token_urlsafe(32)
 RECEIPTS: OrderedDict[str, dict] = OrderedDict()
@@ -34,6 +34,8 @@ FIELDS = {
     "/api/playground": {"state", "questions", "consent"},
     "/api/compare": {"arms", "case_ids", "consent"},
     "/api/receipt": {"receipt_id"},
+    "/api/probe": {"case_id", "repeats", "mode", "consent", "threshold"},
+    "/api/ablate": {"case_id", "mode", "consent", "threshold"},
     "/api/connect": {"api_key"},
     "/api/disconnect": set(),
 }
@@ -210,6 +212,23 @@ class Handler(BaseHTTPRequestHandler):
                         body.get("task"), body.get("allow_cloud"), body.get("consequence_high")
                     ),
                 )
+            if path == "/api/probe":
+                result = probes.probe(
+                    body.get("case_id"),
+                    body.get("repeats", 4),
+                    body.get("mode", "replay"),
+                    body.get("consent", False),
+                    body.get("threshold", 0.85),
+                )
+                return self.send(200, probes.publish(result, store))
+            if path == "/api/ablate":
+                result = probes.ablate(
+                    body.get("case_id"),
+                    body.get("mode", "replay"),
+                    body.get("consent", False),
+                    body.get("threshold", 0.85),
+                )
+                return self.send(200, probes.publish(result, store))
             if path == "/api/connect":
                 status = provider.connect(body.get("api_key"))
                 return self.send(200, {"connected": True, **status})
