@@ -50,7 +50,11 @@ class InterfaceTests(unittest.TestCase):
         for name in ("replay", "native", "gateway"):
             arm = adapters.build(name)
             self.assertEqual(set(arm.tracks), {"minimal_decision", "comparable_distribution"})
-            self.assertFalse(arm.live_verified, "no route has been checked against a live provider")
+            self.assertEqual(
+                arm.live_verified,
+                name == "native",
+                "only the native route has been checked against authenticated responses",
+            )
 
     def test_call_returns_raw_provenance_and_normalized(self):
         request = engine.request_for(engine.case_by_id("S02"))

@@ -54,6 +54,7 @@ test_replay_arm_supplies_distribution_metrics (test_comparator.ComparatorTests.t
 test_report_does_not_rank_arms_or_claim_accuracy (test_comparator.ComparatorTests.test_report_does_not_rank_arms_or_claim_accuracy) ... ok
 test_report_records_verification_boundary (test_comparator.ComparatorTests.test_report_records_verification_boundary) ... ok
 test_unknown_case_is_rejected_before_any_call (test_comparator.ComparatorTests.test_unknown_case_is_rejected_before_any_call) ... ok
+test_verified_live_arm_changes_the_live_warning (test_comparator.ComparatorTests.test_verified_live_arm_changes_the_live_warning) ... ok
 test_allowed_is_simulation_only (test_core.BeforeActionTests.test_allowed_is_simulation_only) ... ok
 test_each_false_blocks (test_core.BeforeActionTests.test_each_false_blocks) ... ok
 test_garden_judgment_local_constraint (test_core.BeforeActionTests.test_garden_judgment_local_constraint) ... ok
@@ -198,6 +199,6 @@ test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... o
 test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 186 tests in 1.386s
+Ran 187 tests in 1.461s
 
 OK

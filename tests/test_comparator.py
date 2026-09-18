@@ -94,6 +94,24 @@ class ComparatorTests(unittest.TestCase):
         self.assertFalse(arm["live_verified"])
         self.assertTrue(any("not" in w.lower() and "live" in w.lower() for w in report["warnings"]))
 
+    def test_verified_live_arm_changes_the_live_warning(self):
+        class VerifiedLive(AlwaysFails):
+            name, kind, live_verified = "native_stub", "live_typesafe", True
+
+            def call(self, request, case_id=None):
+                result = adapters.build("replay").call(request, case_id)
+                result["provenance"] = dict(result["provenance"], live_verified=True)
+                return result
+
+        report = comparator.compare(["S01", "S02"], [VerifiedLive(), adapters.build("replay")])
+        by_name = {a["name"]: a for a in report["arms"]}
+        self.assertTrue(by_name["native_stub"]["live_verified"])
+        self.assertFalse(by_name["replay"]["live_verified"])
+        live_warnings = [w for w in report["warnings"] if "authenticated" in w.lower()]
+        self.assertEqual(len(live_warnings), 1)
+        self.assertIn("native_stub", live_warnings[0])
+        self.assertNotIn(comparator.NO_LIVE_WARNING, report["warnings"])
+
     def test_unknown_case_is_rejected_before_any_call(self):
         with self.assertRaises(ValueError):
             comparator.compare(["NOPE"], self.arms())

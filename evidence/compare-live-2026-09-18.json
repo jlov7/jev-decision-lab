@@ -1,0 +1,1454 @@
+{
+  "schema_version": "comparator-v1.0",
+  "ranked": false,
+  "cases": [
+    "S02",
+    "S04",
+    "T03",
+    "Q02"
+  ],
+  "warnings": [
+    "Arms are reported side by side and are never pooled into one evaluation. This report does not rank arms and does not claim accuracy.",
+    "Live arms were not verified against a live provider route in this run: no authenticated call was made, so nothing here is evidence of live Jev behaviour.",
+    "A distribution a provider did not return is reported as unavailable, never as zero.",
+    "Synthetic replay probabilities are authored teaching fixtures. They measure no model capability and are not a benchmark.",
+    "S04 is a planted teaching error: the authored owner is confidently wrong. It is labelled here so it is not counted as a measured model failure.",
+    "The keyword-rules arm is hand-fit to these twelve authored cases. It shows what a delay-word rule does; its agreement count is not a baseline accuracy."
+  ],
+  "arms": [
+    {
+      "name": "native",
+      "kind": "live_typesafe",
+      "live": true,
+      "pinned_version": "https://api.typesafe.ai/v1/systemone",
+      "live_verified": false,
+      "attempts": 4,
+      "succeeded": 4,
+      "failed": 0,
+      "failures": [],
+      "cases": [
+        {
+          "case_id": "S02",
+          "pack": "supply",
+          "model": "jev-1.13.0",
+          "answers": {
+            "issue": "routine",
+            "owner": "operations",
+            "severity": 0.2,
+            "sufficient": 0.39,
+            "contradiction": 0.08,
+            "next_evidence": "tracking"
+          },
+          "latency_ms": 335.47,
+          "usage": {
+            "input_tokens": 1075,
+            "output_tokens": 201
+          },
+          "estimated_cost_usd": 4.515e-05
+        },
+        {
+          "case_id": "S04",
+          "pack": "supply",
+          "model": "jev-1.13.0",
+          "answers": {
+            "issue": "quality",
+            "owner": "quality",
+            "severity": 2.09,
+            "sufficient": 0.33,
+            "contradiction": 0.08,
+            "next_evidence": "quality_record"
+          },
+          "latency_ms": 281.66,
+          "usage": {
+            "input_tokens": 1071,
+            "output_tokens": 202
+          },
+          "estimated_cost_usd": 4.4982e-05
+        },
+        {
+          "case_id": "T03",
+          "pack": "service",
+          "model": "jev-1.13.0",
+          "answers": {
+            "issue": "outage",
+            "owner": "operations",
+            "severity": 2.47,
+            "sufficient": 0.25,
+            "contradiction": 0.95,
+            "next_evidence": "telemetry"
+          },
+          "latency_ms": 237.98,
+          "usage": {
+            "input_tokens": 1083,
+            "output_tokens": 209
+          },
+          "estimated_cost_usd": 4.5486000000000005e-05
+        },
+        {
+          "case_id": "Q02",
+          "pack": "review",
+          "model": "jev-1.13.0",
+          "answers": {
+            "issue": "routine",
+            "owner": "other",
+            "severity": 0.41,
+            "sufficient": 0.16,
+            "contradiction": 0.08,
+            "next_evidence": "none"
+          },
+          "latency_ms": 273.92,
+          "usage": {
+            "input_tokens": 1087,
+            "output_tokens": 206
+          },
+          "estimated_cost_usd": 4.565400000000001e-05
+        }
+      ],
+      "tracks": {
+        "minimal_decision": {
+          "answered": 4
+        },
+        "comparable_distribution": {
+          "available": true,
+          "metrics": {
+            "n": 3,
+            "accuracy": 0.6666666666666666,
+            "accuracy_wilson_95": [
+              0.2076596008020477,
+              0.9385080552796037
+            ],
+            "brier": 0.2644666666666667,
+            "log_loss": 0.42600949005178324,
+            "ece_10": 0.27666666666666667,
+            "calibration_bins": [
+              {
+                "lower": 0,
+                "upper": 0.1,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "n": 1,
+                "accuracy": 0,
+                "mean_top_probability": 0.49
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "n": 1,
+                "accuracy": 1,
+                "mean_top_probability": 0.67
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.9,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.9,
+                "upper": 1,
+                "n": 1,
+                "accuracy": 1,
+                "mean_top_probability": 0.99
+              }
+            ],
+            "risk_coverage": [
+              {
+                "threshold": 0,
+                "accepted": 3,
+                "coverage": 1,
+                "error_rate": 0.33333333333333337
+              },
+              {
+                "threshold": 0.5,
+                "accepted": 2,
+                "coverage": 0.6666666666666666,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.7,
+                "accepted": 1,
+                "coverage": 0.3333333333333333,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.8,
+                "accepted": 1,
+                "coverage": 0.3333333333333333,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.85,
+                "accepted": 1,
+                "coverage": 0.3333333333333333,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.9,
+                "accepted": 1,
+                "coverage": 0.3333333333333333,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.95,
+                "accepted": 1,
+                "coverage": 0.3333333333333333,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.99,
+                "accepted": 1,
+                "coverage": 0.3333333333333333,
+                "error_rate": 0
+              },
+              {
+                "threshold": 1,
+                "accepted": 0,
+                "coverage": 0,
+                "error_rate": null
+              }
+            ],
+            "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates.",
+            "by_pack": {
+              "supply": {
+                "n": 1,
+                "accuracy": 1,
+                "accuracy_wilson_95": [
+                  0.20654931437723745,
+                  1
+                ],
+                "brier": 0.21139999999999998,
+                "log_loss": 0.40047756659712525,
+                "ece_10": 0.32999999999999996,
+                "calibration_bins": [
+                  {
+                    "lower": 0,
+                    "upper": 0.1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.3,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.3,
+                    "upper": 0.4,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.6,
+                    "upper": 0.7,
+                    "n": 1,
+                    "accuracy": 1,
+                    "mean_top_probability": 0.67
+                  },
+                  {
+                    "lower": 0.7,
+                    "upper": 0.8,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  }
+                ],
+                "risk_coverage": [
+                  {
+                    "threshold": 0,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.5,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.7,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.8,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.85,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.9,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.95,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.99,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 1,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  }
+                ],
+                "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates."
+              },
+              "service": {
+                "n": 1,
+                "accuracy": 1,
+                "accuracy_wilson_95": [
+                  0.20654931437723745,
+                  1
+                ],
+                "brier": 0.0002000000000000002,
+                "log_loss": 0.01005033585350145,
+                "ece_10": 0.010000000000000009,
+                "calibration_bins": [
+                  {
+                    "lower": 0,
+                    "upper": 0.1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.3,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.3,
+                    "upper": 0.4,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.6,
+                    "upper": 0.7,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.7,
+                    "upper": 0.8,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1,
+                    "n": 1,
+                    "accuracy": 1,
+                    "mean_top_probability": 0.99
+                  }
+                ],
+                "risk_coverage": [
+                  {
+                    "threshold": 0,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.5,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.7,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.8,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.85,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.9,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.95,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.99,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 1,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  }
+                ],
+                "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates."
+              },
+              "review": {
+                "n": 1,
+                "accuracy": 0,
+                "accuracy_wilson_95": [
+                  0,
+                  0.7934506856227626
+                ],
+                "brier": 0.5818000000000001,
+                "log_loss": 0.8675005677047231,
+                "ece_10": 0.49,
+                "calibration_bins": [
+                  {
+                    "lower": 0,
+                    "upper": 0.1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.3,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.3,
+                    "upper": 0.4,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "n": 1,
+                    "accuracy": 0,
+                    "mean_top_probability": 0.49
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.6,
+                    "upper": 0.7,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.7,
+                    "upper": 0.8,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  }
+                ],
+                "risk_coverage": [
+                  {
+                    "threshold": 0,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 1
+                  },
+                  {
+                    "threshold": 0.5,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.7,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.8,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.85,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.9,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.95,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.99,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 1,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  }
+                ],
+                "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates."
+              }
+            },
+            "metrics_warning": "Authored examples are not a representative benchmark. Replay measures no Jev capability. Live results on twelve teaching cases are still only a smoke test."
+          },
+          "metric_scope": [
+            "owner"
+          ],
+          "reason": null,
+          "pooled_with_other_arms": false
+        }
+      }
+    },
+    {
+      "name": "replay",
+      "kind": "synthetic_replay",
+      "live": false,
+      "pinned_version": "synthetic-fixture-v1",
+      "live_verified": false,
+      "attempts": 4,
+      "succeeded": 4,
+      "failed": 0,
+      "failures": [],
+      "cases": [
+        {
+          "case_id": "S02",
+          "pack": "supply",
+          "model": "synthetic-fixture-v1",
+          "answers": {
+            "issue": "routine",
+            "owner": "operations",
+            "severity": 0.05,
+            "sufficient": 0.97,
+            "contradiction": 0.01,
+            "next_evidence": "none"
+          },
+          "latency_ms": null,
+          "usage": null,
+          "estimated_cost_usd": null
+        },
+        {
+          "case_id": "S04",
+          "pack": "supply",
+          "model": "synthetic-fixture-v1",
+          "answers": {
+            "issue": "quality",
+            "owner": "operations",
+            "severity": 1.85,
+            "sufficient": 0.95,
+            "contradiction": 0.02,
+            "next_evidence": "quality_record"
+          },
+          "latency_ms": null,
+          "usage": null,
+          "estimated_cost_usd": null
+        },
+        {
+          "case_id": "T03",
+          "pack": "service",
+          "model": "synthetic-fixture-v1",
+          "answers": {
+            "issue": "outage",
+            "owner": "operations",
+            "severity": 2.06,
+            "sufficient": 0.42,
+            "contradiction": 0.93,
+            "next_evidence": "telemetry"
+          },
+          "latency_ms": null,
+          "usage": null,
+          "estimated_cost_usd": null
+        },
+        {
+          "case_id": "Q02",
+          "pack": "review",
+          "model": "synthetic-fixture-v1",
+          "answers": {
+            "issue": "routine",
+            "owner": "assurance",
+            "severity": 0.05,
+            "sufficient": 0.98,
+            "contradiction": 0.01,
+            "next_evidence": "none"
+          },
+          "latency_ms": null,
+          "usage": null,
+          "estimated_cost_usd": null
+        }
+      ],
+      "tracks": {
+        "minimal_decision": {
+          "answered": 4
+        },
+        "comparable_distribution": {
+          "available": true,
+          "metrics": {
+            "n": 3,
+            "accuracy": 1,
+            "accuracy_wilson_95": [
+              0.4385029682449546,
+              1
+            ],
+            "brier": 0.029199926667,
+            "log_loss": 0.12310868716409708,
+            "ece_10": 0.11000000000000001,
+            "calibration_bins": [
+              {
+                "lower": 0,
+                "upper": 0.1,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "n": 1,
+                "accuracy": 1,
+                "mean_top_probability": 0.75
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.9,
+                "n": 0,
+                "accuracy": null,
+                "mean_top_probability": null
+              },
+              {
+                "lower": 0.9,
+                "upper": 1,
+                "n": 2,
+                "accuracy": 1,
+                "mean_top_probability": 0.96
+              }
+            ],
+            "risk_coverage": [
+              {
+                "threshold": 0,
+                "accepted": 3,
+                "coverage": 1,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.5,
+                "accepted": 3,
+                "coverage": 1,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.7,
+                "accepted": 3,
+                "coverage": 1,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.8,
+                "accepted": 2,
+                "coverage": 0.6666666666666666,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.85,
+                "accepted": 2,
+                "coverage": 0.6666666666666666,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.9,
+                "accepted": 2,
+                "coverage": 0.6666666666666666,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.95,
+                "accepted": 2,
+                "coverage": 0.6666666666666666,
+                "error_rate": 0
+              },
+              {
+                "threshold": 0.99,
+                "accepted": 0,
+                "coverage": 0,
+                "error_rate": null
+              },
+              {
+                "threshold": 1,
+                "accepted": 0,
+                "coverage": 0,
+                "error_rate": null
+              }
+            ],
+            "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates.",
+            "by_pack": {
+              "supply": {
+                "n": 1,
+                "accuracy": 1,
+                "accuracy_wilson_95": [
+                  0.20654931437723745,
+                  1
+                ],
+                "brier": 0.0021333066670000027,
+                "log_loss": 0.040821994520255166,
+                "ece_10": 0.040000000000000036,
+                "calibration_bins": [
+                  {
+                    "lower": 0,
+                    "upper": 0.1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.3,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.3,
+                    "upper": 0.4,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.6,
+                    "upper": 0.7,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.7,
+                    "upper": 0.8,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1,
+                    "n": 1,
+                    "accuracy": 1,
+                    "mean_top_probability": 0.96
+                  }
+                ],
+                "risk_coverage": [
+                  {
+                    "threshold": 0,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.5,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.7,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.8,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.85,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.9,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.95,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.99,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 1,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  }
+                ],
+                "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates."
+              },
+              "service": {
+                "n": 1,
+                "accuracy": 1,
+                "accuracy_wilson_95": [
+                  0.20654931437723745,
+                  1
+                ],
+                "brier": 0.083333166667,
+                "log_loss": 0.2876820724517809,
+                "ece_10": 0.25,
+                "calibration_bins": [
+                  {
+                    "lower": 0,
+                    "upper": 0.1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.3,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.3,
+                    "upper": 0.4,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.6,
+                    "upper": 0.7,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.7,
+                    "upper": 0.8,
+                    "n": 1,
+                    "accuracy": 1,
+                    "mean_top_probability": 0.75
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  }
+                ],
+                "risk_coverage": [
+                  {
+                    "threshold": 0,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.5,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.7,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.8,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.85,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.9,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.95,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 0.99,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 1,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  }
+                ],
+                "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates."
+              },
+              "review": {
+                "n": 1,
+                "accuracy": 1,
+                "accuracy_wilson_95": [
+                  0.20654931437723745,
+                  1
+                ],
+                "brier": 0.0021333066670000027,
+                "log_loss": 0.040821994520255166,
+                "ece_10": 0.040000000000000036,
+                "calibration_bins": [
+                  {
+                    "lower": 0,
+                    "upper": 0.1,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.1,
+                    "upper": 0.2,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.2,
+                    "upper": 0.3,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.3,
+                    "upper": 0.4,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.4,
+                    "upper": 0.5,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.5,
+                    "upper": 0.6,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.6,
+                    "upper": 0.7,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.7,
+                    "upper": 0.8,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.8,
+                    "upper": 0.9,
+                    "n": 0,
+                    "accuracy": null,
+                    "mean_top_probability": null
+                  },
+                  {
+                    "lower": 0.9,
+                    "upper": 1,
+                    "n": 1,
+                    "accuracy": 1,
+                    "mean_top_probability": 0.96
+                  }
+                ],
+                "risk_coverage": [
+                  {
+                    "threshold": 0,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.5,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.7,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.8,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.85,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.9,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.95,
+                    "accepted": 1,
+                    "coverage": 1,
+                    "error_rate": 0
+                  },
+                  {
+                    "threshold": 0.99,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  },
+                  {
+                    "threshold": 1,
+                    "accepted": 0,
+                    "coverage": 0,
+                    "error_rate": null
+                  }
+                ],
+                "definition": "Owner classification only. Unhalved multiclass Brier; ECE uses top-class probability, not vendor confidence. Risk-coverage excludes policy gates."
+              }
+            },
+            "metrics_warning": "Authored examples are not a representative benchmark. Replay measures no Jev capability. Live results on twelve teaching cases are still only a smoke test."
+          },
+          "metric_scope": [
+            "owner"
+          ],
+          "reason": null,
+          "pooled_with_other_arms": false
+        }
+      }
+    },
+    {
+      "name": "rules",
+      "kind": "deterministic_rules",
+      "live": false,
+      "pinned_version": "keyword-rules-v1",
+      "live_verified": false,
+      "attempts": 4,
+      "succeeded": 4,
+      "failed": 0,
+      "failures": [],
+      "cases": [
+        {
+          "case_id": "S02",
+          "pack": "supply",
+          "model": "keyword-rules-v1",
+          "answers": {
+            "issue": "delivery",
+            "owner": "operations",
+            "severity": 2,
+            "sufficient": 0,
+            "contradiction": 0,
+            "next_evidence": "tracking"
+          },
+          "latency_ms": null,
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "estimated_cost_usd": null
+        },
+        {
+          "case_id": "S04",
+          "pack": "supply",
+          "model": "keyword-rules-v1",
+          "answers": {
+            "issue": "quality",
+            "owner": "quality",
+            "severity": 2,
+            "sufficient": 1,
+            "contradiction": 0,
+            "next_evidence": "quality_record"
+          },
+          "latency_ms": null,
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "estimated_cost_usd": null
+        },
+        {
+          "case_id": "T03",
+          "pack": "service",
+          "model": "keyword-rules-v1",
+          "answers": {
+            "issue": "other",
+            "owner": "other",
+            "severity": 1,
+            "sufficient": 0,
+            "contradiction": 1,
+            "next_evidence": "none"
+          },
+          "latency_ms": null,
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "estimated_cost_usd": null
+        },
+        {
+          "case_id": "Q02",
+          "pack": "review",
+          "model": "keyword-rules-v1",
+          "answers": {
+            "issue": "routine",
+            "owner": "other",
+            "severity": 0,
+            "sufficient": 1,
+            "contradiction": 0,
+            "next_evidence": "none"
+          },
+          "latency_ms": null,
+          "usage": {
+            "input_tokens": 0,
+            "output_tokens": 0
+          },
+          "estimated_cost_usd": null
+        }
+      ],
+      "tracks": {
+        "minimal_decision": {
+          "answered": 4
+        },
+        "comparable_distribution": {
+          "available": false,
+          "metrics": null,
+          "metric_scope": [
+            "owner"
+          ],
+          "reason": "No distribution for question 'owner' in 3 of 3 scorable case(s), so every metric on this track is unavailable rather than zero. None was fabricated. S02: Keyword rules return a category only. They provide no class distribution, so none was fabricated and this track is unavailable.; T03: Keyword rules return a category only. They provide no class distribution, so none was fabricated and this track is unavailable.; Q02: Keyword rules return a category only. They provide no class distribution, so none was fabricated and this track is unavailable.",
+          "pooled_with_other_arms": false
+        }
+      }
+    }
+  ],
+  "expected_owner": {
+    "S02": "operations",
+    "S04": "quality",
+    "T03": "operations",
+    "Q02": "assurance"
+  },
+  "planted_error": {
+    "S02": false,
+    "S04": true,
+    "T03": false,
+    "Q02": false
+  },
+  "created_at": "2026-09-18T16:04:40.160337+00:00"
+}

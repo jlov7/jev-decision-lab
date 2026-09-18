@@ -15,8 +15,10 @@ choice or score, and exposes a separate provider confidence statistic. This modu
 normalizes both without pretending they are interchange-able, and never fabricates a
 distribution the provider did not return (docs/ACCESS_AND_TROUBLESHOOTING.md).
 
-No call in this module has been verified against a live route. ``live_verified`` is
-False on every arm and stays that way until an authenticated response is observed.
+``live_verified`` records whether an arm's mapping has been checked against a real
+response. The native TypeSafe arm was verified on 18 September 2026: sixteen authenticated
+answers from ``jev-1.13.0`` passed ``engine.validate`` (see ``evidence/``). The Gateway arm
+has never been called and stays False.
 """
 
 from __future__ import annotations
@@ -99,6 +101,7 @@ class NativeArm(ProviderArm):
     name = "native"
     kind = "live_typesafe"
     live = True
+    live_verified = True  # 2026-09-18: authenticated jev-1.13.0 responses validated end to end
     pinned_version = provider.ENDPOINT
 
     def __init__(self, prepaid=None):
@@ -107,7 +110,11 @@ class NativeArm(ProviderArm):
     def call(self, request: dict, case_id: str | None = None) -> dict:
         response, provenance = provider.live(request, prepaid=self.prepaid)
         engine.validate(request, response, live=True)
-        provenance = dict(provenance, live_verified=False, adapter_schema_version=SCHEMA_VERSION)
+        provenance = dict(
+            provenance,
+            live_verified=self.live_verified,
+            adapter_schema_version=SCHEMA_VERSION,
+        )
         return {
             "raw": response,
             "provenance": provenance,

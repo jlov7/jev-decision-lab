@@ -63,7 +63,7 @@ Three properties are enforced in code rather than left to reviewer discipline:
 
 The Claude arm (`jev_lab/llm_arm.py`, arm name `claude`) is the protocol's cheap constrained-output baseline: it asks the official SDK for exactly the declared categories, levels and booleans through structured output, reports them on the minimal-decision track, and marks the distribution track unavailable because a generative model returns no class distribution. Its model is pinned by `JEV_COMPARE_MODEL` (default `claude-haiku-4-5`) and its cost uses dated list prices. `python3 -m jev_lab compare --arms native,claude --mode live --allow-network` runs both live arms from the terminal; the Live lab runs them from the browser after consent.
 
-`live_verified` is `false` throughout until an authenticated response has been recorded. Gateway evaluation is reachable only through the vendor's TypeScript AI SDK, so the Gateway arm in this standard-library prototype is a documented mapping layer whose transport is unresolved by design. `docs/QA.md` records that boundary.
+`live_verified` is `true` for the native arm since 18 September 2026, when sixteen authenticated `jev-1.13.0` responses passed the validator end to end (`evidence/`), and `false` for every other arm. Gateway evaluation is reachable only through the vendor's TypeScript AI SDK, so the Gateway arm in this standard-library prototype is a documented mapping layer whose transport is unresolved by design. `docs/QA.md` records that boundary.
 
 ## Predeclare the decision
 

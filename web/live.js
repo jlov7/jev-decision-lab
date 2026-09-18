@@ -73,11 +73,13 @@ function renderBurst(r) {
   tile('tP95', fmtMs(s.latency_ms.p95), dim);
   tile('tWall', live ? fmtMs(r.wall_ms) : '–', dim);
   tile('tTokens', s.input_tokens === null ? '–' : s.input_tokens.toLocaleString(), dim);
-  tile('tCost', live ? fmtCost(s.estimated_cost_usd) : '–', dim);
+  const cost = s.estimated_cost_usd;
+  const subCent = live && cost !== null && cost < 0.01;
+  tile('tCost', live ? (subCent ? `${(cost * 100).toFixed(3)}¢` : fmtCost(cost)) : '–', dim);
   $('tCostNote').textContent = live
-    ? s.estimated_cost_usd === null
+    ? cost === null
       ? `${s.cost_unknown_cases} case(s) unknown`
-      : `${cents(s.estimated_cost_usd)} · dated public price`
+      : `${subCent ? fmtCost(cost) : cents(cost)} · dated public price`
     : 'no model call';
   tile('tCalls', `${s.succeeded} · ${s.failed}`, s.failed ? 'warn' : dim);
   $('tCallsNote').textContent = live

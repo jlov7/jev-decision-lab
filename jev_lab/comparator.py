@@ -13,8 +13,8 @@ Three constraints from the source documents shape this module:
     back to replay output.
 
 This module computes no verdict, ranks no arm, and asserts no accuracy. It reports what
-each arm returned, what it cost, and what it could not answer. No call has been verified
-against a live route.
+each arm returned, what it cost, and what it could not answer. Whether a live arm's
+answers came from authenticated calls is stated per report, never assumed.
 
 Consent and transport gating are owned upstream, not here. ``provider.live`` refuses
 before sending unless ``TYPESAFE_API_KEY`` and ``JEV_ALLOW_LIVE=1`` are set in the
@@ -39,16 +39,30 @@ WARNINGS = (
         "Arms are reported side by side and are never pooled into one evaluation. This report "
         "does not rank arms and does not claim accuracy."
     ),
-    (
-        "Live arms were not verified against a live provider route in this run: no authenticated "
-        "call was made, so nothing here is evidence of live Jev behaviour."
-    ),
     "A distribution a provider did not return is reported as unavailable, never as zero.",
     (
         "Synthetic replay probabilities are authored teaching fixtures. They measure no model "
         "capability and are not a benchmark."
     ),
 )
+
+
+NO_LIVE_WARNING = (
+    "Live arms were not verified against a live provider route in this run: no authenticated "
+    "call was made, so nothing here is evidence of live Jev behaviour."
+)
+
+
+def _live_warning(reports: list[dict], n_cases: int) -> str:
+    verified = [r for r in reports if r["live_verified"] and r["succeeded"]]
+    if not verified:
+        return NO_LIVE_WARNING
+    names = ", ".join(r["name"] for r in verified)
+    return (
+        f"Live arm answers in this run ({names}) came from authenticated calls on the account "
+        f"owner's key. {n_cases} case(s) is a smoke test, not a benchmark, and one run does not "
+        "establish calibration."
+    )
 
 
 def compare(case_ids: list[str], arms: list[ProviderArm]) -> dict:
@@ -58,12 +72,15 @@ def compare(case_ids: list[str], arms: list[ProviderArm]) -> dict:
     rather than retried or replaced. Gating is the provider's job, not this layer's.
     """
     cases = _resolved_cases(case_ids, arms)
+    reports = [_arm_report(arm, cases) for arm in arms]
+    warnings = list(WARNINGS)
+    warnings.insert(1, _live_warning(reports, len(cases)))
     return {
         "schema_version": SCHEMA_VERSION,
         "ranked": False,
         "cases": [case["id"] for case in cases],
-        "warnings": list(WARNINGS),
-        "arms": [_arm_report(arm, cases) for arm in arms],
+        "warnings": warnings,
+        "arms": reports,
     }
 
 

@@ -59,7 +59,10 @@ Still not executed: any authenticated Jev or Claude call.
 | Playground, live | One free-form synthetic incident (badge readers rejecting cards after a deploy) answered: outage 0.99, operations 0.93, severity 1.2, next evidence telemetry. 1,018 input tokens, 368 ms |
 | Owner agreement | 10 of 11 validated cases matched the teaching label. S04 live answer was quality at 1.00 (the fixture plants operations). Q02 owner split other 0.56 / assurance 0.36, held for a person |
 | Follow-up fixes | Validator tolerances derived from two-decimal rounding; live answers that fail validation are retained with raw response, usage and cost; server prints one structured stderr line per failed request; workbench and burst rows show the retained answer |
-| Evidence | `evidence/first-live-2026-09-18.json` holds the burst summary and eleven receipts. No credential appears in it |
+| Burst 2, after the validator fix | 12 of 12 validated. p50 327 ms, p95 464 ms, wall 802 ms, 12,977 input tokens, about $0.00055. Owner agreement 11 of 12 (Q02 again "other"). Run-to-run drift across eleven common cases: top-owner probability within 0.03, severity within 0.05; Q02 route moved from Human review to Repair the evidence because the next-evidence head changed from "none" to a named type |
+| Compare, live, four cases | Native Jev beside replay and keyword rules on S02, S04, T03, Q02. Rules fired "delivery" on S02's delay wording and "other" on T03; Jev answered routine 0.72 and outage. Native arm now reports `live_verified: true`; the compare warning states that authenticated calls were made instead of denying it |
+| Screenshots | `docs/images/live-burst.png` and `docs/images/compare.png` are rendered from the saved evidence through the current UI code without new calls. The compare footer in the image shows the warning the current comparator emits; the stored report carries the older text the pre-fix server produced |
+| Evidence | `evidence/first-live-2026-09-18.json`, `evidence/live-2026-09-18-run2.json` and `evidence/compare-live-2026-09-18.json` hold the summaries and receipts. No credential appears in them |
 
 ## Browser limitation—do not hide this
 

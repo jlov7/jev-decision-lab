@@ -87,7 +87,7 @@ Requirements: Python 3.10 or newer and a modern browser. [`uv`](https://docs.ast
 git clone https://github.com/jlov7/jev-decision-lab.git
 cd jev-decision-lab
 uv run python3 scripts/setup_lab.py      # rebuild the authored datasets from the reviewed seed scripts
-uv run python3 -m unittest discover -s tests   # 186 tests, about two seconds
+uv run python3 -m unittest discover -s tests   # 187 tests, about two seconds
 uv run python3 -m jev_lab                # serve on http://127.0.0.1:8765
 ```
 
@@ -448,7 +448,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 186 tests
+uv run python3 -m unittest discover -s tests -v    # 187 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint
@@ -467,24 +467,30 @@ What the suite proves, by area:
 
 CI runs the same steps on every push. The UI was also exercised in a real browser against the running server at desktop and 375 px widths; that check caught, and led to the fix of, a Content Security Policy violation. Details in [docs/QA.md](docs/QA.md).
 
-### The first live run, 18 September 2026
+### The first live runs, 18 September 2026
 
-The first authenticated burst was fired from the Live lab on the account owner's key, with consent, at 15:53 UTC. Twelve cases, six concurrent. The raw receipts are in [evidence/first-live-2026-09-18.json](evidence/first-live-2026-09-18.json).
+The first authenticated bursts were fired from the Live lab on the account owner's key, with consent. Two bursts of twelve cases, six concurrent, one free-form playground call and one four-case compare against the replay and keyword-rules arms. Raw receipts: [evidence/first-live-2026-09-18.json](evidence/first-live-2026-09-18.json), [evidence/live-2026-09-18-run2.json](evidence/live-2026-09-18-run2.json), [evidence/compare-live-2026-09-18.json](evidence/compare-live-2026-09-18.json).
 
-| Measure | Observed |
-|---|---|
-| Model echoed | `jev-1.13.0` on every answer |
-| Latency, client-observed | p50 343 ms, p95 512 ms, wall time 938 ms for all twelve |
-| Input tokens | 11,902 across eleven validated answers, about 1,080 per case |
-| Estimated cost | $0.0005 for the burst, about 0.05 cents |
-| Validated answers | 11 of 12 |
-| Owner agreement with the teaching labels | 10 of 11 validated, S04 included |
+| Measure | Burst 1 | Burst 2 |
+|---|---|---|
+| Model echoed | `jev-1.13.0` on every answer | same |
+| Latency, client-observed | p50 343 ms, p95 512 ms, wall 938 ms | p50 327 ms, p95 464 ms, wall 802 ms |
+| Input tokens | 11,902 over 11 validated answers | 12,977 over 12, about 1,080 per case |
+| Estimated cost | $0.0005 | $0.00055, about 0.055 cents |
+| Validated answers | 11 of 12 | 12 of 12 |
+| Owner agreement with the teaching labels | 10 of 11 | 11 of 12 |
 
-Three things the real responses taught:
+![Live burst: twelve real receipts with per-case latency, owner probability and route](docs/images/live-burst.png)
 
-1. **Jev rounds probabilities to two decimals.** S02's five-option distribution summed to slightly more than one and the original validator, which allowed 0.002, refused it. The tolerance is now derived from that rounding (half a unit in the last place per option), and a live answer that fails validation is retained with its raw response, latency, usage and cost instead of being discarded as "cost unknown".
-2. **On S04, live Jev picked the right team.** The authored fixture plants a confident wrong owner to teach that confidence cannot validate itself. The real model answered quality with probability 1.00. Keep both in view: the fixture is a lesson, the live answer is one observation.
-3. **Q02 is a genuine disagreement, not a bug.** The draft sentence is careful and supported, so Jev put 0.56 on "other" and 0.36 on assurance for the owner. The policy held it for a person because no owner cleared the threshold. That is the intended behaviour when a model is unsure.
+Five things the real responses taught:
+
+1. **Jev rounds probabilities to two decimals.** S02's five-option distribution summed to slightly more than one and the original validator, which allowed 0.002, refused it. Tolerances are now derived from that rounding, and a live answer that fails validation is retained with its raw response, latency, usage and cost instead of vanishing as "cost unknown". The second burst validated all twelve.
+2. **On S04, live Jev picked the right team, twice.** The authored fixture plants a confident wrong owner to teach that confidence cannot validate itself. The real model answered quality with probability 1.00 both times. Keep both in view: the fixture is a lesson, the live answers are two observations.
+3. **Q02 is a genuine disagreement, not a bug.** The draft sentence is careful and supported, so Jev put about 0.55 on "other" and 0.36 on assurance for the owner. Both runs held it back from a team recommendation, which is the intended behaviour when no owner clears the threshold.
+4. **Answers drift a little between calls, and policy notices.** Across the eleven cases both bursts validated, top-owner probabilities moved by at most 0.03 and severity scores by at most 0.05. One route changed: Q02 went to a person in the first run because the next-evidence head said "none" while sufficiency was low, and to "repair the evidence" in the second because that head named a type. Small model drift at a rule boundary flips a route. That is why receipts record the response, not just the decision.
+5. **The delay trap is real.** In the live compare on S02, the keyword rule read "delay" and fired delivery; Jev read the same message and answered routine at 0.72 with operations as owner. On T03 the rule found no keyword and gave up; Jev called the outage. The rules arm is hand-fit and not a baseline, but the contrast is exactly what a judgment model is for.
+
+![Live compare: Jev beside the replay fixture and the keyword-rules arm on four cases](docs/images/compare.png)
 
 **What remains unverified:** the Claude comparison arm has not been called on this account, and twelve cases remain a smoke test.
 
