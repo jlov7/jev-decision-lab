@@ -79,6 +79,13 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(body["provenance"]["usage"]["input_tokens"], 500)
         self.assertNotIn("test-key-not-real", json.dumps(body))
 
+    def test_report_script_is_served(self):
+        with urllib.request.urlopen(self.base + "/report.js") as r:
+            body = r.read().decode()
+            self.assertIn("text/javascript", r.headers["Content-Type"])
+        self.assertIn("buildSessionReport", body)
+        self.assertNotIn("session_token", body, "the report must never embed the lab token")
+
     def test_token_required(self):
         with self.assertRaises(urllib.error.HTTPError) as e:
             self.post("/api/run", {"case_id": "S01"})

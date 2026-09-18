@@ -92,6 +92,14 @@ Still not executed: any authenticated Jev or Claude call.
 | First-visit panel | Shows on a fresh visit, hides on *Got it*, stays hidden after reload via a guarded localStorage flag; page still works when storage is unavailable |
 | Copy pass | README opening and plain-English section rewritten for a first-time reader; `docs/START_HERE.md` added as the one page to hand someone; no em dashes remain in README, START_HERE or the app |
 
+## Phase 4 session report (0.4) — verified with headless Chromium on current code
+
+| Check | Result |
+|---|---|
+| Builder | `buildSessionReport()` run in the real app with the saved burst 2, probe S02, ablation S04 and compare run 2 loaded: 13 KB, four sections, zero external references, session token absent, no key-like strings |
+| Standalone render | The exported file opened from disk with no console errors and no failed requests; screenshot at `docs/images/session-report.png`; example committed as `docs/example-session-report.html` |
+| Not yet executed | Clicking the button in the desktop browser pane, which triggers a file download the pane does not expose. The live server process predates `report.js` in its static allow-list and needs a restart to serve it |
+
 ## Browser limitation—do not hide this
 
 The Browser plugin was not available. System Chromium was available through Playwright, but direct navigation to the local server returned `ERR_BLOCKED_BY_ADMINISTRATOR`. No administrator policy was disabled. The browser test therefore rendered the local HTML/CSS/JavaScript and used a test-only fetch bridge to the **actual loopback HTTP server**.

@@ -71,7 +71,7 @@ Twelve authored, synthetic cases across three industries drive everything. Until
 | Tab | What it does | Needs a key? |
 |---|---|---|
 | **Workbench** | Pick a scenario and case, run six typed judgments, inspect every distribution, change the policy threshold or mark evidence stale and replay the policy with zero new model calls, recheck the action boundary, export a receipt | No (replay) / Yes (live) |
-| **Live lab** | **Burst:** fire all twelve cases concurrently and read p50/p95 latency, tokens and estimated cost. Click a row to inspect its receipt. **Playground:** write your own situation and questions, with a live byte counter against the HTTP and provider ceilings. **Compare:** Jev beside a constrained-output Claude baseline and a keyword-rules arm; S04 is labelled as a planted teaching error and excluded from owner-agreement counts. **Experiments:** a stability probe (same case up to eight times, see how far every answer moves) and evidence ablation (remove one excerpt at a time, see which one carried the judgment) | Burst/compare replay work offline; live Jev/Claude need a key |
+| **Live lab** | **Burst:** fire all twelve cases concurrently and read p50/p95 latency, tokens and estimated cost. Click a row to inspect its receipt. **Playground:** write your own situation and questions, with a live byte counter against the HTTP and provider ceilings. **Compare:** Jev beside a constrained-output Claude baseline and a keyword-rules arm; S04 is labelled as a planted teaching error and excluded from owner-agreement counts. **Experiments:** a stability probe (same case up to eight times, see how far every answer moves) and evidence ablation (remove one excerpt at a time, see which one carried the judgment). **Export session report** writes everything this tab has seen to one HTML file | Burst/compare replay work offline; live Jev/Claude need a key |
 | **Model garden** | A deterministic worksheet: given a task type and constraints, which *kind* of capability belongs, and what checks are owed before procurement | No |
 | **Signal audit** | A dated chronology of public signals before Jev's launch, filterable by as-of date, with explicit "ingestion unknown" caveats | No |
 | **Learn & measure** | The three primitives explained, the confident-wrong teaching case, and calibration metrics over the authored fixtures | No |
@@ -92,7 +92,7 @@ cd jev-decision-lab
 uv run jev-lab
 ```
 
-That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (202 tests, about two seconds).
+That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (203 tests, about two seconds).
 
 Open **http://127.0.0.1:8765**. You are in synthetic replay: the banner at the top says so, and stays visible on every screen.
 
@@ -341,6 +341,12 @@ In replay mode both experiments show the layout with authored fixtures, and say 
 
 ![Experiments: eight-call stability probe on S02 with min, median and max bars per option; evidence ablation on S04 with the inspection excerpt highlighted as most influential](docs/images/experiments.png)
 
+### Share what you saw
+
+**Export session report** in the Live lab writes one self-contained HTML file from whatever this browser tab has seen: burst, probe, ablation, compare and playground results, each with its own warnings, plus the model version and the dated price. It is built in the browser, makes no call, and contains no key, session token or company data. Send it to a colleague, open it on a phone, print it. An example built from the 18 September runs is at [docs/example-session-report.html](docs/example-session-report.html).
+
+![Session report: header, burst tiles and the twelve-case table with latency bars](docs/images/session-report.png)
+
 ### Provider arms and the two comparison tracks
 
 `adapters.py` defines one interface, `ProviderArm.call(request) → {raw, provenance, normalized}`, and four arms:
@@ -396,14 +402,14 @@ jev-decision-lab/
 │   ├── experiments.py         request-shape experiment (one batch vs six serial vs six parallel)
 │   ├── server.py              loopback HTTP server, allow-listed fields, receipt store, CSP
 │   └── __main__.py            serve · check · smoke · eval · bench · compare
-├── web/                       index.html · app.js · live.js · style.css · live.css · favicon.svg (no build step)
+├── web/                       index.html · app.js · live.js · report.js · style.css · live.css · favicon.svg (no build step)
 ├── data/                      generated: cases · packs · replay · labels · signals
 ├── scripts/
 │   ├── setup_lab.py           regenerate data and the source register
 │   ├── seed_cases.py          the authored cases, questions, fixtures and labels
 │   ├── seed_signals.py        the prelaunch chronology
 │   └── source_register.py     bibliography metadata
-├── tests/                     202 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
+├── tests/                     203 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
 ├── docs/                      START_HERE, research report, frontier audit, build packet, evaluation protocol, QA record, workshop
 ├── evidence/                  retained test output and browser-check records
 ├── runs/                      CLI outputs (replay evaluation and compare are committed as examples)
@@ -492,7 +498,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 202 tests
+uv run python3 -m unittest discover -s tests -v    # 203 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint

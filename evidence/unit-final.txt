@@ -165,6 +165,7 @@ test_live_validation_failure_returns_the_retained_answer (test_server.ServerTest
 ok
 test_no_path_traversal (test_server.ServerTests.test_no_path_traversal) ... ok
 test_replay_reconsider (test_server.ServerTests.test_replay_reconsider) ... ok
+test_report_script_is_served (test_server.ServerTests.test_report_script_is_served) ... ok
 test_synthetic_eval (test_server.ServerTests.test_synthetic_eval) ... ok
 test_token_required (test_server.ServerTests.test_token_required) ... ok
 test_action_preview_hold (test_server.ShowcaseEndpointTests.test_action_preview_hold) ... ok
@@ -194,6 +195,7 @@ test_playground_unconfigured_is_403 (test_server.ShowcaseEndpointTests.test_play
 ok
 test_receipt_lookup_returns_the_stored_run (test_server.ShowcaseEndpointTests.test_receipt_lookup_returns_the_stored_run) ... ok
 test_replay_reconsider (test_server.ShowcaseEndpointTests.test_replay_reconsider) ... ok
+test_report_script_is_served (test_server.ShowcaseEndpointTests.test_report_script_is_served) ... ok
 test_synthetic_eval (test_server.ShowcaseEndpointTests.test_synthetic_eval) ... ok
 test_token_required (test_server.ShowcaseEndpointTests.test_token_required) ... ok
 test_unknown_receipt_is_400 (test_server.ShowcaseEndpointTests.test_unknown_receipt_is_400) ... {"event": "request_failed", "path": "/api/receipt", "status": 400, "error": "ValueError", "message": "Receipt expired or unknown. Run the case again."}
@@ -216,6 +218,6 @@ test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... o
 test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 202 tests in 1.714s
+Ran 204 tests in 1.692s
 
 OK
