@@ -42,6 +42,15 @@ The Claude arm and the live burst have **not** been run against a live route in 
 
 Still not executed: any authenticated Jev or Claude call.
 
+## Version 0.3.2 follow-ups (OpenCode review) — verified in a real browser
+
+| Check | Result |
+|---|---|
+| Teaching note timing | Selecting S04 shows no teaching note; after *Run six judgments* the note and planted-error tag appear; switching to S02 clears it. Predict-first workshop exercise restored. `/api/cases` still carries the note for evaluators |
+| Severity top level | `decide()` reads the highest declared level instead of the literal key `3`; regression test covers 3- and 5-level severity scales. Route results on the twelve cases unchanged |
+| Live gate order | With no key, `run` and `burst` now report *Live mode disabled* before asking for consent, matching the playground |
+| Suite | 181 tests pass; no console errors; zero inline `style` attributes |
+
 ## Browser limitation—do not hide this
 
 The Browser plugin was not available. System Chromium was available through Playwright, but direct navigation to the local server returned `ERR_BLOCKED_BY_ADMINISTRATOR`. No administrator policy was disabled. The browser test therefore rendered the local HTML/CSS/JavaScript and used a test-only fetch bridge to the **actual loopback HTTP server**.

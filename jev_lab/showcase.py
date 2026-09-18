@@ -66,13 +66,13 @@ def burst(
     engine.number(threshold)
     prepaid = None
     if mode == "live":
-        if consent is not True:
-            raise PermissionError(
-                "Explicit consent is required to send these synthetic cases to TypeSafe."
-            )
         if not provider.live_enabled():
             raise PermissionError(
                 "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."
+            )
+        if consent is not True:
+            raise PermissionError(
+                "Explicit consent is required to send these synthetic cases to TypeSafe."
             )
         prepaid = provider.BUDGET.hold(len(cases))
     elif mode != "replay":

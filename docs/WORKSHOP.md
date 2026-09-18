@@ -14,7 +14,7 @@
 
 ## Sixty-minute engineer session
 
-Spend 10 minutes on the three primitives and request/response inspection. Spend 15 minutes on S02, S04, T03 and Q04, asking participants to predict the policy route before running. Spend 10 minutes distinguishing missing evidence, high consequence and expired authority. Spend 10 minutes on the source timeline and why “not in the brief” is not automatically an ingestion failure. Spend 10 minutes writing a rubric for one real workflow using synthetic examples. Spend 5 minutes agreeing a comparator, failure cost and a kill criterion.
+Spend 10 minutes on the three primitives and request/response inspection. Spend 15 minutes on S02, S04, T03 and Q04, asking participants to predict the policy route before running. The workbench shows a case's teaching note only after it has been run, so the prediction is not spoiled. Spend 10 minutes distinguishing missing evidence, high consequence and expired authority. Spend 10 minutes on the source timeline and why “not in the brief” is not automatically an ingestion failure. Spend 10 minutes writing a rubric for one real workflow using synthetic examples. Spend 5 minutes agreeing a comparator, failure cost and a kill criterion.
 
 An optional live call belongs after everyone understands replay provenance and after the account owner explicitly authorizes it. The workshop does not need live access to explain the architecture.
 

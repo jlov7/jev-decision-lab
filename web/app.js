@@ -124,13 +124,15 @@ function fillCaseView(id) {
   $('evidence').innerHTML = c.state.evidence
     .map((e) => `<div class="source"><strong>${esc(e.id)}</strong>${esc(e.text)}</div>`)
     .join('');
-  $('teachingNote').innerHTML = c.teaching_note
-    ? `<p class="notice">${esc(c.teaching_note)}${
-        c.planted_error
-          ? ' This is a planted teaching error, not a measured Jev failure.'
-          : ''
-      }</p>`
-    : '';
+}
+function teachingNote() {
+  const c = state.cases.find((x) => x.id === state.caseId);
+  $('teachingNote').innerHTML =
+    c && c.teaching_note
+      ? `<p class="notice">${esc(c.teaching_note)}${
+          c.planted_error ? ' This is a planted teaching error, not a measured Jev failure.' : ''
+        }</p>`
+      : '';
 }
 function selectCase(id) {
   state.receipt = null;
@@ -139,7 +141,7 @@ function selectCase(id) {
   fillCaseView(id);
   $('route').textContent = 'Ready to inspect';
   $('routeText').textContent = 'Run this case to inspect the model–policy boundary.';
-  ['decisionMetrics', 'nextEvidence', 'trace', 'actionResult', 'headCallout'].forEach(
+  ['decisionMetrics', 'nextEvidence', 'trace', 'actionResult', 'headCallout', 'teachingNote'].forEach(
     (k) => ($(k).innerHTML = ''),
   );
   $('answers').innerHTML =
@@ -173,6 +175,7 @@ function render() {
     d = r.decision,
     p = r.provenance;
   provenance();
+  teachingNote();
   $('route').textContent = routes[d.route][0];
   $('routeText').textContent = routes[d.route][1];
   const mismatch = d.inconsistencies && d.inconsistencies[0];

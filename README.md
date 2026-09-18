@@ -98,7 +98,7 @@ Try this in order:
 1. In **Workbench**, keep *Supplier disruption* and case **S02** ("The word delay is not a delay"). Click **Run six judgments**. Expand *Investigating team* to see the full distribution.
 2. Change *Source metadata simulation* to **Evidence has expired** and click **Replay policy**. The route changes to *Refresh the evidence* with **0 new model calls**. The model did not get smarter; the code applied a new constraint to an old judgment.
 3. Scroll to **The moment before action**. Untick *Required approval is current* and click **Recheck**. The action is **held**.
-4. Select **S04** ("Confident, but the wrong team") and run it. The fixture is 98% sure the owner is operations. Open **Learn & measure** and evaluate: the label says quality. This error was planted on purpose to show that confidence cannot validate itself.
+4. Select **S04** ("Confident, but the wrong team") and run it. The fixture is 98% sure the owner is operations. The case's teaching note appears only after the run, so you can predict the route first. Open **Learn & measure** and evaluate: the label says quality. This error was planted on purpose to show that confidence cannot validate itself.
 
 No network call has happened. Every number you saw was authored.
 

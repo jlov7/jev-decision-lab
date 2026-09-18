@@ -53,8 +53,9 @@ class BurstTests(unittest.TestCase):
         with patch.dict(os.environ, {"JEV_ALLOW_LIVE": "", "TYPESAFE_API_KEY": ""}):
             with self.assertRaises(PermissionError):
                 showcase.burst(["S01"], mode="live", consent=False)
-            with self.assertRaises(PermissionError):
+            with self.assertRaises(PermissionError) as caught:
                 showcase.burst(["S01"], mode="live", consent=True)
+            self.assertIn("Live mode disabled", str(caught.exception))
 
     def test_live_burst_summarises_latency_tokens_and_cost(self):
         with (

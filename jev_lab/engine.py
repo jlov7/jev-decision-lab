@@ -155,7 +155,8 @@ def decide(case: dict, response: dict, threshold: float = 0.85, variant: str = "
     a = response["answers"]
     owner = a["owner"]["choice"]
     p = a["owner"]["probabilities"][owner]
-    critical = a["severity"]["probabilities"]["3"]
+    severity = a["severity"]["probabilities"]
+    critical = severity[max(severity, key=int)]  # top declared level, whatever the pack size
     facts = copy.deepcopy(case["facts"])
     if variant == "stale":
         facts["source_fresh"] = False
@@ -298,6 +299,10 @@ def run(
             "warning": "Authored teaching probabilities, not measured Jev outputs or performance evidence.",
         }
     elif mode == "live":
+        if not provider.live_enabled():
+            raise PermissionError(
+                "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."
+            )
         if consent is not True:
             raise PermissionError(
                 "Explicit consent is required to send this synthetic case to TypeSafe."

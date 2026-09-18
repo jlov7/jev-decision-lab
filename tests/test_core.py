@@ -1,4 +1,6 @@
+import copy
 import json
+import os
 import unittest
 from unittest.mock import patch
 
@@ -124,6 +126,28 @@ class PolicyTests(unittest.TestCase):
     def test_boolean_consent_not_string(self):
         with self.assertRaises(PermissionError):
             engine.run("S02", "live", consent="true")
+
+    def test_live_disabled_reported_before_consent(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(PermissionError) as caught:
+                engine.run("S02", "live", consent=True)
+            self.assertIn("Live mode disabled", str(caught.exception))
+            with self.assertRaises(PermissionError) as caught:
+                engine.run("S02", "live", consent=False)
+            self.assertIn("Live mode disabled", str(caught.exception))
+
+    def test_critical_reads_top_severity_level(self):
+        case = engine.case_by_id("S01")
+        response = copy.deepcopy(engine.run("S01")["response"])
+        sev = response["answers"]["severity"]
+        sev["probabilities"] = {"0": 0.1, "1": 0.1, "2": 0.1, "3": 0.1, "4": 0.6}
+        sev["legend"] = {str(i): f"level {i}" for i in range(5)}
+        sev["score"] = 3.0
+        self.assertEqual(engine.decide(case, response)["critical_probability"], 0.6)
+        sev["probabilities"] = {"0": 0.2, "1": 0.3, "2": 0.5}
+        sev["legend"] = {str(i): f"level {i}" for i in range(3)}
+        sev["score"] = 1.3
+        self.assertEqual(engine.decide(case, response)["critical_probability"], 0.5)
 
     def test_stale_overrides(self):
         r = engine.reconsider(engine.run("S02"), 0.5, "stale")
