@@ -8,7 +8,7 @@ function liveStatus() {
   const c = state.config;
   setStatus(
     'jevStatus',
-    c.live_enabled ? `Live · ${c.model}` : 'Offline · key not in this server process',
+    c.live_enabled ? `Live · ${c.model}` : 'Offline · no key in this server process',
     c.live_enabled,
   );
   const claudeOn = c.compare_enabled && c.compare_sdk_available;
@@ -25,6 +25,7 @@ function liveStatus() {
     `${c.live_attempts} of ${c.live_attempt_limit} Jev · ${c.compare_attempts} of ${c.compare_attempt_limit} Claude`;
   $('armClaudeModel').textContent = c.compare_model;
   if (c.lab_version) document.querySelector('.brand > span').textContent = c.lab_version;
+  connectionUi(c);
   if (!state.liveInitialised) {
     $('burstMode').value = c.live_enabled ? 'live' : 'replay';
     $('armNative').checked = c.live_enabled;
@@ -38,6 +39,46 @@ function liveStatus() {
 async function refreshConfig() {
   state.config = await api('/api/config');
   liveStatus();
+}
+function connectionUi(c) {
+  const connected = Boolean(c.live_enabled);
+  const fromTerminal = c.key_source === 'terminal';
+  $('connect').textContent = connected ? `Connected · ····${c.key_hint}` : 'Connect Jev ↗';
+  $('connect').classList.toggle('connected', connected);
+  $('apiKey').disabled = fromTerminal;
+  $('connectSubmit').disabled = fromTerminal;
+  $('forgetKey').hidden = c.key_source !== 'browser';
+  $('connectStatus').textContent = fromTerminal
+    ? `Connected with the key from this server's terminal (ending ····${c.key_hint}). The paste box is disabled while it is set.`
+    : connected
+      ? `Connected. Key ending ····${c.key_hint} is held in this server's memory only. Open Live lab, tick consent, and fire the burst.`
+      : 'Not connected. Paste a key to enable live calls in this server process.';
+}
+async function connectSubmit(event) {
+  event.preventDefault();
+  const field = $('apiKey');
+  const key = field.value;
+  field.value = '';
+  if (!key.trim()) return ($('connectStatus').textContent = 'Paste a key first.');
+  $('connectSubmit').disabled = true;
+  try {
+    await api('/api/connect', { api_key: key });
+    state.liveInitialised = false;
+    await refreshConfig();
+  } catch (e) {
+    $('connectStatus').textContent = e.message;
+  } finally {
+    $('connectSubmit').disabled = state.config.key_source === 'terminal';
+  }
+}
+async function forgetKey() {
+  try {
+    await api('/api/disconnect', {});
+    state.liveInitialised = false;
+    await refreshConfig();
+  } catch (e) {
+    $('connectStatus').textContent = e.message;
+  }
 }
 function tile(id, text, tone) {
   const el = $(id);
@@ -333,8 +374,11 @@ async function compareRun() {
   ].filter(Boolean);
   if (!arms.length) return error('Choose at least one arm to compare.');
   if (arms.includes('native') && !state.config.live_enabled)
+    return error('Jev is not connected in this server process. Open Connect Jev, or untick the Jev arm.');
+  const remaining = state.config.live_attempt_limit - state.config.live_attempts;
+  if (arms.includes('native') && remaining < state.cases.length)
     return error(
-      'Jev is not connected in this server process. Open How to connect, or untick the Jev arm.',
+      `Compare needs ${state.cases.length} Jev attempt slots and ${remaining} remain in this server process. Nothing was sent. Restart the server, or start it with a higher JEV_MAX_LIVE_CALLS.`,
     );
   if (
     arms.includes('claude') &&
@@ -415,13 +459,14 @@ function renderCompare(r) {
   $('compareWarnings').textContent = r.warnings.join(' ');
 }
 
-
 $('burstThreshold').oninput = () => syncThreshold('burstThreshold');
 $('burstMode').onchange = consentHint;
 $('armNative').onchange = consentHint;
 $('armClaude').onchange = consentHint;
 $('liveConsent').onchange = consentHint;
 $('connectLive').onclick = () => $('setup').showModal();
+$('connectForm').onsubmit = connectSubmit;
+$('forgetKey').onclick = forgetKey;
 $('burstRun').onclick = burst;
 $('pgRun').onclick = pgRun;
 $('compareRun').onclick = compareRun;
@@ -458,9 +503,6 @@ $('exportCompare').onclick = () => {
     signals();
     liveStatus();
     pgPreset('');
-    $('liveStatus').textContent = state.config.live_enabled
-      ? `Key and enable flag present; account access remains unverified. Model ${state.config.model}. Process attempt cap ${state.config.live_attempt_limit}.`
-      : 'This server is offline-only. Your account is not connected to this process.';
   } catch (e) {
     error('Initialization failed: ' + e.message);
   }

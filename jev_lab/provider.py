@@ -79,14 +79,74 @@ def replay(case_id: str) -> dict:
         raise ValueError("No teaching fixture for this case") from exc
 
 
+# A key pasted into the Connect screen lives here, in this process's memory, and nowhere
+# else: never on disk, never in a log line, never echoed back. Closing the server forgets it.
+_RUNTIME_KEY: str | None = None
+_KEY_LOCK = threading.Lock()
+KEY_MIN, KEY_MAX = 16, 256
+
+
+def _env_key() -> str | None:
+    if os.getenv("JEV_ALLOW_LIVE") == "1" and os.getenv("TYPESAFE_API_KEY"):
+        return os.environ["TYPESAFE_API_KEY"]
+    return None
+
+
+def api_key() -> str | None:
+    """The key live calls will use: the terminal's if it set one, else the pasted one."""
+    with _KEY_LOCK:
+        return _env_key() or _RUNTIME_KEY
+
+
+def key_status() -> dict:
+    """Where the active key came from and its last four characters. Never the key."""
+    env = _env_key()
+    with _KEY_LOCK:
+        runtime = _RUNTIME_KEY
+    key = env or runtime
+    return {
+        "source": "terminal" if env else "browser" if runtime else None,
+        "hint": key[-4:] if key else None,
+    }
+
+
+def connect(key) -> dict:
+    """Hold a pasted key in memory for this server process. Sends nothing to anyone."""
+    if _env_key():
+        raise PermissionError(
+            "This server already has a key from its terminal. Stop it and start it without "
+            "TYPESAFE_API_KEY to use a pasted key instead."
+        )
+    if not isinstance(key, str):
+        raise ValueError("The API key must be text")
+    key = key.strip()
+    if not KEY_MIN <= len(key) <= KEY_MAX or not key.isprintable() or any(c.isspace() for c in key):
+        raise ValueError(
+            f"That does not look like an API key: expected one line of {KEY_MIN} to {KEY_MAX} "
+            "printable characters with no spaces. Nothing was stored."
+        )
+    global _RUNTIME_KEY
+    with _KEY_LOCK:
+        _RUNTIME_KEY = key
+    return key_status()
+
+
+def disconnect() -> dict:
+    """Forget the pasted key. A terminal key cannot be removed from here."""
+    global _RUNTIME_KEY
+    with _KEY_LOCK:
+        _RUNTIME_KEY = None
+    return key_status()
+
+
 def live_enabled() -> bool:
-    return os.getenv("JEV_ALLOW_LIVE") == "1" and bool(os.getenv("TYPESAFE_API_KEY"))
+    return api_key() is not None
 
 
 def _redact(text: str) -> str:
-    key = os.environ.get("TYPESAFE_API_KEY") or ""
-    if key:
-        text = text.replace(key, "[redacted]")
+    for key in {os.environ.get("TYPESAFE_API_KEY") or "", api_key() or ""}:
+        if key:
+            text = text.replace(key, "[redacted]")
     return text
 
 
@@ -112,9 +172,11 @@ def _http_error_detail(exc: urllib.error.HTTPError) -> str:
 
 
 def live(payload: dict, prepaid: Prepaid | None = None) -> tuple[dict, dict]:
-    if not live_enabled():
+    key = api_key()
+    if key is None:
         raise PermissionError(
-            "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."
+            "Live mode disabled. Paste a key in Connect Jev, or set TYPESAFE_API_KEY and "
+            "JEV_ALLOW_LIVE=1 in the server terminal."
         )
     body = json.dumps(payload, allow_nan=False).encode()
     if len(body) > MAX_INPUT_BYTES:
@@ -127,7 +189,7 @@ def live(payload: dict, prepaid: Prepaid | None = None) -> tuple[dict, dict]:
         data=body,
         method="POST",
         headers={
-            "Authorization": "Bearer " + os.environ["TYPESAFE_API_KEY"],
+            "Authorization": "Bearer " + key,
             "Content-Type": "application/json",
             "User-Agent": USER_AGENT,
         },

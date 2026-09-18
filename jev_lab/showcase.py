@@ -68,7 +68,8 @@ def burst(
     if mode == "live":
         if not provider.live_enabled():
             raise PermissionError(
-                "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."
+                "Live mode disabled. Paste a key in Connect Jev, or set TYPESAFE_API_KEY and "
+                "JEV_ALLOW_LIVE=1 in the server terminal."
             )
         if consent is not True:
             raise PermissionError(
@@ -267,8 +268,9 @@ def playground(state, questions, consent: bool = False) -> dict:
     request = playground_request(state, questions)
     if not provider.live_enabled():
         raise PermissionError(
-            "The playground needs a live connection: set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in "
-            "the server terminal. There is no replay for text you wrote yourself."
+            "The playground needs a live connection: paste a key in Connect Jev, or set "
+            "TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal. There is no replay for "
+            "text you wrote yourself."
         )
     if consent is not True:
         raise PermissionError("Explicit consent is required to send your text to TypeSafe.")

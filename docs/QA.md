@@ -66,6 +66,15 @@ Still not executed: any authenticated Jev or Claude call.
 | Attempt cap lesson | The Live lab compare button always runs all twelve cases, so one compare plus one burst exhausts the 20-slot default. A browser-automation crash mid-request still consumed its twelve slots server-side. Raise `JEV_MAX_LIVE_CALLS` for longer sessions |
 | Evidence | `evidence/first-live-2026-09-18.json`, `evidence/live-2026-09-18-run2.json` and `evidence/compare-live-2026-09-18.json` hold the summaries and receipts. No credential appears in them |
 
+## Phase 1 onboarding (0.4) — verified in a real browser
+
+| Check | Result |
+|---|---|
+| One-command start | Fresh `git clone` into a scratch directory, then `uv run jev-lab check`: datasets rebuilt on first run, 12 cases validate. No manual setup step |
+| Paste-a-key connect | Fake key pasted in the Connect screen on an offline scratch server: header shows *Connected · ····CDEF*, Live lab flips to *Live · jev-1.13.0*, burst mode defaults to live, paste field cleared, Forget returns everything to offline. No console errors, zero inline styles, no overflow at 375px |
+| Key never leaves the process | `/api/config` carries only `key_source` and the last four characters; tests assert the key string is absent from config, from error bodies and from the failure log line (which prints "rejected" for `/api/connect`). Terminal key takes precedence and disables the paste box |
+| Suite | 193 tests |
+
 ## Browser limitation—do not hide this
 
 The Browser plugin was not available. System Chromium was available through Playwright, but direct navigation to the local server returned `ERR_BLOCKED_BY_ADMINISTRATOR`. No administrator policy was disabled. The browser test therefore rendered the local HTML/CSS/JavaScript and used a test-only fetch bridge to the **actual loopback HTTP server**.

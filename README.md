@@ -86,10 +86,10 @@ Requirements: Python 3.10 or newer and a modern browser. [`uv`](https://docs.ast
 ```bash
 git clone https://github.com/jlov7/jev-decision-lab.git
 cd jev-decision-lab
-uv run python3 scripts/setup_lab.py      # rebuild the authored datasets from the reviewed seed scripts
-uv run python3 -m unittest discover -s tests   # 187 tests, about two seconds
-uv run python3 -m jev_lab                # serve on http://127.0.0.1:8765
+uv run jev-lab
 ```
+
+That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (193 tests, about two seconds).
 
 Open **http://127.0.0.1:8765**. You are in synthetic replay: the banner at the top says so, and stays visible on every screen.
 
@@ -106,47 +106,63 @@ No network call has happened. Every number you saw was authored.
 
 ## Connect your Jev account
 
-You need an API key from your TypeSafe account. Having access to Jev means you have an account; the key is what the code uses.
+You need an API key from your TypeSafe account. Having access to Jev means you have an account; the key is what the code uses. There are two ways to give it to the lab. Both keep the key on your machine; neither writes it to disk.
 
-1. Open [console.typesafe.ai](https://console.typesafe.ai), go to **Settings → API keys**, and create a key. Check your credits and rate limits there too.
-2. In a terminal, from the `jev-decision-lab` directory, start the server with the key held only in that process:
+### The simple way: paste it
+
+1. Open [console.typesafe.ai](https://console.typesafe.ai), go to **Settings → API keys**, create a key and copy it. Check your credits and rate limits there too.
+2. In the lab, click **Connect Jev** at the top right, paste the key, click **Connect**. The button changes to *Connected · ····last four characters* and the Live lab status card reads *Live · jev-1.13.0*.
+3. Open **Live lab**, tick the consent box, click **Fire 12 cases**.
+
+![Connect screen: paste a key, see it held as four trailing characters, forget it with one click](docs/images/connect.png)
+
+Where the key goes: from your browser to the lab's own server on 127.0.0.1, and no further. The server holds it in memory for as long as it runs. It is never written to disk, never put in a log line, a URL or a page, and never shown again. Click **Forget this key**, or stop the server, and it is gone. Every live call still needs the consent box ticked.
+
+### The careful way: keep it in the terminal
+
+If you would rather the key never touched a browser, start the server with the key held only in that shell. The first command waits for the key without echoing it or saving it to shell history.
 
 ```bash
-read -s TYPESAFE_API_KEY && export TYPESAFE_API_KEY   # prompts silently; nothing is echoed or saved to history
-export JEV_ALLOW_LIVE=1
-uv run python3 -m jev_lab
+read -s TYPESAFE_API_KEY && export TYPESAFE_API_KEY JEV_ALLOW_LIVE=1
+uv run jev-lab
 ```
 
-3. In the browser, open **Live lab**. The status card should read *Live · jev-1.13.0*. Tick the consent box and click **Fire 12 cases**.
+While a terminal key is present, the paste box in Connect Jev is disabled, so there is exactly one active key and you know where it came from.
 
-That is the first real Jev call this project makes. Six concurrent requests, twelve receipts, seventy-two typed judgments. Read the console tiles, then scroll down: each case shows its route, its suggested owner, and a latency bar.
+### Your first live call
+
+Six concurrent requests, twelve receipts, seventy-two typed judgments, in about a second and for a fraction of a cent. Read the console tiles, then scroll down: each case shows its route, its suggested owner, and a latency bar. Click a row to open its receipt on the workbench.
 
 Then try the **Playground**: pick *Start from Supplier disruption* to load a real case and its six questions, edit anything, and click **Ask Jev**. You are now reading distributions for text you wrote.
 
+Each server process caps live attempts (default 20, set `JEV_MAX_LIVE_CALLS` to change it). A full burst or a full compare uses 12 each, so a longer session wants a higher cap. The Live lab shows attempts used and refuses a compare it cannot cover before sending anything.
+
 ### Optional: the Claude comparison arm
 
-The **Compare** section runs the same twelve cases through a constrained-output generative baseline (Claude Haiku 4.5 by default) so you can see Jev's answers, latency and cost next to a familiar alternative. It needs the official Anthropic SDK and a key, in the same terminal:
+The **Compare** section runs the same twelve cases through a constrained-output generative baseline (Claude Haiku 4.5 by default) so you can see Jev's answers, latency and cost next to a familiar alternative. It needs the official Anthropic SDK and an API key from console.anthropic.com, which is billed separately from a Claude subscription. Export it in the same terminal:
 
 ```bash
 uv sync --extra compare
 read -s ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
 export JEV_COMPARE_MODEL=claude-haiku-4-5       # or claude-sonnet-5, claude-opus-5
-uv run python3 -m jev_lab
+uv run jev-lab
 ```
 
 The baseline is asked for exactly the categories, levels and booleans each question declares, through the API's structured-output format. It returns categories only, so it is compared on the *decision* track; it has no probability distribution to compare, and none is invented.
 
-![Compare: an arm card with answered, agreement, latency and cost, then a table of twelve cases against the teaching label](docs/images/compare.png)
+![Compare: an arm card with answered, agreement, latency and cost, then a table of cases against the teaching label](docs/images/compare.png)
 
 ### Terminal-only alternative
 
 ```bash
-uv run python3 -m jev_lab smoke --mode live --allow-network --out runs/first-live.json
+uv run jev-lab smoke --mode live --allow-network --out runs/first-live.json
 ```
 
 Sends one bundled case and writes the full receipt, including the raw response, to disk. Stop and read it if anything about the response surprises the validator.
 
 ### When you are done
+
+Click **Forget this key** in Connect Jev, or stop the server. If you used the terminal route:
 
 ```bash
 unset TYPESAFE_API_KEY ANTHROPIC_API_KEY JEV_ALLOW_LIVE
@@ -448,7 +464,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 187 tests
+uv run python3 -m unittest discover -s tests -v    # 193 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint
@@ -500,6 +516,10 @@ Five things the real responses taught:
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| Connect Jev says the key "does not look like an API key" | The paste had spaces, a line break or was very short. Copy the key again from the console. Nothing was stored. |
+| Connect Jev's paste box is disabled | This server was started with `TYPESAFE_API_KEY` in its terminal, so the terminal key is the active one. Stop it and start it without the variable to paste instead. |
+| Compare refuses with "needs 12 Jev attempt slots" | Each server process caps live attempts (default 20) and a full compare needs 12. Restart the server, or start it with a higher `JEV_MAX_LIVE_CALLS`. |
+| `uv run jev-lab` says `Failed to spawn: jev-lab` | Your checkout predates the command. Run `git pull`, then `uv sync`. `uv run python3 -m jev_lab` always works. |
 | `No module named jev_lab` | Wrong working directory | Run from the repository root |
 | Banner says *Offline · key not in this server process* after exporting the key | The server was started before the export, or in a different terminal | Export in the same terminal, then restart the server. `.env` is not read. |
 | *Live mode is not configured* when clicking a live button | `JEV_ALLOW_LIVE=1` or the key is missing from the server process | Set both, restart |

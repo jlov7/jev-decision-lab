@@ -317,7 +317,8 @@ def run(
     elif mode == "live":
         if not provider.live_enabled():
             raise PermissionError(
-                "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."
+                "Live mode disabled. Paste a key in Connect Jev, or set TYPESAFE_API_KEY and "
+                "JEV_ALLOW_LIVE=1 in the server terminal."
             )
         if consent is not True:
             raise PermissionError(

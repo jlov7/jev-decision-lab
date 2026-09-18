@@ -1379,3 +1379,49 @@ td .cell-sub {
     }
   }
 }
+
+/* connect screen */
+.connect-steps {
+  padding-left: 20px;
+  font-size: 13px;
+}
+.connect-steps li {
+  margin: 12px 0;
+}
+.connect-form {
+  margin-top: 8px;
+}
+.connect-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.connect-row input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.connect-row input:disabled {
+  background: #f3f5f5;
+  color: var(--muted);
+}
+.connect-status {
+  margin: 8px 0 4px;
+  color: var(--muted);
+}
+.connect-why {
+  margin: 12px 0;
+  font-size: 13px;
+}
+.connect-why summary {
+  cursor: pointer;
+  font-weight: 550;
+}
+#connect.connected {
+  border-color: var(--accent);
+  color: var(--accent);
+}

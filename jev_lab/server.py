@@ -34,6 +34,8 @@ FIELDS = {
     "/api/playground": {"state", "questions", "consent"},
     "/api/compare": {"arms", "case_ids", "consent"},
     "/api/receipt": {"receipt_id"},
+    "/api/connect": {"api_key"},
+    "/api/disconnect": set(),
 }
 
 
@@ -69,7 +71,13 @@ class Handler(BaseHTTPRequestHandler):
             "path": urlparse(self.path).path,
             "status": status,
             "error": type(exc).__name__,
-            "message": str(exc)[:300] if status != 500 else "unexpected local error",
+            "message": (
+                "rejected"
+                if urlparse(self.path).path == "/api/connect"
+                else str(exc)[:300]
+                if status != 500
+                else "unexpected local error"
+            ),
         }
         print(json.dumps(line), file=sys.stderr, flush=True)
 
@@ -109,6 +117,8 @@ class Handler(BaseHTTPRequestHandler):
                 {
                     "session_token": TOKEN,
                     "live_enabled": provider.live_enabled(),
+                    "key_source": provider.key_status()["source"],
+                    "key_hint": provider.key_status()["hint"],
                     "live_attempts": provider.BUDGET.used,
                     "live_attempt_limit": provider.BUDGET.limit,
                     "model": engine.request_for(engine.cases()[0])["model"],
@@ -200,6 +210,11 @@ class Handler(BaseHTTPRequestHandler):
                         body.get("task"), body.get("allow_cloud"), body.get("consequence_high")
                     ),
                 )
+            if path == "/api/connect":
+                status = provider.connect(body.get("api_key"))
+                return self.send(200, {"connected": True, **status})
+            if path == "/api/disconnect":
+                return self.send(200, {"connected": False, **provider.disconnect()})
             if path == "/api/receipt":
                 stored = lookup(body.get("receipt_id"))
                 return self.send(200, dict(stored, receipt_id=body.get("receipt_id")))

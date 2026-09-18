@@ -2,12 +2,21 @@
 
 import argparse
 import json
+import runpy
 from pathlib import Path
 
 from . import engine, experiments, metrics, server, showcase
 
 
+def bootstrap() -> None:
+    """First run after a clone: rebuild the authored datasets from the reviewed seed scripts."""
+    if not (engine.ROOT / "data" / "cases.json").exists():
+        print("First run: building the authored datasets (offline, a second or two).", flush=True)
+        runpy.run_path(str(engine.ROOT / "scripts" / "setup_lab.py"), run_name="__main__")
+
+
 def main():
+    bootstrap()
     p = argparse.ArgumentParser(description="Synthetic-first enterprise judgment experiments")
     p.add_argument(
         "command",

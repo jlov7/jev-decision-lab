@@ -1,3 +1,7 @@
+   Building jev-decision-lab @ file:///path/to/jev-decision-lab
+      Built jev-decision-lab @ file:///path/to/jev-decision-lab
+Uninstalled 1 package in 0.70ms
+Installed 1 package in 1ms
 test_absent_confidence_metadata_is_none_not_zero (test_adapters.GatewayNormalizationTests.test_absent_confidence_metadata_is_none_not_zero) ... ok
 test_boolean_replaces_noul_and_stays_comparable (test_adapters.GatewayNormalizationTests.test_boolean_replaces_noul_and_stays_comparable) ... ok
 test_choice_has_no_distribution_and_says_so_instead_of_inventing_one (test_adapters.GatewayNormalizationTests.test_choice_has_no_distribution_and_says_so_instead_of_inventing_one) ... ok
@@ -55,6 +59,14 @@ test_report_does_not_rank_arms_or_claim_accuracy (test_comparator.ComparatorTest
 test_report_records_verification_boundary (test_comparator.ComparatorTests.test_report_records_verification_boundary) ... ok
 test_unknown_case_is_rejected_before_any_call (test_comparator.ComparatorTests.test_unknown_case_is_rejected_before_any_call) ... ok
 test_verified_live_arm_changes_the_live_warning (test_comparator.ComparatorTests.test_verified_live_arm_changes_the_live_warning) ... ok
+test_bad_key_is_a_400_that_does_not_echo_it (test_connect.ConnectEndpointTests.test_bad_key_is_a_400_that_does_not_echo_it) ... {"event": "request_failed", "path": "/api/connect", "status": 400, "error": "ValueError", "message": "rejected"}
+ok
+test_connect_rejects_unexpected_fields (test_connect.ConnectEndpointTests.test_connect_rejects_unexpected_fields) ... {"event": "request_failed", "path": "/api/connect", "status": 400, "error": "ValueError", "message": "rejected"}
+ok
+test_connect_then_config_then_disconnect (test_connect.ConnectEndpointTests.test_connect_then_config_then_disconnect) ... ok
+test_malformed_keys_are_refused_without_being_stored (test_connect.RuntimeKeyTests.test_malformed_keys_are_refused_without_being_stored) ... ok
+test_pasted_key_enables_live_and_is_never_echoed (test_connect.RuntimeKeyTests.test_pasted_key_enables_live_and_is_never_echoed) ... ok
+test_terminal_key_takes_precedence_and_blocks_paste (test_connect.RuntimeKeyTests.test_terminal_key_takes_precedence_and_blocks_paste) ... ok
 test_allowed_is_simulation_only (test_core.BeforeActionTests.test_allowed_is_simulation_only) ... ok
 test_each_false_blocks (test_core.BeforeActionTests.test_each_false_blocks) ... ok
 test_garden_judgment_local_constraint (test_core.BeforeActionTests.test_garden_judgment_local_constraint) ... ok
@@ -153,7 +165,7 @@ test_token_required (test_server.ServerTests.test_token_required) ... ok
 test_action_preview_hold (test_server.ShowcaseEndpointTests.test_action_preview_hold) ... ok
 test_arbitrary_state_cannot_be_sent (test_server.ShowcaseEndpointTests.test_arbitrary_state_cannot_be_sent) ... {"event": "request_failed", "path": "/api/run", "status": 400, "error": "ValueError", "message": "Unexpected request fields; arbitrary state and credentials are not accepted"}
 ok
-test_burst_live_unconfigured_is_403_not_replay (test_server.ShowcaseEndpointTests.test_burst_live_unconfigured_is_403_not_replay) ... {"event": "request_failed", "path": "/api/burst", "status": 403, "error": "PermissionError", "message": "Live mode disabled. Set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."}
+test_burst_live_unconfigured_is_403_not_replay (test_server.ShowcaseEndpointTests.test_burst_live_unconfigured_is_403_not_replay) ... {"event": "request_failed", "path": "/api/burst", "status": 403, "error": "PermissionError", "message": "Live mode disabled. Paste a key in Connect Jev, or set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal."}
 ok
 test_burst_replay_stores_receipts (test_server.ShowcaseEndpointTests.test_burst_replay_stores_receipts) ... ok
 test_cases_include_teaching_notes (test_server.ShowcaseEndpointTests.test_cases_include_teaching_notes) ... ok
@@ -173,7 +185,7 @@ ok
 test_no_path_traversal (test_server.ShowcaseEndpointTests.test_no_path_traversal) ... ok
 test_playground_bad_shape_is_400 (test_server.ShowcaseEndpointTests.test_playground_bad_shape_is_400) ... {"event": "request_failed", "path": "/api/playground", "status": 400, "error": "ValueError", "message": "Question q type must be choice, score or noul"}
 ok
-test_playground_unconfigured_is_403 (test_server.ShowcaseEndpointTests.test_playground_unconfigured_is_403) ... {"event": "request_failed", "path": "/api/playground", "status": 403, "error": "PermissionError", "message": "The playground needs a live connection: set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal. There is no replay for text you wrote yourself."}
+test_playground_unconfigured_is_403 (test_server.ShowcaseEndpointTests.test_playground_unconfigured_is_403) ... {"event": "request_failed", "path": "/api/playground", "status": 403, "error": "PermissionError", "message": "The playground needs a live connection: paste a key in Connect Jev, or set TYPESAFE_API_KEY and JEV_ALLOW_LIVE=1 in the server terminal. There is no replay for text you wrote yourself."}
 ok
 test_receipt_lookup_returns_the_stored_run (test_server.ShowcaseEndpointTests.test_receipt_lookup_returns_the_stored_run) ... ok
 test_replay_reconsider (test_server.ShowcaseEndpointTests.test_replay_reconsider) ... ok
@@ -199,6 +211,6 @@ test_state_limits (test_showcase.PlaygroundRequestTests.test_state_limits) ... o
 test_valid_request_is_built_with_the_pinned_model (test_showcase.PlaygroundRequestTests.test_valid_request_is_built_with_the_pinned_model) ... ok
 
 ----------------------------------------------------------------------
-Ran 187 tests in 1.461s
+Ran 193 tests in 1.669s
 
 OK
