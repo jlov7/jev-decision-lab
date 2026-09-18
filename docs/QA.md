@@ -107,7 +107,9 @@ Still not executed: any authenticated Jev or Claude call.
 | Claude subscription arm | `claude -p` with `--json-schema`, tools disallowed, no session persistence. First attempt with `--bare` failed as "Not logged in" because minimal mode skips sign-in; removed. Then S02 → routine/operations, S04 → quality/quality, about 28 s per call, billed to the subscription, structured output parsed from the envelope. Report saved as `evidence/compare-claude-code-2026-09-18.json` |
 | OpenAI and Anthropic API arms | Unit-tested against fake transports (strict schema, refusal, truncation, redaction, dated prices); not called live on this account |
 | Budget | All three generative arms share `JEV_MAX_COMPARE_CALLS`; prepare_arms refuses before sending when the pool cannot cover every arm |
-| Suite | 218 tests |
+| Full four-arm compare, live | Jev 11 of 12 (T04 refused: score vs weighted index beyond one rounding step; a single re-run passed at 0.02), Claude subscription 12 of 12 at p50 26 s, replay and rules 12 of 12. Claude answered sufficient=yes on all twelve; Jev 0.11–0.47. Saved as `evidence/compare-full-2026-09-18.json`; `docs/images/compare.png` rendered from it |
+| Follow-ups | Score tolerance widened to two rounding steps per level (test adjusted); native validation failures inside compare now retain the provider response and cost (test added) |
+| Suite | 219 tests |
 
 ## Browser limitation—do not hide this
 

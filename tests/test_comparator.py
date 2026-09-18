@@ -112,6 +112,31 @@ class ComparatorTests(unittest.TestCase):
         self.assertIn("native_stub", live_warnings[0])
         self.assertNotIn(comparator.NO_LIVE_WARNING, report["warnings"])
 
+    def test_native_validation_failure_keeps_the_answer_and_its_cost(self):
+        import copy
+        import os
+        from unittest.mock import patch
+
+        from jev_lab import provider
+
+        def malformed(request, prepaid=None):
+            response = copy.deepcopy(provider.replay("S02"))
+            response["model"] = request["model"]
+            response["usage"] = {"input_tokens": 500, "output_tokens": 40}
+            response["answers"]["owner"]["probabilities"]["operations"] = 0.5
+            return response, {"kind": "live_typesafe", "model_calls": 1, "latency_ms": 90.0, "usage": response["usage"], "estimated_cost_usd": 0.000021}
+
+        env = {"JEV_ALLOW_LIVE": "1", "TYPESAFE_API_KEY": "test-key-not-real-0123456789"}
+        with patch.dict(os.environ, env), patch("jev_lab.provider.live", side_effect=malformed), patch.object(provider, "BUDGET", provider.CallBudget(5)):
+            report = comparator.compare(["S02"], [adapters.build("native")])
+        arm = report["arms"][0]
+        self.assertEqual((arm["succeeded"], arm["failed"]), (0, 1))
+        failure = arm["failures"][0]
+        self.assertIn("sum to one", failure["error"])
+        self.assertEqual(failure["provider_response"]["answers"]["owner"]["probabilities"]["operations"], 0.5)
+        self.assertFalse(failure["cost_unknown"])
+        self.assertAlmostEqual(failure["estimated_cost_usd"], 0.000021)
+
     def test_unknown_case_is_rejected_before_any_call(self):
         with self.assertRaises(ValueError):
             comparator.compare(["NOPE"], self.arms())

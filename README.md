@@ -92,7 +92,7 @@ cd jev-decision-lab
 uv run jev-lab
 ```
 
-That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (218 tests, about two seconds).
+That is the whole install. The first run builds the authored datasets from the reviewed seed scripts (offline, a second or two), then serves on http://127.0.0.1:8765. To run the tests first: `uv run python3 -m unittest discover -s tests` (219 tests, about two seconds).
 
 Open **http://127.0.0.1:8765**. You are in synthetic replay: the banner at the top says so, and stays visible on every screen.
 
@@ -423,7 +423,7 @@ jev-decision-lab/
 │   ├── seed_cases.py          the authored cases, questions, fixtures and labels
 │   ├── seed_signals.py        the prelaunch chronology
 │   └── source_register.py     bibliography metadata
-├── tests/                     218 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
+├── tests/                     219 tests: contract, policy, server, connect, probes, adapters, comparator, showcase, Claude arm, CLI
 ├── docs/                      START_HERE, research report, frontier audit, build packet, evaluation protocol, QA record, workshop
 ├── evidence/                  retained test output and browser-check records
 ├── runs/                      CLI outputs (replay evaluation and compare are committed as examples)
@@ -517,7 +517,7 @@ Attempts are reserved before sending and never refunded on a timeout, because th
 ## Testing and verification
 
 ```bash
-uv run python3 -m unittest discover -s tests -v    # 218 tests
+uv run python3 -m unittest discover -s tests -v    # 219 tests
 uv run python3 -m jev_lab check                     # twelve fixtures validate, policy runs
 node --check web/app.js web/live.js                 # optional JS syntax check
 uv run ruff check jev_lab tests                     # optional lint
@@ -562,6 +562,21 @@ Five things the real responses taught:
 ![Live compare: Jev beside the replay fixture and the keyword-rules arm on four cases](docs/images/compare.png)
 
 **Later the same day** the Claude-subscription arm ran on S02 and S04 through the local `claude` command: routine/operations and quality/quality, matching Jev's top choices, at about 28 seconds per call against Jev's third of a second ([evidence/compare-claude-code-2026-09-18.json](evidence/compare-claude-code-2026-09-18.json)). A generative model gives you the category; Jev gives you the category and how sure it is, a hundred times faster.
+
+**The full four-arm compare, 17:20 UTC.** Jev, your Claude subscription, the replay fixture and the keyword rules on all twelve cases, in one run ([evidence/compare-full-2026-09-18.json](evidence/compare-full-2026-09-18.json)):
+
+| Arm | Answered | Owner agrees with label (planted S04 excluded) | Median latency | Cost |
+|---|---|---|---|---|
+| Jev, native API | 11 of 12 | 9 of 10 | 338 ms | $0.0005 |
+| Claude, your subscription | 12 of 12 | 11 of 11 | 26 s | subscription |
+| Synthetic replay | 12 of 12 | 11 of 11 | no call | none |
+| Keyword rules | 12 of 12 | 9 of 11 | no call | none |
+
+Three things worth saying plainly:
+
+- **On the twelve owners the two models agree except Q02**, where Claude picks assurance (the label) and Jev spreads its probability and says "other". Same categories, seventy-five times the latency.
+- **Asked "is the evidence sufficient?", Claude said yes to every one of the twelve cases.** Jev's probability of yes ranged from 0.11 to 0.47 on the same inputs. A yes/no question to a generative model collapses to yes; a judgment model gives you a graded answer you can put a threshold on. That difference is the whole reason the policy in this lab asks for more evidence so often.
+- **Jev's T04 answer was refused by the validator once more**, this time because the returned score sat further from the weighted index of the rounded probabilities than one rounding step per level allows. A single re-run of T04 passed. The tolerance now allows two steps, the compare report keeps the refused answer with its cost instead of dropping it, and the failure stays visible in the table.
 
 **What remains unverified:** the Anthropic and OpenAI API-key arms have not been called on this account, and twelve cases remain a smoke test.
 

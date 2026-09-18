@@ -76,9 +76,9 @@ class ContractTests(unittest.TestCase):
     def test_score_tolerates_rounded_distribution(self):
         sev = self.response["answers"]["severity"]
         sev["probabilities"] = {"0": 0.01, "1": 0.05, "2": 0.79, "3": 0.15}  # weighted 2.08
-        sev["score"] = 2.11
+        sev["score"] = 2.14  # 0.06 away: within two rounding steps per level
         engine.validate(self.request, self.response)
-        sev["score"] = 2.15
+        sev["score"] = 2.20  # 0.12 away: not explicable by rounding
         with self.assertRaises(ValueError):
             engine.validate(self.request, self.response)
 

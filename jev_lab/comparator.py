@@ -104,6 +104,18 @@ def _attempt(arm: ProviderArm, case: dict):
     """
     try:
         return arm.call(engine.request_for(case), case["id"]), None
+    except engine.LiveValidationError as exc:
+        # The provider answered; the answer broke the contract. Keep it, with its bill.
+        p = exc.provenance or {}
+        return None, {
+            "case_id": case["id"],
+            "error": str(exc),
+            "provider_response": exc.response,
+            "latency_ms": p.get("latency_ms"),
+            "usage": p.get("usage"),
+            "estimated_cost_usd": p.get("estimated_cost_usd"),
+            "cost_unknown": p.get("estimated_cost_usd") is None,
+        }
     except Exception as exc:  # noqa: BLE001 - every failure must be retained, not swallowed
         return None, {
             "case_id": case["id"],

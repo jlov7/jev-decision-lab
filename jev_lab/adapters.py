@@ -109,7 +109,10 @@ class NativeArm(ProviderArm):
 
     def call(self, request: dict, case_id: str | None = None) -> dict:
         response, provenance = provider.live(request, prepaid=self.prepaid)
-        engine.validate(request, response, live=True)
+        try:
+            engine.validate(request, response, live=True)
+        except ValueError as exc:
+            raise engine.LiveValidationError(str(exc), response, provenance) from exc
         provenance = dict(
             provenance,
             live_verified=self.live_verified,
