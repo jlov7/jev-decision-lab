@@ -469,7 +469,7 @@ CI runs the same steps on every push. The UI was also exercised in a real browse
 
 ### The first live runs, 18 September 2026
 
-The first authenticated bursts were fired from the Live lab on the account owner's key, with consent. Two bursts of twelve cases, six concurrent, one free-form playground call and one four-case compare against the replay and keyword-rules arms. Raw receipts: [evidence/first-live-2026-09-18.json](evidence/first-live-2026-09-18.json), [evidence/live-2026-09-18-run2.json](evidence/live-2026-09-18-run2.json), [evidence/compare-live-2026-09-18.json](evidence/compare-live-2026-09-18.json).
+The first authenticated bursts were fired from the Live lab on the account owner's key, with consent. Two bursts of twelve cases, six concurrent, one free-form playground call and one four-case compare against the replay and keyword-rules arms. Raw receipts: [evidence/first-live-2026-09-18.json](evidence/first-live-2026-09-18.json), [evidence/live-2026-09-18-run2.json](evidence/live-2026-09-18-run2.json), [evidence/compare-live-2026-09-18.json](evidence/compare-live-2026-09-18.json) and [evidence/compare-live-2026-09-18-run2.json](evidence/compare-live-2026-09-18-run2.json).
 
 | Measure | Burst 1 | Burst 2 |
 |---|---|---|
@@ -485,10 +485,10 @@ The first authenticated bursts were fired from the Live lab on the account owner
 Five things the real responses taught:
 
 1. **Jev rounds probabilities to two decimals.** S02's five-option distribution summed to slightly more than one and the original validator, which allowed 0.002, refused it. Tolerances are now derived from that rounding, and a live answer that fails validation is retained with its raw response, latency, usage and cost instead of vanishing as "cost unknown". The second burst validated all twelve.
-2. **On S04, live Jev picked the right team, twice.** The authored fixture plants a confident wrong owner to teach that confidence cannot validate itself. The real model answered quality with probability 1.00 both times. Keep both in view: the fixture is a lesson, the live answers are two observations.
+2. **On S04, live Jev picked the right team every time.** The authored fixture plants a confident wrong owner to teach that confidence cannot validate itself. Across two bursts and three compares the real model answered quality with probability 1.00 each time. Keep both in view: the fixture is a lesson, the live answers are two observations.
 3. **Q02 is a genuine disagreement, not a bug.** The draft sentence is careful and supported, so Jev put about 0.55 on "other" and 0.36 on assurance for the owner. Both runs held it back from a team recommendation, which is the intended behaviour when no owner clears the threshold.
 4. **Answers drift a little between calls, and policy notices.** Across the eleven cases both bursts validated, top-owner probabilities moved by at most 0.03 and severity scores by at most 0.05. One route changed: Q02 went to a person in the first run because the next-evidence head said "none" while sufficiency was low, and to "repair the evidence" in the second because that head named a type. Small model drift at a rule boundary flips a route. That is why receipts record the response, not just the decision.
-5. **The delay trap is real.** In the live compare on S02, the keyword rule read "delay" and fired delivery; Jev read the same message and answered routine at 0.72 with operations as owner. On T03 the rule found no keyword and gave up; Jev called the outage. The rules arm is hand-fit and not a baseline, but the contrast is exactly what a judgment model is for.
+5. **The delay trap is real.** In every live compare on S02, the keyword rule read "delay" and fired delivery; Jev read the same message and answered routine at 0.72 with operations as owner. On T03 the rule found no keyword and gave up; Jev called the outage. The rules arm is hand-fit and not a baseline, but the contrast is exactly what a judgment model is for.
 
 ![Live compare: Jev beside the replay fixture and the keyword-rules arm on four cases](docs/images/compare.png)
 
