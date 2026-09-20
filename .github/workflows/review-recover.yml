@@ -1,0 +1,36 @@
+name: Recover review upload
+on:
+  push:
+    branches: ['review/evidence-first-frontier-2026-09-20']
+    paths: ['.github/workflows/review-recover.yml']
+permissions:
+  contents: read
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Retrieve the three confirmed patch chunks without executing them
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import base64, hashlib, json, os, pathlib, urllib.request
+          out = pathlib.Path(os.environ['RUNNER_TEMP']) / 'recovered-review'
+          out.mkdir()
+          shas = ['d0278f3c6d3f293ffd72ac1b8b75ccf607768a55', 'c5f1ef5bc1e3335142ed65f3c5b1e9c62fb3de92', 'b1f6c6c12c4d1be3c61e45e86656f447d02aaf11']
+          for i, sha in enumerate(shas):
+              req = urllib.request.Request('https://api.github.com/repos/jlov7/jev-decision-lab/git/blobs/' + sha, headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  item = json.load(response)
+              data = base64.b64decode(item['content'])
+              assert hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest() == sha
+              (out / ('chunk-%02d.bin' % i)).write_bytes(data)
+              print('Recovered chunk', i, 'bytes', len(data))
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: recovered-review
+          path: ${{ runner.temp }}/recovered-review/*
+          retention-days: 1
+          if-no-files-found: error
