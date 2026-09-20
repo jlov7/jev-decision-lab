@@ -11,7 +11,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Download the pinned public lint wheel, no repository source
-        run: python -m pip download --only-binary=:all: --no-deps ruff==0.16.8 --dest "${RUNNER_TEMP}/review-tools"
+        run: |
+          python -m pip download --only-binary=:all: --no-deps ruff==0.16.8 --dest "${RUNNER_TEMP}/review-tools"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: jev-review-tools
