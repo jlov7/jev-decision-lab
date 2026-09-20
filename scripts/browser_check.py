@@ -13,6 +13,7 @@ import json
 import os
 import re
 import threading
+import traceback
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -296,7 +297,7 @@ def run(bridge: bool, output: Path) -> dict:
                 assert page.locator("#studioResult details").count() >= 2, (
                     "Studio did not render typed answers from the QA transport mock"
                 )
-                assert "human review required" in page.locator("#studioStatus").inner_text()
+                expect(page.locator("#studioStatus")).to_contain_text("human review required")
                 assert not page.locator("#studioConsent").is_checked()
                 with page.expect_download() as download:
                     page.locator("#studioResultExport").click()
@@ -318,7 +319,7 @@ def run(bridge: bool, output: Path) -> dict:
                 page.locator("#studioConsent").check()
                 page.locator("#studioRun").click()
                 expect(page.locator("#studioResultExport")).to_be_enabled()
-                assert "failed" in page.locator("#studioStatus").inner_text()
+                expect(page.locator("#studioStatus")).to_contain_text("Live attempt failed.")
                 with page.expect_download() as download:
                     page.locator("#studioResultExport").click()
                 failed = json.loads(Path(download.value.path()).read_text())
@@ -383,7 +384,8 @@ def run(bridge: bool, output: Path) -> dict:
             browser.close()
     except Exception as exc:
         report["status"] = "FAIL"
-        report["error"] = str(exc)
+        report["error"] = f"{type(exc).__name__}: {exc}"
+        report["traceback"] = traceback.format_exc()
         raise
     finally:
         http.shutdown()
