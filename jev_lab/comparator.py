@@ -25,7 +25,7 @@ error, and retaining that error verbatim is the whole point of this layer.
 
 from __future__ import annotations
 
-from . import engine, metrics
+from . import engine, evidence, metrics
 from .adapters import TRACKS, ProviderArm
 
 SCHEMA_VERSION = "comparator-v1.0"
@@ -56,6 +56,8 @@ NO_LIVE_WARNING = (
 def _live_warning(reports: list[dict], n_cases: int) -> str:
     verified = [r for r in reports if r["live_verified"] and r["succeeded"]]
     if not verified:
+        if any(r["live"] for r in reports):
+            return "Live arms were requested, but no successful authenticated response was verified by this report. Inspect every retained attempt; absent verification is not evidence that no call or billing occurred."
         return NO_LIVE_WARNING
     names = ", ".join(r["name"] for r in verified)
     return (
@@ -73,10 +75,21 @@ def compare(case_ids: list[str], arms: list[ProviderArm]) -> dict:
     """
     cases = _resolved_cases(case_ids, arms)
     reports = [_arm_report(arm, cases) for arm in arms]
+    labels = engine.load("labels")
+    excludes_planted = any(a["kind"] == "synthetic_replay" for a in reports)
+    common = set(case_ids)
+    for arm_report in reports:
+        common.intersection_update(row["case_id"] for row in arm_report["cases"])
+    if excludes_planted:
+        common = {cid for cid in common if not labels.get(cid, {}).get("planted_error")}
+    for arm_report in reports:
+        matched = [row for row in arm_report["cases"] if row["case_id"] in common]
+        arm_report["paired_owner_agreement"] = {"numerator": sum(row["answers"].get("owner") == labels[row["case_id"]]["expected_owner"] for row in matched), "denominator": len(matched)}
     warnings = list(WARNINGS)
     warnings.insert(1, _live_warning(reports, len(cases)))
     return {
         "schema_version": SCHEMA_VERSION,
+        "paired": {"case_ids": sorted(common), "requested": len(cases), "planted_replay_excluded": excludes_planted, "warning": "Common answered subset only; failures remain in all-attempt denominators. This selected subset is not operational coverage."},
         "ranked": False,
         "cases": [case["id"] for case in cases],
         "warnings": warnings,
@@ -111,10 +124,13 @@ def _attempt(arm: ProviderArm, case: dict):
             "case_id": case["id"],
             "error": str(exc),
             "provider_response": exc.response,
+            "provenance": p,
+            "task_request": engine.request_for(case),
             "latency_ms": p.get("latency_ms"),
             "usage": p.get("usage"),
             "estimated_cost_usd": p.get("estimated_cost_usd"),
             "cost_unknown": p.get("estimated_cost_usd") is None,
+            "billing": p.get("billing"),
         }
     except Exception as exc:  # noqa: BLE001 - every failure must be retained, not swallowed
         return None, {
@@ -129,6 +145,7 @@ def _arm_report(arm: ProviderArm, cases: list[dict]) -> dict:
     for case in cases:
         result, failure = _attempt(arm, case)
         (failures if failure else successes).append(failure or (case, result))
+    rows = [_case_row(case, result) for case, result in successes]
     return {
         "name": arm.name,
         "kind": arm.kind,
@@ -139,7 +156,8 @@ def _arm_report(arm: ProviderArm, cases: list[dict]) -> dict:
         "succeeded": len(successes),
         "failed": len(failures),
         "failures": failures,
-        "cases": [_case_row(case, result) for case, result in successes],
+        "cases": rows,
+        "cost_summary": evidence.costs(rows + failures),
         "tracks": _tracks(successes),
     }
 
@@ -147,7 +165,7 @@ def _arm_report(arm: ProviderArm, cases: list[dict]) -> dict:
 def _case_row(case: dict, result: dict) -> dict:
     """What this arm answered for one case, with its own latency and cost. No verdict."""
     provenance = result["provenance"]
-    return {
+    row = {
         "case_id": case["id"],
         "pack": case["pack"],
         "model": provenance.get("model") or result["raw"].get("model"),
@@ -158,7 +176,13 @@ def _case_row(case: dict, result: dict) -> dict:
         "usage": provenance.get("usage"),
         "estimated_cost_usd": provenance.get("estimated_cost_usd"),
         "billing": provenance.get("billing"),
+        "task_request": engine.request_for(case),
+        "provider_response": result["raw"],
+        "provenance": provenance,
+        "normalized": result["normalized"],
+        "wire_request_note": "Canonical task request supplied to the adapter; not necessarily the SDK wire envelope for a generative arm.",
     }
+    return dict(row, record_hash=engine.digest(row))
 
 
 def _live_verified(arm: ProviderArm, successes: list) -> bool:
@@ -212,7 +236,7 @@ def _distribution_metrics(successes: list):
     measurable = [
         (case, result)
         for case, result in successes
-        if not labels.get(case["id"], {}).get("planted_error")
+        if not (result["provenance"]["kind"] == "synthetic_replay" and labels.get(case["id"], {}).get("planted_error"))
     ]
     if not measurable:
         return (
@@ -247,6 +271,8 @@ def _distribution_metrics(successes: list):
             "pack": case["pack"],
             "provenance": {"kind": result["provenance"]["kind"]},
             "response": result["raw"],
+            "question_version": engine.QUESTION_VERSION,
+            "request": engine.request_for(case),
         }
         for case, result in measurable
     ]

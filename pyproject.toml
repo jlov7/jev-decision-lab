@@ -1,6 +1,6 @@
 [project]
 name = "jev-decision-lab"
-version = "0.5.0"
+version = "0.6.0"
 description = "A local lab for seeing what TypeSafe's Jev judgment model does on realistic business cases: typed answers, probabilities, policy in code, receipts."
 readme = "README.md"
 license = "MIT"

@@ -30,7 +30,7 @@ import time
 import urllib.error
 import urllib.request
 
-from . import provider
+from . import engine, provider
 from .adapters import SCHEMA_VERSION, TRACKS, ProviderArm
 
 DEFAULT_MODEL = "claude-haiku-4-5"
@@ -255,15 +255,7 @@ class ClaudeArm(ProviderArm):
             ) from None
         latency = round((time.perf_counter() - started) * 1000, 2)
         stop = getattr(response, "stop_reason", None)
-        if stop != "end_turn":
-            raise ValueError(
-                f"Claude stopped with {stop!r}; the answer is incomplete or declined and was not used."
-            )
-        text = _text(response)
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError:
-            raise ValueError("Claude returned invalid JSON. Nothing was fabricated.") from None
+        data = None
         usage_obj = getattr(response, "usage", None)
         usage = {
             "input_tokens": _count(getattr(usage_obj, "input_tokens", None)),
@@ -273,6 +265,7 @@ class ClaudeArm(ProviderArm):
         raw = {
             "model": returned_model,
             "stop_reason": stop,
+            "content": [{"type": getattr(block, "type", None), "text": getattr(block, "text", None)} for block in response.content],
             "output": data,
             "usage": usage,
             "request_id": getattr(response, "_request_id", None),
@@ -294,7 +287,21 @@ class ClaudeArm(ProviderArm):
             "latency includes network time. A generative baseline returns categories, not "
             "distributions.",
         }
-        return {"raw": raw, "provenance": provenance, "normalized": normalize(request, data)}
+        try:
+            if stop != "end_turn":
+                raise ValueError(
+                    f"Claude stopped with {stop!r}; the answer is incomplete or declined and was not used."
+                )
+            text = _text(response)
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError:
+                raise ValueError("Claude returned invalid JSON. Nothing was fabricated.") from None
+            raw["output"] = data
+            normalized = normalize(request, data)
+        except (ValueError, TypeError) as exc:
+            raise engine.LiveValidationError(str(exc), raw, provenance) from None
+        return {"raw": raw, "provenance": provenance, "normalized": normalized}
 
 
 class ClaudeCodeArm(ProviderArm):
@@ -373,18 +380,9 @@ class ClaudeCodeArm(ProviderArm):
             envelope = json.loads(completed.stdout)
         except json.JSONDecodeError:
             raise ValueError("claude command returned no JSON envelope. Nothing was fabricated.") from None
-        if not isinstance(envelope, dict) or envelope.get("type") != "result":
+        if not isinstance(envelope, dict):
             raise ValueError("claude command returned an unexpected envelope. Nothing was fabricated.")
-        if envelope.get("is_error") or envelope.get("subtype") != "success":
-            said = str(envelope.get("result") or envelope.get("terminal_reason") or "").strip()
-            raise ValueError(
-                f"claude command reported an error: {said[:200] or envelope.get('subtype')!r}. "
-                "The answer was not used. If it says not logged in, run `claude` once in a terminal "
-                "and sign in."
-            )
         data = envelope.get("structured_output")
-        if not isinstance(data, dict):
-            raise ValueError("claude command returned no structured output. Nothing was fabricated.")
         usage_obj = envelope.get("usage") or {}
         usage = {
             "input_tokens": _count(usage_obj.get("input_tokens")),
@@ -398,6 +396,8 @@ class ClaudeCodeArm(ProviderArm):
         raw = {
             "model": returned_model,
             "subtype": envelope.get("subtype"),
+            "provider_envelope": envelope,
+            "exit_code": completed.returncode,
             "num_turns": envelope.get("num_turns"),
             "output": data,
             "usage": usage,
@@ -424,7 +424,23 @@ class ClaudeCodeArm(ProviderArm):
             "prompt. Latency includes CLI start-up. A generative baseline returns categories, not "
             "distributions.",
         }
-        return {"raw": raw, "provenance": provenance, "normalized": normalize(request, data)}
+        try:
+            if envelope.get("type") != "result":
+                raise ValueError("claude command returned an unexpected envelope. Nothing was fabricated.")
+            if completed.returncode != 0 or envelope.get("is_error") or envelope.get("subtype") != "success":
+                said = str(envelope.get("result") or envelope.get("terminal_reason") or "").strip()
+                raise ValueError(
+                    f"claude command reported an error: {said[:200] or envelope.get('subtype')!r}. "
+                    "The answer was not used. If it says not logged in, run `claude` once in a terminal "
+                    "and sign in."
+                )
+            data = envelope.get("structured_output")
+            if not isinstance(data, dict):
+                raise ValueError("claude command returned no structured output. Nothing was fabricated.")
+            normalized = normalize(request, data)
+        except (ValueError, TypeError) as exc:
+            raise engine.LiveValidationError(str(exc), raw, provenance) from None
+        return {"raw": raw, "provenance": provenance, "normalized": normalized}
 
 
 class OpenAIArm(ProviderArm):
@@ -503,20 +519,11 @@ class OpenAIArm(ProviderArm):
             raise ValueError("Response exceeds lab ceiling")
         try:
             result = json.loads(raw_bytes)
-            choice = result["choices"][0]
-            message = choice["message"]
-        except (ValueError, KeyError, IndexError, TypeError):
+        except ValueError:
             raise ValueError("OpenAI response was not a chat completion. Nothing was fabricated.") from None
-        if message.get("refusal"):
-            raise ValueError("OpenAI declined the request; the answer was not used.")
-        if choice.get("finish_reason") != "stop":
-            raise ValueError(
-                f"OpenAI stopped with {choice.get('finish_reason')!r}; the answer is incomplete and was not used."
-            )
-        try:
-            data = json.loads(message.get("content") or "")
-        except json.JSONDecodeError:
-            raise ValueError("OpenAI returned invalid JSON. Nothing was fabricated.") from None
+        if not isinstance(result, dict):
+            raise ValueError("OpenAI response was not a chat completion. Nothing was fabricated.")
+        data = None
         usage_obj = result.get("usage") or {}
         usage = {
             "input_tokens": _count(usage_obj.get("prompt_tokens")),
@@ -531,7 +538,8 @@ class OpenAIArm(ProviderArm):
         )
         raw = {
             "model": returned_model,
-            "finish_reason": choice.get("finish_reason"),
+            "finish_reason": None,
+            "provider_envelope": result,
             "output": data,
             "usage": usage,
             "request_id": result.get("id"),
@@ -553,7 +561,28 @@ class OpenAIArm(ProviderArm):
             f"{OPENAI_PRICE_AS_OF}, not an invoice. Client latency includes network time. A "
             "generative baseline returns categories, not distributions.",
         }
-        return {"raw": raw, "provenance": provenance, "normalized": normalize(request, data)}
+        try:
+            try:
+                choice = result["choices"][0]
+                message = choice["message"]
+            except (KeyError, IndexError, TypeError):
+                raise ValueError("OpenAI response was not a chat completion. Nothing was fabricated.") from None
+            if not isinstance(choice, dict) or not isinstance(message, dict):
+                raise ValueError("OpenAI response was not a chat completion. Nothing was fabricated.")
+            raw["finish_reason"] = choice.get("finish_reason")
+            if message.get("refusal"):
+                raise ValueError("OpenAI declined the request; the answer was not used.")
+            if choice.get("finish_reason") != "stop":
+                raise ValueError(f"OpenAI stopped with {choice.get('finish_reason')!r}; the answer is incomplete and was not used.")
+            try:
+                data = json.loads(message.get("content") or "")
+            except (json.JSONDecodeError, TypeError):
+                raise ValueError("OpenAI returned invalid JSON. Nothing was fabricated.") from None
+            raw["output"] = data
+            normalized = normalize(request, data)
+        except (ValueError, TypeError) as exc:
+            raise engine.LiveValidationError(str(exc), raw, provenance) from None
+        return {"raw": raw, "provenance": provenance, "normalized": normalized}
 
 
 def normalize(request: dict, data: dict) -> dict:
@@ -566,7 +595,7 @@ def normalize(request: dict, data: dict) -> dict:
     for qid, question in request["questions"].items():
         value, qtype = data[qid], question["type"]
         if qtype == "choice":
-            if value not in question["criteria"]:
+            if not isinstance(value, str) or value not in question["criteria"]:
                 raise ValueError(f"Baseline choice is outside the declared criteria: {qid}")
             records[qid] = _record("choice", "category", value)
         elif qtype == "score":

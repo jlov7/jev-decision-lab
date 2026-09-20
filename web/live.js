@@ -111,7 +111,7 @@ function renderProbe(r) {
   $('probeSummary').textContent =
     `${r.case_id} · ${r.succeeded} of ${r.requested} answered` +
     (live ? ` · p50 ${fmtMs(r.latency_ms.p50)} · ${r.estimated_cost_usd === null ? 'cost unknown' : cents(r.estimated_cost_usd)}` : '') +
-    ` · route: ${routeText || 'none'}` +
+    ` · ${r.complete ? 'complete' : 'incomplete: stability not established'} · ${r.comparable ? 'same observed contract' : 'mixed contracts: spread withheld'} · route: ${routeText || 'none'}` +
     (r.widest_option_range.question
       ? ` · widest range ${r.widest_option_range.range.toFixed(2)} on ${names[r.widest_option_range.question] || r.widest_option_range.question}`
       : '') +
@@ -166,11 +166,11 @@ function renderAblate(r, c) {
   $('ablateSummary').textContent =
     `${r.case_id} · ${r.succeeded} of ${r.requested} variants answered · ` +
     (most
-      ? `the judgment leaned most on ${most}.`
+      ? `largest observed probability movement: ${most}.`
       : r.mode === 'live'
-        ? 'no single evidence item moved the judgment beyond the noise floor.'
+        ? 'no variant exceeded the descriptive reference, or comparison was unavailable.'
         : 'replay layout only.') +
-    ` Noise floor ${r.noise_floor.toFixed(2)}. ${r.warning}`;
+    ` Descriptive reference ${r.noise_floor.toFixed(2)}. ${r.warning}`;
   const delta = (v, key) => {
     if (!v.deltas) return '<td>–</td>';
     const d = v.deltas[key];
@@ -184,10 +184,10 @@ function renderAblate(r, c) {
       const a = v.answers;
       const lead = most && v.removed_evidence && v.removed_evidence.id === most ? ' class="lead"' : '';
       const text = v.removed_evidence ? `<span class="cell-sub">${esc(v.removed_evidence.text)}</span>` : '<span class="cell-sub">every excerpt present</span>';
-      return `<tr${lead}><td><b>${esc(v.label)}</b>${text}</td><td class="${v.owner_changed ? 'changed' : ''}">${esc(a.owner)} ${(a.owner_probability * 100).toFixed(0)}%${delta(v, 'owner_probability').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.severity.toFixed(2)}${delta(v, 'severity').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.sufficient.toFixed(2)}${delta(v, 'sufficient').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.contradiction.toFixed(2)}${delta(v, 'contradiction').replace(/<\/?td[^>]*>/g, ' ')}</td><td class="${v.route_changed ? 'changed' : ''}">${esc(routes[a.route][0])}</td><td>${v.deltas ? (v.above_noise ? `<b>${v.movement.toFixed(2)}</b>` : `<span class="noise">${v.movement.toFixed(2)} noise</span>`) : '–'}</td></tr>`;
+      return `<tr${lead}><td><b>${esc(v.label)}</b>${text}</td><td class="${v.owner_changed ? 'changed' : ''}">${esc(a.owner)} ${(a.owner_probability * 100).toFixed(0)}%${delta(v, 'owner_probability').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.severity.toFixed(2)}${delta(v, 'severity').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.sufficient.toFixed(2)}${delta(v, 'sufficient').replace(/<\/?td[^>]*>/g, ' ')}</td><td>${a.contradiction.toFixed(2)}${delta(v, 'contradiction').replace(/<\/?td[^>]*>/g, ' ')}</td><td class="${v.route_changed ? 'changed' : ''}">${esc(routes[a.route][0])}</td><td>${v.deltas ? (v.above_noise ? `<b>${v.movement.toFixed(2)}</b>` : `<span class="noise">${v.movement.toFixed(2)} below reference</span>`) : '–'}</td></tr>`;
     })
     .join('');
-  $('ablateRows').innerHTML = `<table class="ablate-table"><thead><tr><th>Variant</th><th>Owner (Δ)</th><th>Severity (Δ)</th><th>Sufficient (Δ)</th><th>Contradiction (Δ)</th><th>Route</th><th>Movement</th></tr></thead><tbody>${rows}</tbody></table>`;
+  $('ablateRows').innerHTML = `<table class="ablate-table"><thead><tr><th>Variant</th><th>Owner · Δ for baseline label</th><th>Severity (Δ)</th><th>Sufficient (Δ)</th><th>Contradiction (Δ)</th><th>Route</th><th>Movement</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 function connectionUi(c) {
   const connected = Boolean(c.live_enabled);
@@ -490,6 +490,11 @@ async function pgRun() {
     renderPg(r);
     await refreshConfig();
   } catch (e) {
+    if (e.detail) {
+      state.lastPlayground = {failure:true, detail:e.detail, warning:'Live request failed. Details retained; no retry or fallback.'};
+      $('pgMeta').textContent = 'Live request failed. Export retains the failure details.';
+      $('pgAnswers').textContent = JSON.stringify(e.detail, null, 2);
+    }
     error(e.message);
   } finally {
     busy(false);
@@ -572,10 +577,9 @@ function renderCompare(r) {
   $('compareSummary').innerHTML = r.arms
     .map((arm) => {
       const rows = arm.cases || [];
-      const honest = rows.filter((x) => !planted[x.case_id]);
+      const audit = armEvidence(arm, expected, planted);
+      const honest = rows.filter((x) => !(arm.kind === 'synthetic_replay' && planted[x.case_id]));
       const agree = honest.filter((x) => x.answers.owner === expected[x.case_id]).length;
-      const costs = rows.map((x) => x.estimated_cost_usd);
-      const known = costs.filter((c) => c !== null && c !== undefined);
       const model = rows[0]?.model || arm.pinned_version;
       const fails = arm.failures
         .slice(0, 2)
@@ -586,7 +590,7 @@ function renderCompare(r) {
         : '–';
       const medianLatency = median(rows.map((x) => x.latency_ms));
       const free = arm.kind === 'synthetic_replay' || arm.kind === 'deterministic_rules';
-      return `<div class="arm-card ${arm.failed ? 'failing' : ''}"><h3>${esc(ARM_LABEL[arm.name] || arm.name)}<small>${esc(model)}</small></h3>${metric('Answered', `${arm.succeeded} / ${arm.attempts}`)}${metric('Owner agrees with label', agreeText)}${metric('Median latency', medianLatency !== null ? fmtMs(medianLatency) : '–')}${metric('Total cost', free ? 'No call' : known.length ? `${fmtCost(known.reduce((a, b) => a + b, 0))}${known.length < rows.length ? ' +?' : ''}` : rows.length ? (rows.every((r) => r.billing === 'subscription') ? 'Subscription' : 'Unknown') : '–')}${fails}${arm.failed > 2 ? `<p class="compare-fail">…and ${arm.failed - 2} more failures retained in the report.</p>` : ''}</div>`;
+      return `<div class="arm-card ${arm.failed ? 'failing' : ''}"><h3>${esc(ARM_LABEL[arm.name] || arm.name)}<small>${esc(model)}</small></h3>${metric('Answered', `${arm.succeeded} / ${arm.attempts}`)}${metric('Owner agrees with label', agreeText)}${metric('Answered-call median latency', medianLatency !== null ? fmtMs(medianLatency) : '–')}${metric('All-attempt cost', armCostLabel(audit, free))}${metric('Common subset agreement', arm.paired_owner_agreement ? `${arm.paired_owner_agreement.numerator} / ${arm.paired_owner_agreement.denominator}` : 'Unavailable')}${fails}${arm.failed > 2 ? `<p class="compare-fail">…and ${arm.failed - 2} more failures retained in the report.</p>` : ''}</div>`;
     })
     .join('');
   const head = r.arms.map((a) => `<th>${esc(ARM_LABEL[a.name] || a.name)}</th>`).join('');
@@ -598,10 +602,10 @@ function renderCompare(r) {
           const row = (arm.cases || []).find((x) => x.case_id === id);
           if (!row) {
             const f = arm.failures.find((x) => x.case_id === id);
-            return `<td class="na" title="${esc(f ? f.error : '')}">failed<span class="cell-sub">cost unknown</span></td>`;
+            return `<td class="na" title="${esc(f ? f.error : '')}">failed<span class="cell-sub">${f?.estimated_cost_usd == null ? 'cost unknown' : fmtCost(f.estimated_cost_usd) + ' estimated'}</span></td>`;
           }
           const issue = row.answers.issue ? `${esc(row.answers.issue)} · ` : '';
-          if (planted[id]) {
+          if (arm.kind === 'synthetic_replay' && planted[id]) {
             return `<td class="planted">${esc(row.answers.owner)}<span class="planted-tag">planted teaching error</span><span class="cell-sub">${issue}${row.latency_ms === null ? 'no call' : fmtMs(row.latency_ms)} · ${row.estimated_cost_usd === null ? (row.billing === 'subscription' ? 'subscription' : 'cost n/a') : fmtCost(row.estimated_cost_usd)}</span></td>`;
           }
           const ok = row.answers.owner === expected[id];
@@ -609,7 +613,7 @@ function renderCompare(r) {
         })
         .join('');
       const plantedCell = planted[id]
-        ? `${esc(expected[id])}<span class="planted-tag">do not score</span>`
+        ? `${esc(expected[id])}<span class="planted-tag">planted only in authored replay</span>`
         : esc(expected[id]);
       return `<tr><td><strong>${esc(id)}</strong><span class="cell-sub">${esc(c.title)}</span></td><td${planted[id] ? ' class="planted"' : ''}>${plantedCell}</td>${cells}</tr>`;
     })

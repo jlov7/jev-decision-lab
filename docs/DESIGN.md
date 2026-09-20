@@ -1,6 +1,6 @@
 # Design contract
 
-Version 0.5 · 18 September 2026 · A teaching and evaluation prototype, not production software.
+Version 0.6 · 20 September 2026 · A teaching and evaluation prototype, not production software.
 
 ## Goal
 
@@ -12,6 +12,11 @@ One local application, one process, no build step. Twelve authored synthetic cas
 
 Surfaces:
 
+- Start: intent-led onboarding, an offline three-step lesson and a teach-back record.
+- Decision Studio: eight versioned patterns with sixteen synthetic situations, exact request preview, optional explicit-consent live observation, unrun study designs and assumption-only workflow economics.
+
+Existing surfaces:
+
 1. Workbench: pick a case, run six judgments, inspect distributions, replay the policy under different facts with no new call, export a receipt.
 2. Before action: change simulated authority or freshness, recheck without a model call, watch the action hold.
 3. Live lab: burst all twelve cases, ask Jev about text you wrote, compare Jev with generative baselines and a keyword rule, probe one case repeatedly, remove evidence one excerpt at a time, export a session report.
@@ -22,7 +27,7 @@ Surfaces:
 ## Invariants
 
 - Only authored synthetic records, or text the user typed after consent, ever reach a provider.
-- Replay output is never presented as measured model output. A banner says which mode is active on every screen.
+- Replay output is never presented as measured model output. The global banner describes the local lab; each result states its own mode. A previous workbench receipt cannot label another surface.
 - Live calls need a key in the server process (pasted or from the terminal), the consent box, and a free attempt slot. Nothing retries. Nothing falls back to replay.
 - Provider payloads never contain labels, expected routes, teaching notes or policy facts. A test enforces this.
 - Responses are validated strictly. A response that breaks the contract is refused and retained with its cost; nothing is invented to fill a gap.

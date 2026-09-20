@@ -65,8 +65,8 @@ def number(value: Any, low: float = 0, high: float = 1) -> float:
     if (
         isinstance(value, bool)
         or not isinstance(value, (int, float))
-        or not math.isfinite(value)
         or not low <= value <= high
+        or not math.isfinite(value)
     ):
         raise ValueError(f"Expected a finite number in [{low}, {high}]")
     return value

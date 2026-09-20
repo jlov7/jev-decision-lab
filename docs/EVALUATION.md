@@ -1,5 +1,14 @@
 # Evaluation protocol
 
+## v0.6 instrumentation update · 20 September 2026
+
+Comparisons now retain self-contained task/response/provenance records and report both all-attempt counts and a common answered subset. Only a synthetic-replay S04 output is planted; a live S04 answer is not. Known failed-response cost is retained across native and generative adapters; unknown or incompatible billing bases do not become one total. Probes cannot declare stability on incomplete or mixed-contract results. Ablation compares the same baseline label, scopes observed variation by model/request, and is descriptive rather than causal. Probe and ablation downloads retain audit receipts after server IDs expire.
+
+The eight Studio patterns have no newly collected model-quality results. Their study designs are `UNRUN`. Economics is assumption-only and includes failed calls, imperfect review and capacity. The comparison suite still lacks a domain-adjudicated held-out population and an implemented small discriminative baseline. Do not infer performance or calibration from infrastructure tests.
+
+The protocol below retains the original evaluation scope; historical integration observations are dated, not claims that every currently configured arm was live-tested in this release.
+
+
 ## What v0.2 measures
 
 The bundled evaluation measures **owner classification on twelve authored teaching cases**. It reads separate labels and authored probability fixtures. It reports accuracy, a Wilson interval, multiclass Brier loss, log loss, ten-bin expected calibration error and a top-probability risk/coverage curve. These are demonstrations of measurement machinery. They are not measurements of Jev.

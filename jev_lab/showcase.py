@@ -275,7 +275,10 @@ def playground(state, questions, consent: bool = False) -> dict:
     if consent is not True:
         raise PermissionError("Explicit consent is required to send your text to TypeSafe.")
     response, provenance = provider.live(request)
-    engine.validate(request, response, live=True)
+    try:
+        engine.validate(request, response, live=True)
+    except ValueError as exc:
+        raise engine.LiveValidationError(str(exc), response, provenance) from exc
     return {
         "request": request,
         "response": response,
@@ -291,6 +294,8 @@ def prepare_arms(arm_names: list[str], n_cases: int, consent: bool = False) -> l
     """Build arms once. Reserve live slots only after every live arm can proceed."""
     if not isinstance(arm_names, list) or not arm_names:
         raise ValueError("Choose at least one comparison arm")
+    if len(set(arm_names)) != len(arm_names):
+        raise ValueError("Choose each comparison arm only once")
     if isinstance(n_cases, bool) or not isinstance(n_cases, int) or n_cases < 1:
         raise ValueError("Compare needs at least one case")
     unknown = [name for name in arm_names if name not in adapters.ARM_NAMES]
@@ -344,8 +349,8 @@ def compare(arm_names: list[str], case_ids: list[str], consent: bool = False) ->
     if any(report["planted_error"].values()):
         report["warnings"] = list(report.get("warnings") or []) + [
             (
-                "S04 is a planted teaching error: the authored owner is confidently wrong. "
-                "It is labelled here so it is not counted as a measured model failure."
+                "Only the S04 replay output is a planted teaching error; a live S04 answer is not planted. "
+                "The replay fixture is excluded only from replay-arm agreement metrics."
             )
         ]
     if "rules" in arm_names:

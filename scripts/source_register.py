@@ -5,7 +5,7 @@ from pathlib import Path
 rows=[
 ('S01','TypeSafe: Introducing System One Models & Jev','https://typesafe.ai/blog/introducing-system-one-models-and-jev','2026-09-15','vendor launch','Full HTML inspected. Architecture and performance are vendor claims; schema safety is not semantic correctness.'),
 ('S02','TypeSafe quick start','https://docs.typesafe.ai/introduction/quickstart',None,'official documentation','Native account, Playground and API setup. Account-specific entitlements were not inspected.'),
-('S03','TypeSafe API reference','https://docs.typesafe.ai/api',None,'official documentation','Native wire contract inspected; no authenticated live response obtained.'),
+('S03','TypeSafe API reference','https://docs.typesafe.ai/api',None,'official documentation','Native wire contract inspected. No authenticated live response at this access date; authenticated `jev-1.13.0` responses were validated end to end on 2026-09-18 ([../evidence/README.md](../evidence/README.md)).'),
 ('S04','TypeSafe models and prices','https://docs.typesafe.ai/models',None,'official documentation','Observed 2026-09-17; prices, limits and aliases can change.'),
 ('S05','TypeSafe confidence semantics','https://docs.typesafe.ai/confidence',None,'official documentation','Distribution-derived confidence is distinct from probability and measured calibration.'),
 ('S06','TypeSafe Choice primitive','https://docs.typesafe.ai/primitives/choice',None,'official documentation','Categorical request and response semantics.'),

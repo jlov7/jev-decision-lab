@@ -228,5 +228,5 @@ class ShowcaseEndpointTests(ServerTests):
         self.assertIn("wrong", s04["teaching_note"].lower())
         config = self.get("/api/config")
         self.assertIn("rules", config["arms"])
-        self.assertEqual(config["lab_version"], "0.5.0")
+        self.assertEqual(config["lab_version"], "0.6.0")
         self.assertEqual(config["http_body_limit"], 16384)
