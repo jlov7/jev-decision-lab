@@ -58,6 +58,9 @@ jobs:
               target.write_bytes(content)
           for name in ['review-snapshot.yml', 'review-tools.yml', 'review-recover.yml', 'review-publish.yml']:
               (root / '.github/workflows' / name).unlink(missing_ok=True)
+          legacy = root / '.github/recovery'
+          assert {p.name for p in legacy.iterdir()} == {'%02d.b64' % i for i in range(10)}
+          shutil.rmtree(legacy)
           shutil.rmtree(root / '.review-transfer')
           subprocess.run(['git', 'add', '-A'], check=True)
           tree = subprocess.check_output(['git', 'write-tree'], text=True).strip()
