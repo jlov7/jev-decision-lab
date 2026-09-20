@@ -18,7 +18,7 @@ import urllib.request
 from pathlib import Path
 from unittest.mock import patch
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 from jev_lab import provider, server, studio
 
@@ -153,9 +153,17 @@ def run(bridge: bool, output: Path) -> dict:
                 assert response and response.status == 200
                 assert "script-src 'self'" in response.headers["content-security-policy"]
                 assert page.url == base + "/"
-            page.wait_for_function(
-                "document.getElementById('lessonRun').disabled === false && studioState.preview !== null && state.cases.length === 12"
-            )
+            # Locator assertions poll in Playwright's isolated utility world.
+            # Do not enable unsafe-eval or bypass CSP to inspect application state.
+            expect(page.locator("#lessonRun")).to_be_enabled()
+            expect(page.locator("#studioExport")).to_be_enabled()
+
+            def expect_preview(pattern_id, variant):
+                request = studio.preview(pattern_id, variant)["request"]
+                expect(page.locator("#studioRequest")).to_have_text(
+                    json.dumps(request, indent=2, ensure_ascii=False)
+                )
+                return request
             assert page.title() == "Jev Decision Lab"
             assert page.locator("#start").is_visible()
             assert not page.locator("#workbench").is_visible()
@@ -170,14 +178,14 @@ def run(bridge: bool, output: Path) -> dict:
 
             shot("start-desktop.png")
             page.locator("#lessonRun").click()
-            page.wait_for_function("studioState.step === 1")
+            expect(page.locator("#lessonEvidence")).to_contain_text("ROUTE_TO_TEAM")
             assert "ROUTE_TO_TEAM" in page.locator("#lessonEvidence").inner_text()
             page.locator("#lessonNext").click()
-            page.wait_for_function("studioState.step === 2")
+            expect(page.locator("#lessonEvidence")).to_contain_text("REFRESH_EVIDENCE")
             assert "HOLD" in page.locator("#lessonEvidence").inner_text()
             assert "REFRESH_EVIDENCE" in page.locator("#lessonEvidence").inner_text()
             page.locator("#lessonNext").click()
-            page.wait_for_function("studioState.step === 3")
+            expect(page.locator("#teachBack")).to_be_visible()
             for q, answer in {"q1": "shape", "q2": "gate", "q3": "estimate"}.items():
                 page.locator(f'input[name="{q}"][value="{answer}"]').check()
             page.locator("#teachForm button").click()
@@ -198,10 +206,7 @@ def run(bridge: bool, output: Path) -> dict:
                 page.locator(f'[data-pattern="{pattern["id"]}"]').click()
                 for variant in ("routine", "adverse"):
                     page.locator("#studioVariant").select_option(variant)
-                    page.wait_for_function(
-                        "([id,v]) => studioState.preview?.pattern_id === id && studioState.preview?.variant === v",
-                        arg=[pattern["id"], variant],
-                    )
+                    expect_preview(pattern["id"], variant)
                     request = json.loads(page.locator("#studioRequest").inner_text())
                     assert request == studio.preview(pattern["id"], variant)["request"]
                     assert not page.locator("#studioExport").is_disabled()
@@ -212,7 +217,7 @@ def run(bridge: bool, output: Path) -> dict:
             assert "No patterns match" in page.locator("#patternList").inner_text()
             page.locator("#patternSearch").fill("")
             page.locator('[data-pattern="citation"]').click()
-            page.wait_for_function("studioState.preview?.pattern_id === 'citation'")
+            expect_preview("citation", page.locator("#studioVariant").input_value())
             assert "Hold:" in page.locator("#studioChecks").inner_text()
             with page.expect_download() as download:
                 page.locator("#studioExport").click()
@@ -232,9 +237,7 @@ def run(bridge: bool, output: Path) -> dict:
             page.wait_for_selector("#economicsResult table")
             page.locator("#econ_review_capacity_hours").fill("0")
             page.locator("#economicsForm button").click()
-            page.wait_for_function(
-                "document.getElementById('economicsResult').textContent.includes('Review capacity shortfall')"
-            )
+            expect(page.locator("#economicsResult")).to_contain_text("Review capacity shortfall")
             with page.expect_download() as download:
                 page.locator("#economicsExport").click()
             econ = json.loads(Path(download.value.path()).read_text())
@@ -248,14 +251,10 @@ def run(bridge: bool, output: Path) -> dict:
             page.locator('[data-tab="workbench"]').click()
             page.locator('[data-case="S02"]').click()
             page.locator("#run").click()
-            page.wait_for_function(
-                "document.getElementById('route').textContent === 'Recommend a team'"
-            )
+            expect(page.locator("#route")).to_have_text("Recommend a team")
             page.locator("#variant").select_option("stale")
             page.locator("#reconsider").click()
-            page.wait_for_function(
-                "document.getElementById('route').textContent === 'Refresh the evidence'"
-            )
+            expect(page.locator("#route")).to_have_text("Refresh the evidence")
             with page.expect_download() as download:
                 page.locator("#export").click()
             receipt = json.loads(Path(download.value.path()).read_text())
@@ -270,9 +269,9 @@ def run(bridge: bool, output: Path) -> dict:
             page.wait_for_selector("#compareTable table")
             assert "Common subset agreement" in page.locator("#compareSummary").inner_text()
             page.locator("#probeRun").click()
-            page.wait_for_function("state.lastProbe !== undefined && state.lastProbe !== null")
+            expect(page.locator("#exportProbe")).to_be_enabled()
             page.locator("#ablateRun").click()
-            page.wait_for_function("state.lastAblate !== undefined && state.lastAblate !== null")
+            expect(page.locator("#exportAblate")).to_be_enabled()
             assert "Descriptive reference" in page.locator("#ablateSummary").inner_text()
             with page.expect_download() as download:
                 page.locator("#exportReport").click()
@@ -290,10 +289,10 @@ def run(bridge: bool, output: Path) -> dict:
                 patch("jev_lab.provider.live", side_effect=mock_response),
                 patch.object(provider, "BUDGET", provider.CallBudget(20)),
             ):
-                page.evaluate("refreshConfig()")
+                page.evaluate("() => refreshConfig()")
                 page.locator("#studioConsent").check()
                 page.locator("#studioRun").click()
-                page.wait_for_function("!studioState.running")
+                expect(page.locator("#studioResultExport")).to_be_enabled()
                 assert page.locator("#studioResult details").count() >= 2, (
                     "Studio did not render typed answers from the QA transport mock"
                 )
@@ -315,10 +314,10 @@ def run(bridge: bool, output: Path) -> dict:
                 patch("jev_lab.provider.live", side_effect=malformed),
                 patch.object(provider, "BUDGET", provider.CallBudget(20)),
             ):
-                page.evaluate("refreshConfig()")
+                page.evaluate("() => refreshConfig()")
                 page.locator("#studioConsent").check()
                 page.locator("#studioRun").click()
-                page.wait_for_function("!studioState.running")
+                expect(page.locator("#studioResultExport")).to_be_enabled()
                 assert "failed" in page.locator("#studioStatus").inner_text()
                 with page.expect_download() as download:
                     page.locator("#studioResultExport").click()
@@ -330,9 +329,9 @@ def run(bridge: bool, output: Path) -> dict:
             report["checks"].append(
                 "Explicit-consent Studio success and malformed-response paths tested with authored transport mocks; failure response/cost retained; no retry"
             )
-            page.evaluate("refreshConfig()")
+            page.evaluate("() => refreshConfig()")
             page.locator("#studioVariant").select_option("routine")
-            page.wait_for_function("studioState.preview?.variant === 'routine'")
+            expect_preview("citation", "routine")
             page.locator("#studioRun").click()
             assert "Connect Jev first" in page.locator("#error").inner_text()
             report["checks"].append(
@@ -356,7 +355,7 @@ def run(bridge: bool, output: Path) -> dict:
             )
             page.locator('[data-tab="studio"]').click()
             page.locator("#patternSelect").select_option("extraction")
-            page.wait_for_function("studioState.preview?.pattern_id === 'extraction'")
+            expect_preview("extraction", "routine")
             assert page.locator("#studioSituation").is_visible()
             report["checks"].append(
                 "Phone pattern selector changes the readable source and typed questions without a live call"
