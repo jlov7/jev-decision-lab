@@ -102,3 +102,5 @@ The September 18 owner-recorded live observations in [`evidence/`](evidence/) ar
 A receipt hash detects changed bytes; it is not a signature or proof of truth. Stable outputs can be wrong. Input ablation measures observed sensitivity, not hidden model reasoning or causal importance. Twelve teaching cases and sixteen new situations do not estimate enterprise error rates.
 
 [Start here](docs/START_HERE.md) · [Design](docs/DESIGN.md) · [Studio](docs/STUDIO.md) · [Evaluation](docs/EVALUATION.md) · [Research update](docs/review/RESEARCH.md) · [Review rubric](docs/review/RUBRIC.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
+
+<sub>This is a personal research and development project. It is not affiliated with, endorsed by, or sponsored by my employer. Any views expressed are my own.</sub>
