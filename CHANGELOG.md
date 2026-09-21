@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0 · 20 September 2026
+
+- Add intent-led Start, an offline three-step lesson and a teach-back export.
+- Add Decision Studio: eight source-linked judgment patterns, sixteen routine/adverse request previews, explicit-consent live observations and `UNRUN` study designs.
+- Add assumption-only economics with all-attempt model cost, imperfect human review, residual-error loss, capacity and sensitivity.
+- Preserve known failed-response costs across native, Anthropic, OpenAI and Claude Code paths; keep unknowns and billing bases distinct. Reject nonzero CLI exits even when a success-shaped envelope is present.
+- Refuse mixed-model/question-contract calibration and false stability from incomplete probes. Scope descriptive variation by input/model; compare ablation against the same owner label without causal claims.
+- Add common-answered-subset comparison alongside failure-inclusive denominators. Keep the planted S04 exclusion specific to authored replay.
+- Make probe/ablation and experiment-snapshot exports self-contained and explicit about their coverage.
+- Add UI accounting tests and real-navigation CI browser checks; fix the source generator that erased the dated September 18 live-evidence note.
+- Preserve historical owner observations unchanged; record the interrupted-upload recovery and outstanding independent evaluation gates.
+
+
 Dates are 2026. Versions follow the `lab_version` shown in the app header.
 
 ## 0.5.0 · 18 September

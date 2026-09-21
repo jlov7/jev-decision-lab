@@ -1,3 +1,40 @@
+# v0.6 recovery verification · 20 September 2026
+
+This section is current for the upgrade. Older records below remain historical. Repository CI artifacts, not this paragraph, establish the result of any later commit.
+
+## Local evidence
+
+- Python 3.13.5: **259 tests passed**, including provider refusals, malformed outputs, incomplete probes, mixed versions, paired denominators, offline Studio requests, economics bounds/capacity, export custody and source-register regeneration.
+- Node 22.16: **7 JavaScript tests passed**; each of the five browser JavaScript files passed a separate syntax check.
+- Ruff 0.16.8: all configured lint checks passed. Twelve original teaching case contracts validated offline.
+- Chromium/Playwright 1.57.0: all seven surfaces exercised at 1440×1100 and 375×812, including all sixteen Studio previews, lesson/teach-back downloads, comparison/probe/ablation snapshots, economics, keyboard navigation, phone pattern selection, and retained malformed transport-mock responses.
+
+The local managed browser blocks real loopback navigation with `net::ERR_BLOCKED_BY_ADMINISTRATOR`. The explicit local `--bridge` run renders the real assets and calls the actual Python HTTP server, but **does not verify browser-network or CSP integration**. The CI browser job uses direct navigation with no bridge, checks actual CSP headers, and retains `browser-report.json` and screenshots. Inspect that job's result before merging. No policy was disabled to work around the local browser restriction.
+
+The browser loop found and repaired an incorrect Studio answer-renderer invocation and populated Live lab mobile overflow. Test-code selector/hidden-detail reading errors were repaired as test errors, not counted as product defects. The runtime test fixture labels every simulated provider response `transport_mock`; these outputs are not Jev evidence.
+
+## Reproduce
+
+```bash
+uv run python3 scripts/setup_lab.py
+uv run python3 -m unittest discover -s tests -v
+uv run python3 -m jev_lab check
+node --test tests/evidence.test.cjs
+for file in web/*.js; do node --check "$file"; done
+ruff check jev_lab tests scripts
+python3 -m scripts.browser_check --output-dir runs/browser
+```
+
+The recovery container ran Python commands with `uv run --no-project python3` to use its existing offline interpreter and tooling. This does not claim that a fresh `uv` package build was tested there. The CI matrix tests Ubuntu Python 3.10/3.13 and macOS Python 3.13. Browser evidence is Chromium-only; Safari, Firefox, Windows, real touch hardware and screen-reader behavior remain unverified.
+
+## Remaining evidence limits
+
+No new authenticated provider call, independent multi-agent review, human usability study, held-out domain benchmark or production security assessment was performed. Existing September 18 owner observations are unchanged. Local self-review cannot establish the requested independent 90+ standard in every category; see [the rubric](review/RUBRIC.md). A PR proposes code for review; it is not a deployment or public-release approval.
+
+---
+
+# Historical verification records
+
 # Verification record
 
 What has been checked, how, and what has not. Dates are 2026. Every live figure below is in a file under `evidence/`.

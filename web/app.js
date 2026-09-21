@@ -77,6 +77,11 @@ async function api(path, body) {
   return data;
 }
 function provenance() {
+  if ($('workbench').hidden) {
+    $('provenance').classList.remove('live');
+    $('provenance').textContent = 'Local lab · Inspect provenance beside each result · A model opinion is not permission';
+    return;
+  }
   const p = state.receipt?.provenance;
   const live = p?.kind === 'live_typesafe';
   $('provenance').classList.toggle('live', live);
@@ -132,9 +137,9 @@ function fillCaseView(id) {
 function teachingNote() {
   const c = state.cases.find((x) => x.id === state.caseId);
   $('teachingNote').innerHTML =
-    c && c.teaching_note
+    c && c.teaching_note && (!c.planted_error || state.receipt?.provenance.kind === 'synthetic_replay')
       ? `<p class="notice">${esc(c.teaching_note)}${
-          c.planted_error ? ' This is a planted teaching error, not a measured Jev failure.' : ''
+          c.planted_error && state.receipt?.provenance.kind === 'synthetic_replay' ? ' This is a planted teaching error, not a measured Jev failure.' : ''
         }</p>`
       : '';
 }
@@ -345,6 +350,7 @@ function tab(id) {
     x.setAttribute('aria-current', x.dataset.tab === id ? 'page' : 'false');
   });
   error('');
+  provenance();
 }
 
 /* Shared formatters used by the workbench and live.js */
@@ -353,7 +359,7 @@ const fmtMs = (v) => {
   return v >= 1000 ? `${(v / 1000).toFixed(2)} s` : `${Math.round(v)} ms`;
 };
 const fmtCost = (v) =>
-  v === null || v === undefined ? 'Unknown' : v < 0.01 ? `$${v.toFixed(6)}` : `$${v.toFixed(4)}`;
+  v === null || v === undefined ? 'Unknown' : Math.abs(v) < 0.01 ? `$${v.toFixed(6)}` : `$${v.toFixed(4)}`;
 const cents = (v) => (v === null || v === undefined ? '' : `≈ ${(v * 100).toFixed(3)}¢`);
 const median = (xs) => {
   const a = xs.filter((x) => x !== null && x !== undefined).sort((x, y) => x - y);

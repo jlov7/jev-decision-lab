@@ -1,7 +1,7 @@
 """Transparent owner-classification metrics, not product-performance assertions."""
 import math
 
-from .engine import distribution
+from .engine import digest, distribution
 
 
 def wilson(correct: int, n: int):
@@ -52,6 +52,14 @@ def evaluate(receipts: list[dict], labels: dict) -> dict:
     kinds = {r['provenance']['kind'] for r in receipts}
     if len(kinds) > 1:
         raise ValueError('Never mix synthetic and live outputs in one evaluation')
+    versions = {(r['response'].get('model'), r.get('question_version')) for r in receipts}
+    if len(versions) > 1:
+        raise ValueError('Model versions or question contracts differ; do not pool them')
+    contracts = {}
+    for r in receipts:
+        contracts.setdefault(r['pack'], set()).add(digest((r.get('request') or {}).get('questions')))
+    if any(len(v) > 1 for v in contracts.values()):
+        raise ValueError('Question contracts differ within a pack; do not pool them')
     groups = {}
     for r in receipts:
         if r['case_id'] not in labels:

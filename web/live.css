@@ -209,3 +209,14 @@ td.planted {
 .ablate-table .down {
   color: #962f32;
 }
+
+/* Constrain min-content growth after populated experiment results on phones. */
+.experiment { min-width: 0; overflow-wrap: anywhere; }
+#ablateRows { overflow-x: auto; }
+@media (max-width: 900px) {
+  .experiments { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 430px) {
+  .range-row { grid-template-columns: 80px minmax(0, 1fr) 72px; gap: 7px; }
+  .probe-q h4 { flex-wrap: wrap; }
+}

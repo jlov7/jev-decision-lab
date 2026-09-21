@@ -10,12 +10,15 @@ from collections import OrderedDict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
-from . import engine, llm_arm, metrics, probes, provider, showcase, strategy
+from . import economics, engine, llm_arm, metrics, probes, provider, showcase, strategy, studio
 
 TOKEN = secrets.token_urlsafe(32)
 RECEIPTS: OrderedDict[str, dict] = OrderedDict()
 LOCK = threading.Lock()
 STATIC = {
+    "/studio.js": ("studio.js", "text/javascript; charset=utf-8"),
+    "/evidence.js": ("evidence.js", "text/javascript; charset=utf-8"),
+    "/studio.css": ("studio.css", "text/css; charset=utf-8"),
     "/": ("index.html", "text/html; charset=utf-8"),
     "/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/live.js": ("live.js", "text/javascript; charset=utf-8"),
@@ -26,6 +29,10 @@ STATIC = {
     "/favicon.ico": ("favicon.svg", "image/svg+xml"),
 }
 FIELDS = {
+    "/api/studio-preview": {"pattern_id", "variant"},
+    "/api/studio-study": {"pattern_id"},
+    "/api/studio-run": {"pattern_id", "variant", "consent"},
+    "/api/economics": {"assumptions"},
     "/api/run": {"case_id", "mode", "threshold", "consent"},
     "/api/reconsider": {"receipt_id", "threshold", "variant"},
     "/api/action-preview": {"receipt_id", "current"},
@@ -156,6 +163,8 @@ class Handler(BaseHTTPRequestHandler):
                     "provider_input_limit": provider.MAX_INPUT_BYTES,
                 },
             )
+        if path == "/api/studio":
+            return self.send(200, {"patterns": studio.catalog(), "economics_defaults": economics.DEFAULTS, "economics_bounds": economics.BOUNDS})
         if path == "/api/cases":
             labels = engine.load("labels")
             cases = []
@@ -194,6 +203,14 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError(
                     "Unexpected request fields; arbitrary state and credentials are not accepted"
                 )
+            if path == "/api/studio-preview":
+                return self.send(200, studio.preview(body.get("pattern_id"), body.get("variant", "routine")))
+            if path == "/api/studio-study":
+                return self.send(200, studio.study(body.get("pattern_id")))
+            if path == "/api/studio-run":
+                return self.send(200, studio.run(body.get("pattern_id"), body.get("variant", "routine"), body.get("consent", False)))
+            if path == "/api/economics":
+                return self.send(200, economics.calculate(body.get("assumptions")))
             if path == "/api/run":
                 return self.send(
                     200,

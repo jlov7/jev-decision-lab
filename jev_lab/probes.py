@@ -17,25 +17,27 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 from . import engine, provider
+from . import evidence as accounting
 from .showcase import MAX_WORKERS, _percentile
 
 PROBE_MIN, PROBE_MAX = 2, 8
 # Observed on 18 Sep 2026 across two twelve-case bursts: top-owner probability moved by at most
-# 0.03 between calls. Ablation deltas below that are reported as within-noise, not as effects.
+# 0.03 between calls. This is only a descriptive reference, never a significance test.
 NOISE_FLOOR = 0.03
 # Per-process memory of what a live probe measured for each case: the widest range seen on any
 # single option. Ablation on the same case then uses the larger of this and NOISE_FLOOR, so an
 # ambiguous case (S02 measured 0.08 on 18 Sep 2026) is not read with a floor tuned on stable ones.
 MEASURED_RANGE: dict[str, float] = {}
+MEASURED_CONTRACT_RANGE: dict[tuple[str, str], float] = {}
 _MEASURED_LOCK = threading.Lock()
 
 
-def noise_floor_for(case_id: str) -> tuple[float, str]:
+def noise_floor_for(case_id: str, contract: str | None = None) -> tuple[float, str]:
     with _MEASURED_LOCK:
-        measured = MEASURED_RANGE.get(case_id)
+        measured = (MEASURED_CONTRACT_RANGE.get((case_id, contract)) if contract is not None and case_id in MEASURED_RANGE else MEASURED_RANGE.get(case_id) if contract is None else None)
     if measured is not None and measured > NOISE_FLOOR:
-        return measured, "measured by a live probe of this case in this server process"
-    return NOISE_FLOOR, "default from the 18 September 2026 bursts; probe this case to measure its own"
+        return measured, "measured descriptive range from a complete live probe in this process; ablation requires the same observed model and request"
+    return NOISE_FLOOR, "authored 0.03 descriptive reference, informed by the 18 September observations; not a significance threshold"
 
 
 def _hold(mode: str, consent: bool, n: int):
@@ -58,7 +60,7 @@ def _run_many(cases: list[dict], mode: str, threshold: float, consent: bool, pre
         try:
             return {"ok": True, "receipt": engine.run_case(case, mode, threshold, consent, prepaid)}
         except engine.LiveValidationError as exc:
-            return {"ok": False, "error": str(exc), "provider_response": exc.response}
+            return {"ok": False, "error": str(exc), "provider_response": exc.response, **{k: exc.provenance.get(k) for k in ("latency_ms", "usage", "estimated_cost_usd", "billing")}}
         except (ValueError, PermissionError, RuntimeError) as exc:
             return {"ok": False, "error": str(exc)}
 
@@ -106,7 +108,9 @@ def probe(case_id: str, repeats: int, mode: str = "replay", consent: bool = Fals
     wall_ms = round((time.perf_counter() - started) * 1000, 2)
     receipts = [r["receipt"] for r in results if r["ok"]]
     rows = [_answer_row(r) for r in receipts]
-    questions = receipts[0]["request"]["questions"] if receipts else {}
+    comparable = len({accounting.signature(r, include_state=True) for r in receipts}) <= 1
+    complete = len(receipts) == repeats
+    questions = receipts[0]["request"]["questions"] if receipts and comparable else {}
     spread = {}
     for qid, q in questions.items():
         answers = [r["response"]["answers"][qid] for r in receipts]
@@ -132,18 +136,19 @@ def probe(case_id: str, repeats: int, mode: str = "replay", consent: bool = Fals
     for row in rows:
         routes[row["route"]] = routes.get(row["route"], 0) + 1
     latencies = [r["latency_ms"] for r in rows if r["latency_ms"] is not None]
-    costs = [r["estimated_cost_usd"] for r in rows if r["estimated_cost_usd"] is not None]
+    cost_summary = accounting.costs([r["receipt"]["provenance"] if r["ok"] else r for r in results])
     widest = max(
         (
-            (max(o["range"] for o in s["options"].values()), qid)
+            (max(o["range"] for o in s["options"].values()) if "options" in s else s["value"]["range"], qid)
             for qid, s in spread.items()
-            if "options" in s
         ),
         default=(0, None),
     )
-    if mode == "live" and receipts and widest[1] is not None:
+    if mode == "live" and complete and comparable and widest[1] is not None:
         with _MEASURED_LOCK:
             MEASURED_RANGE[case_id] = max(MEASURED_RANGE.get(case_id, 0.0), widest[0])
+            key = (case_id, accounting.signature(receipts[0], include_state=True))
+            MEASURED_CONTRACT_RANGE[key] = max(MEASURED_CONTRACT_RANGE.get(key, 0.0), widest[0])
     return {
         "kind": "stability_probe",
         "mode": mode,
@@ -158,10 +163,13 @@ def probe(case_id: str, repeats: int, mode: str = "replay", consent: bool = Fals
         "receipts": receipts,
         "spread": spread,
         "routes": routes,
-        "route_stable": len(routes) <= 1,
+        "route_stable": len(routes) == 1 if complete and comparable else None,
+        "complete": complete,
+        "comparable": comparable,
         "widest_option_range": {"range": widest[0], "question": widest[1]},
         "latency_ms": {"p50": _percentile(latencies, 0.5), "max": max(latencies) if latencies else None},
-        "estimated_cost_usd": sum(costs) if costs and len(costs) == len(rows) else None,
+        "estimated_cost_usd": cost_summary["total_cost_usd"],
+        "cost_summary": cost_summary,
         "warning": (
             "Synthetic replay returns the same authored fixture every time, so every range is zero. "
             "Run this live to measure real call-to-call variation."
@@ -189,13 +197,15 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
     variants = [("baseline", None, case)] + [
         (f"without {e['id']}", e, _without(case, e["id"])) for e in evidence
     ]
-    floor, floor_source = noise_floor_for(case_id)
     prepaid = _hold(mode, consent, len(variants))
     started = time.perf_counter()
     results = _run_many([v[2] for v in variants], mode, threshold, consent, prepaid)
     wall_ms = round((time.perf_counter() - started) * 1000, 2)
     base = results[0]
+    contract = accounting.signature(base["receipt"], include_state=True) if base["ok"] else "unavailable"
+    floor, floor_source = noise_floor_for(case_id, contract)
     base_row = _answer_row(base["receipt"]) if base["ok"] else None
+    comparable = len({accounting.signature(x['receipt']) for x in results if x['ok']}) <= 1
     out_variants = []
     for (label, removed, _), result in zip(variants, results, strict=True):
         entry = {
@@ -207,19 +217,20 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
             row = _answer_row(result["receipt"])
             entry["answers"] = row
             entry["receipt"] = result["receipt"]
-            if base_row and removed is not None:
+            if base_row and removed is not None and comparable:
                 deltas = {
-                    "owner_probability": round(row["owner_probability"] - base_row["owner_probability"], 4),
+                    "owner_probability": round(result["receipt"]["response"]["answers"]["owner"]["probabilities"][base_row["owner"]] - base_row["owner_probability"], 4),
                     "severity": round(row["severity"] - base_row["severity"], 4),
                     "sufficient": round(row["sufficient"] - base_row["sufficient"], 4),
                     "contradiction": round(row["contradiction"] - base_row["contradiction"], 4),
                 }
                 entry["deltas"] = deltas
+                entry["delta_owner_label"] = base_row["owner"]
                 entry["owner_changed"] = row["owner"] != base_row["owner"]
                 entry["issue_changed"] = row["issue"] != base_row["issue"]
                 entry["route_changed"] = row["route"] != base_row["route"]
                 entry["movement"] = round(
-                    sum(abs(v) for k, v in deltas.items() if k != "severity") + abs(deltas["severity"]) / 3,
+                    max(abs(v) for k, v in deltas.items() if k != "severity"),
                     4,
                 )
                 entry["above_noise"] = (
@@ -227,6 +238,8 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
                 )
         else:
             entry["error"] = result["error"]
+            for key in ("latency_ms", "usage", "estimated_cost_usd", "billing"):
+                entry[key] = result.get(key)
             if "provider_response" in result:
                 entry["provider_response"] = result["provider_response"]
         out_variants.append(entry)
@@ -242,28 +255,33 @@ def ablate(case_id: str, mode: str = "replay", consent: bool = False, threshold:
         "wall_ms": wall_ms,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "baseline_ok": base["ok"],
+        "comparable": comparable,
+        "complete": all(x["ok"] for x in results),
+        "cost_summary": accounting.costs([x["receipt"]["provenance"] if x["ok"] else x for x in results]),
         "variants": out_variants,
         "most_influential": most["removed_evidence"]["id"] if most and most["above_noise"] else None,
         "noise_floor": floor,
         "noise_floor_source": floor_source,
         "warning": (
             "Synthetic replay returns the same authored fixture for every variant, so nothing moves. "
-            "Run this live to see which evidence carries the judgment."
+            "Run live to describe sensitivity to the supplied evidence, not causal importance."
             if mode == "replay"
-            else f"One call per variant. Movement below {floor:.2f} ({floor_source}) is marked as noise. "
-            "Removing evidence changes the input; it does not show what the model attended to."
+            else f"One call per variant. The {floor:.2f} reference ({floor_source}) is descriptive, not a significance test. "
+            "Removing evidence changes the input; it does not show what the model attended to or establish causality. Mixed versions are not comparable. Legacy field names above_noise and most_influential denote only a descriptive sensitivity comparison."
         ),
     }
 
 
 def publish(result: dict, store) -> dict:
-    """Store receipts, replace them with ids in the public result."""
+    """Keep a self-contained audit copy as well as short-lived inspector IDs."""
     if result["kind"] == "stability_probe":
-        ids = [store(r)["receipt_id"] for r in result.pop("receipts")]
+        result["audit_receipts"] = result.pop("receipts")
+        ids = [store(r)["receipt_id"] for r in result["audit_receipts"]]
         for row, rid in zip(result["rows"], ids, strict=True):
             row["receipt_id"] = rid
     else:
         for variant in result["variants"]:
             if "receipt" in variant:
-                variant["receipt_id"] = store(variant.pop("receipt"))["receipt_id"]
+                variant["audit_receipt"] = variant.pop("receipt")
+                variant["receipt_id"] = store(variant["audit_receipt"])["receipt_id"]
     return result
