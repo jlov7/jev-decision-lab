@@ -11,6 +11,7 @@
 - Make probe/ablation and experiment-snapshot exports self-contained and explicit about their coverage.
 - Add UI accounting tests and real-navigation CI browser checks; fix the source generator that erased the dated September 18 live-evidence note.
 - Preserve historical owner observations unchanged; record the interrupted-upload recovery and outstanding independent evaluation gates.
+- Restore the CLI, HTTP API, policy, receipts and troubleshooting reference as `docs/REFERENCE.md`, enforced by a contract test that fails when a documented route or field drifts from the server.
 
 
 Dates are 2026. Versions follow the `lab_version` shown in the app header.

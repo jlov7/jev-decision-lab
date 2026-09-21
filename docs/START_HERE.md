@@ -22,4 +22,4 @@ Connect Jev locally, then explicitly authorize one displayed synthetic Studio re
 
 Do not use company or client data. No real action is possible in the local authority simulation. A new key, account, receipt or green test does not create enterprise approval.
 
-Read [STUDIO.md](STUDIO.md), [EVALUATION.md](EVALUATION.md), [QA.md](QA.md) and [the review rubric](review/RUBRIC.md) before making a stronger claim. The original owner-recorded September 18 observations remain in `evidence/`; v0.6 adds engineering and teaching capabilities, not a new measured Jev performance claim.
+Read [STUDIO.md](STUDIO.md), [EVALUATION.md](EVALUATION.md), [QA.md](QA.md) and [the review rubric](review/RUBRIC.md) before making a stronger claim. The original owner-recorded September 18 observations remain in `evidence/`; v0.6 adds engineering and teaching capabilities, not a new measured Jev performance claim. For the precise CLI commands, HTTP endpoints, policy rules, receipts, environment variables and troubleshooting, read [REFERENCE.md](REFERENCE.md).
